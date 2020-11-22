@@ -10,9 +10,3 @@
 // You should have received a copy of the AGPL License
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
-
-mod app_window;
-mod pubkey;
-
-pub use app_window::{AppWindow, Error as AppError};
-pub use pubkey::PubkeyDlg;

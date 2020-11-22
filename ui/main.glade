@@ -175,7 +175,7 @@
                 <property name="can_focus">False</property>
                 <property name="toolbar_style">both-horiz</property>
                 <child>
-                  <object class="GtkToolButton" id="addIssue">
+                  <object class="GtkToolButton" id="pubkeyAdd">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="tooltip_text" translatable="yes">Add asset allocation - an unspent bitcoin transaction output which will contain the issued asset</property>

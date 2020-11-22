@@ -1,3 +1,3 @@
 # Bitcoin Pro
 
-Professional bitcoin accounts & assets managementw
+Professional bitcoin accounts & assets management.
