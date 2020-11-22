@@ -103,7 +103,7 @@
                   <object class="GtkEntry" id="pubkeyField">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="width_chars">64</property>
+                    <property name="width_chars">66</property>
                     <property name="max_width_chars">64</property>
                     <property name="primary_icon_tooltip_text" translatable="yes">Hex-or bech32-encoded single public key</property>
                     <property name="placeholder_text" translatable="yes">Hex-or bech32-encoded single public key</property>
@@ -489,7 +489,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="hexpand">True</property>
-                            <property name="width_chars">64</property>
+                            <property name="width_chars">66</property>
                             <property name="primary_icon_tooltip_text" translatable="yes">BIP 32 or bech32-encoded extended public key</property>
                             <property name="placeholder_text" translatable="yes">BIP 32 or bech32-encoded extended public key</property>
                             <signal name="changed" handler="xpubkeyChanged" swapped="no"/>
@@ -729,7 +729,7 @@
                                 <property name="can_focus">True</property>
                                 <property name="hexpand">True</property>
                                 <property name="editable">False</property>
-                                <property name="width_chars">64</property>
+                                <property name="width_chars">66</property>
                                 <property name="secondary_icon_stock">gtk-copy</property>
                               </object>
                               <packing>
@@ -743,7 +743,7 @@
                                 <property name="can_focus">True</property>
                                 <property name="hexpand">True</property>
                                 <property name="editable">False</property>
-                                <property name="width_chars">64</property>
+                                <property name="width_chars">66</property>
                                 <property name="secondary_icon_stock">gtk-copy</property>
                               </object>
                               <packing>
@@ -846,7 +846,7 @@
                                 <property name="can_focus">True</property>
                                 <property name="hexpand">True</property>
                                 <property name="editable">False</property>
-                                <property name="width_chars">64</property>
+                                <property name="width_chars">66</property>
                                 <property name="secondary_icon_stock">gtk-copy</property>
                               </object>
                               <packing>
@@ -930,7 +930,7 @@
                                 <property name="can_focus">True</property>
                                 <property name="hexpand">True</property>
                                 <property name="editable">False</property>
-                                <property name="width_chars">64</property>
+                                <property name="width_chars">66</property>
                                 <property name="secondary_icon_stock">gtk-copy</property>
                               </object>
                               <packing>
@@ -943,7 +943,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="editable">False</property>
-                                <property name="width_chars">64</property>
+                                <property name="width_chars">66</property>
                                 <property name="secondary_icon_stock">gtk-copy</property>
                               </object>
                               <packing>
@@ -956,7 +956,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="editable">False</property>
-                                <property name="width_chars">64</property>
+                                <property name="width_chars">66</property>
                                 <property name="secondary_icon_stock">gtk-copy</property>
                               </object>
                               <packing>
@@ -1039,7 +1039,7 @@
                                 <property name="can_focus">True</property>
                                 <property name="hexpand">True</property>
                                 <property name="editable">False</property>
-                                <property name="width_chars">64</property>
+                                <property name="width_chars">66</property>
                                 <property name="secondary_icon_stock">gtk-copy</property>
                               </object>
                               <packing>
@@ -1052,7 +1052,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="editable">False</property>
-                                <property name="width_chars">64</property>
+                                <property name="width_chars">66</property>
                                 <property name="secondary_icon_stock">gtk-copy</property>
                               </object>
                               <packing>
@@ -1065,7 +1065,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="editable">False</property>
-                                <property name="width_chars">64</property>
+                                <property name="width_chars">66</property>
                                 <property name="secondary_icon_stock">gtk-copy</property>
                               </object>
                               <packing>
@@ -1078,7 +1078,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="editable">False</property>
-                                <property name="width_chars">64</property>
+                                <property name="width_chars">66</property>
                                 <property name="secondary_icon_stock">gtk-copy</property>
                               </object>
                               <packing>
@@ -1152,7 +1152,7 @@
                                 <property name="can_focus">True</property>
                                 <property name="hexpand">True</property>
                                 <property name="editable">False</property>
-                                <property name="width_chars">64</property>
+                                <property name="width_chars">66</property>
                                 <property name="secondary_icon_stock">gtk-copy</property>
                               </object>
                               <packing>

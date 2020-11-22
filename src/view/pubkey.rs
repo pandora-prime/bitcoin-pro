@@ -27,9 +27,10 @@ pub enum PkType {
     Hd,
 }
 
-//#[glade_load="../ui/asset_issue.glade"]
+//#[display(Glade)]
+//#[glade(file = "../ui/asset_issue.glade")]
 pub struct PubkeyDlg {
-    //#[glade_id="assetIssue"]
+    //#[glade(id = "assetIssue")]
     dialog: gtk::Dialog,
     msg_box: gtk::Box,
     msg_label: gtk::Label,
@@ -177,6 +178,70 @@ impl glade::View for PubkeyDlg {
             }),
         );
 
+        me.as_ref()
+            .borrow()
+            .uncompressed_display
+            .connect_icon_press(clone!(@weak me => move |_, _, _| {
+                let me = me.borrow();
+                gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD)
+                    .set_text(&me.uncompressed_display.get_text());
+                me.display_info("Key copied to clipboard");
+            }));
+
+        me.as_ref().borrow().compressed_display.connect_icon_press(
+            clone!(@weak me => move |_, _, _| {
+                let me = me.borrow();
+                gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD)
+                    .set_text(&me.compressed_display.get_text());
+                me.display_info("Key copied to clipboard");
+            }),
+        );
+
+        me.as_ref().borrow().xcoordonly_display.connect_icon_press(
+            clone!(@weak me => move |_, _, _| {
+                let me = me.borrow();
+                gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD)
+                    .set_text(&me.xcoordonly_display.get_text());
+                me.display_info("Key copied to clipboard");
+            }),
+        );
+
+        me.as_ref().borrow().pkh_display.connect_icon_press(
+            clone!(@weak me => move |_, _, _| {
+                let me = me.borrow();
+                gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD)
+                    .set_text(&me.pkh_display.get_text());
+                me.display_info("Address copied to clipboard");
+            }),
+        );
+
+        me.as_ref().borrow().wpkh_display.connect_icon_press(
+            clone!(@weak me => move |_, _, _| {
+                let me = me.borrow();
+                gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD)
+                    .set_text(&me.wpkh_display.get_text());
+                me.display_info("Address copied to clipboard");
+            }),
+        );
+
+        me.as_ref().borrow().wpkh_sh_display.connect_icon_press(
+            clone!(@weak me => move |_, _, _| {
+                let me = me.borrow();
+                gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD)
+                    .set_text(&me.wpkh_sh_display.get_text());
+                me.display_info("Address copied to clipboard");
+            }),
+        );
+
+        me.as_ref().borrow().taproot_display.connect_icon_press(
+            clone!(@weak me => move |_, _, _| {
+                let me = me.borrow();
+                gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD)
+                    .set_text(&me.taproot_display.get_text());
+                me.display_info("Address copied to clipboard");
+            }),
+        );
+
         Ok(me)
     }
 }
@@ -195,6 +260,15 @@ impl PubkeyDlg {
         self.dialog.hide();
     }
 
+    pub fn display_info(&self, msg: impl ToString) {
+        self.msg_label.set_text(&msg.to_string());
+        self.msg_image.set_from_icon_name(
+            Some("dialog-information"),
+            gtk::IconSize::SmallToolbar,
+        );
+        self.msg_box.set_visible(true);
+    }
+
     pub fn set_key_type(&self, pk_type: PkType, activate: bool) {
         self.pubkey_field.set_sensitive(pk_type == PkType::Single);
         self.xpub_field.set_sensitive(pk_type == PkType::Hd);
@@ -207,17 +281,29 @@ impl PubkeyDlg {
 
     pub fn update_ui(&self) {
         match self.update_ui_internal() {
-            Ok(_) => {
+            Ok(None) => {
                 self.msg_box.set_visible(false);
+            }
+            Ok(Some(msg)) => {
+                self.msg_label.set_text(&msg);
+                self.msg_image.set_from_icon_name(
+                    Some("dialog-information"),
+                    gtk::IconSize::SmallToolbar,
+                );
+                self.msg_box.set_visible(true);
             }
             Err(err) => {
                 self.msg_label.set_text(&err);
+                self.msg_image.set_from_icon_name(
+                    Some("dialog-error"),
+                    gtk::IconSize::SmallToolbar,
+                );
                 self.msg_box.set_visible(true);
             }
         }
     }
 
-    pub fn update_ui_internal(&self) -> Result<(), String> {
+    pub fn update_ui_internal(&self) -> Result<Option<String>, String> {
         let network = match self.network_combo.get_active() {
             Some(0) => bitcoin::Network::Bitcoin,
             Some(1) => bitcoin::Network::Testnet,
@@ -265,6 +351,6 @@ impl PubkeyDlg {
             PkType::Hd
         };
 
-        Ok(())
+        Ok(None)
     }
 }
