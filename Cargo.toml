@@ -1,0 +1,23 @@
+[package]
+name = "bitcoin-pro"
+description = "Professional bitcoin accounts & assets management"
+version = "0.1.0"
+authors = ["Dr Maxim Orlovsky <orlovsky@pandoracore.com>"]
+edition = "2018"
+license = "AGPL-3.0-only"
+readme = "README.md"
+
+[[bin]]
+name = "bitcoin-pro"
+
+[dependencies]
+amplify = "~2.3.1"
+amplify_derive = "~2.3.1"
+lazy_static = "~1.4.0"
+serde = "~1.0.117"
+serde_json = "~1.0.59"
+serde_yaml = "~0.8.14"
+toml = "~0.5.7"
+gtk = { version = "~0.9.2", features = ["v3_24_9"] }
+gio =  { version = "~0.9.1", features = ["v2_64"] }
+glib = { version = "~0.10.3", features = ["v2_64"] }

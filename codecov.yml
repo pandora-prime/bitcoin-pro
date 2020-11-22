@@ -1,0 +1,12 @@
+codecov:
+  require_ci_to_pass: no
+
+coverage:
+  precision: 1
+  round: nearest
+  range: "0...95"
+  status:
+    project:
+      default:
+        target: 0 # TODO: Update it in the future after first release
+        threshold: 1%
