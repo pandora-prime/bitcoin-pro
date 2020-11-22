@@ -11,10 +11,16 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+#![allow(dead_code)]
+
+#[macro_use]
+extern crate amplify;
 #[macro_use]
 extern crate amplify_derive;
 #[macro_use]
 extern crate glade;
+#[macro_use]
+extern crate glib;
 
 mod view;
 

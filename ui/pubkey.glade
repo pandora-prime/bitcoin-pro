@@ -25,32 +25,10 @@
             <property name="can_focus">False</property>
             <property name="layout_style">end</property>
             <child>
-              <object class="GtkButton" id="ok">
-                <property name="label" translatable="yes">Ok</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="action_name">dlg.ok</property>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
+              <placeholder/>
             </child>
             <child>
-              <object class="GtkButton" id="cancel">
-                <property name="label" translatable="yes">Cancel</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="action_name">dlg.cancel</property>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
+              <placeholder/>
             </child>
           </object>
           <packing>
@@ -78,7 +56,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkEntry">
+              <object class="GtkEntry" id="nameField">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="hexpand">True</property>
@@ -122,13 +100,14 @@
                 <property name="top_padding">6</property>
                 <property name="left_padding">24</property>
                 <child>
-                  <object class="GtkEntry">
+                  <object class="GtkEntry" id="pubkeyField">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="width_chars">64</property>
                     <property name="max_width_chars">64</property>
                     <property name="primary_icon_tooltip_text" translatable="yes">Hex-or bech32-encoded single public key</property>
                     <property name="placeholder_text" translatable="yes">Hex-or bech32-encoded single public key</property>
+                    <signal name="changed" handler="pubkeyChanged" swapped="no"/>
                   </object>
                 </child>
               </object>
@@ -140,7 +119,7 @@
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
                 <property name="draw_indicator">True</property>
-                <property name="group">hdKey</property>
+                <signal name="toggled" handler="onSkToggled" swapped="no"/>
               </object>
             </child>
           </object>
@@ -261,7 +240,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkCheckButton">
+                          <object class="GtkCheckButton" id="purposeCheck">
                             <property name="label" translatable="yes">hardened</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -275,7 +254,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkCheckButton">
+                          <object class="GtkCheckButton" id="assetsCheck">
                             <property name="label" translatable="yes">hardened</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -289,7 +268,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkCheckButton">
+                          <object class="GtkCheckButton" id="accountCheck">
                             <property name="label" translatable="yes">hardened</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -303,7 +282,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkSpinButton">
+                          <object class="GtkSpinButton" id="purposeCounter">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="hexpand">True</property>
@@ -317,7 +296,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkSpinButton">
+                          <object class="GtkSpinButton" id="assetsCounter">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="hexpand">True</property>
@@ -331,7 +310,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkSpinButton">
+                          <object class="GtkSpinButton" id="accountCounter">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="hexpand">True</property>
@@ -346,7 +325,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkSpinButton">
+                          <object class="GtkSpinButton" id="indexCounter">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="hexpand">True</property>
@@ -361,7 +340,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkComboBoxText">
+                          <object class="GtkComboBoxText" id="purposeCombo">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="active">3</property>
@@ -380,7 +359,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkComboBoxText">
+                          <object class="GtkComboBoxText" id="assetsCombo">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="active">2</property>
@@ -398,7 +377,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkComboBoxText">
+                          <object class="GtkComboBoxText" id="changeCombo">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="active">1</property>
@@ -415,7 +394,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkCheckButton">
+                          <object class="GtkCheckButton" id="changeCheck">
                             <property name="label" translatable="yes">hardened</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -428,7 +407,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkSpinButton">
+                          <object class="GtkSpinButton" id="changeCounter">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="hexpand">True</property>
@@ -442,7 +421,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkCheckButton">
+                          <object class="GtkCheckButton" id="indexCheck">
                             <property name="label" translatable="yes">hardened</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -461,11 +440,10 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkEntry">
+                      <object class="GtkEntry" id="indexRangeField">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="hexpand">True</property>
-                        <property name="editable">False</property>
                         <property name="max_length">1024</property>
                         <property name="width_chars">64</property>
                         <property name="primary_icon_tooltip_text" translatable="yes">Use format "from-to". You can specify nultiple ranges with comma delimiters.</property>
@@ -477,7 +455,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkCheckButton">
+                      <object class="GtkCheckButton" id="indexRangeCheck">
                         <property name="label" translatable="yes">Index ranges:</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
@@ -507,14 +485,14 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkEntry">
+                          <object class="GtkEntry" id="xpubField">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="hexpand">True</property>
-                            <property name="editable">False</property>
                             <property name="width_chars">64</property>
                             <property name="primary_icon_tooltip_text" translatable="yes">BIP 32 or bech32-encoded extended public key</property>
                             <property name="placeholder_text" translatable="yes">BIP 32 or bech32-encoded extended public key</property>
+                            <signal name="changed" handler="xpubkeyChanged" swapped="no"/>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -535,6 +513,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
+                        <property name="active">True</property>
                         <property name="draw_indicator">True</property>
                         <property name="group">deriveBip44</property>
                       </object>
@@ -544,11 +523,10 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkEntry">
+                      <object class="GtkEntry" id="derivationField">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="hexpand">True</property>
-                        <property name="editable">False</property>
                         <property name="width_chars">64</property>
                         <property name="placeholder_text" translatable="yes">Use BIP 44 format without leading "m", like "/1'/0/"</property>
                       </object>
@@ -567,7 +545,6 @@
                         <property name="margin_top">6</property>
                         <property name="active">True</property>
                         <property name="draw_indicator">True</property>
-                        <property name="group">deriveCustom</property>
                       </object>
                       <packing>
                         <property name="left_attach">0</property>
@@ -587,6 +564,7 @@
                 <property name="active">True</property>
                 <property name="draw_indicator">True</property>
                 <property name="group">singleKey</property>
+                <signal name="toggled" handler="onHdToggled" swapped="no"/>
               </object>
             </child>
           </object>
@@ -632,7 +610,7 @@
                         <property name="row_spacing">6</property>
                         <property name="column_spacing">6</property>
                         <child>
-                          <object class="GtkComboBoxText">
+                          <object class="GtkComboBoxText" id="blockchainCombo">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="active">2</property>
@@ -688,7 +666,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkCheckButton">
+                          <object class="GtkCheckButton" id="exportCheck">
                             <property name="label" translatable="yes">hardened</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -746,7 +724,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkEntry">
+                              <object class="GtkEntry" id="xpubDisplay">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="hexpand">True</property>
@@ -760,7 +738,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkEntry">
+                              <object class="GtkEntry" id="descriptorDisplay">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="hexpand">True</property>
@@ -791,7 +769,7 @@
                                 <property name="can_focus">False</property>
                                 <property name="spacing">6</property>
                                 <child>
-                                  <object class="GtkEntry">
+                                  <object class="GtkEntry" id="fingerprintDisplay">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="editable">False</property>
@@ -819,7 +797,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkEntry">
+                                  <object class="GtkEntry" id="derivationDisplay">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="hexpand">True</property>
@@ -863,7 +841,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkEntry">
+                              <object class="GtkEntry" id="xpubDispla">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="hexpand">True</property>
@@ -947,7 +925,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkEntry">
+                              <object class="GtkEntry" id="uncompressedDisplay">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="hexpand">True</property>
@@ -961,7 +939,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkEntry">
+                              <object class="GtkEntry" id="comporessedDisplay">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="editable">False</property>
@@ -974,7 +952,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkEntry">
+                              <object class="GtkEntry" id="xonlyDisplay">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="editable">False</property>
@@ -1056,7 +1034,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkEntry">
+                              <object class="GtkEntry" id="pkhDisplay">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="hexpand">True</property>
@@ -1070,7 +1048,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkEntry">
+                              <object class="GtkEntry" id="wpkhDisplay">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="editable">False</property>
@@ -1083,7 +1061,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkEntry">
+                              <object class="GtkEntry" id="wpkhShDisplay">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="editable">False</property>
@@ -1096,7 +1074,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkEntry">
+                              <object class="GtkEntry" id="taprootDisplay">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="editable">False</property>
@@ -1169,7 +1147,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkEntry">
+                              <object class="GtkEntry" id="bechDisplay">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="hexpand">True</property>
@@ -1231,9 +1209,27 @@
         <property name="can_focus">False</property>
         <property name="title" translatable="yes">Public key parameters</property>
         <property name="subtitle" translatable="yes">Curve SECP256K1</property>
-        <property name="show_close_button">True</property>
         <child>
-          <placeholder/>
+          <object class="GtkButton" id="cancel">
+            <property name="label" translatable="yes">Cancel</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="action_name">dlg.cancel</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton" id="save">
+            <property name="label" translatable="yes">Save</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="action_name">dlg.save</property>
+          </object>
+          <packing>
+            <property name="pack_type">end</property>
+            <property name="position">1</property>
+          </packing>
         </child>
       </object>
     </child>
