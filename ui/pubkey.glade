@@ -1195,6 +1195,8 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">You have to provide correct key value in either "single key" or "master" field</property>
+                <property name="wrap">True</property>
+                <property name="wrap_mode">word-char</property>
                 <property name="selectable">True</property>
                 <attributes>
                   <attribute name="style" value="oblique"/>

@@ -27,6 +27,13 @@ pub enum PkType {
     Hd,
 }
 
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Display)]
+#[display(Debug)]
+pub enum DeriveType {
+    Bip44,
+    Custom,
+}
+
 //#[display(Glade)]
 //#[glade(file = "../ui/asset_issue.glade")]
 pub struct PubkeyDlg {
@@ -271,29 +278,34 @@ impl glade::View for PubkeyDlg {
             .pubkey_field
             .connect_changed(clone!(@weak me => move |_| {
                 let me = me.borrow();
-                me.set_key_type(PkType::Single, true)
+                me.set_key_type(PkType::Single)
             }));
 
-        me.borrow()
-            .xpub_field
-            .connect_changed(clone!(@weak me => move |_| {
+        for ctl in &[&me.borrow().xpub_field, &me.borrow().range_field] {
+            ctl.connect_changed(clone!(@weak me => move |_| {
                 let me = me.borrow();
-                me.set_key_type(PkType::Hd, true)
+                me.set_key_type(PkType::Hd)
             }));
+        }
 
-        me.borrow()
-            .sk_radio
-            .connect_toggled(clone!(@weak me => move |_| {
+        me.borrow().derivation_field.connect_changed(
+            clone!(@weak me => move |_| {
                 let me = me.borrow();
-                me.set_key_type(PkType::Single, false)
-            }));
+                me.set_derive_type(DeriveType::Custom)
+            }),
+        );
 
-        me.borrow()
-            .hd_radio
-            .connect_toggled(clone!(@weak me => move |_| {
+        for ctl in &[
+            &me.borrow().sk_radio,
+            &me.borrow().hd_radio,
+            &me.borrow().bip44_radio,
+            &me.borrow().custom_radio,
+        ] {
+            ctl.connect_toggled(clone!(@weak me => move |_| {
                 let me = me.borrow();
-                me.set_key_type(PkType::Hd, false)
+                me.update_ui()
             }));
+        }
 
         for ctl in &[
             &me.borrow().purpose_combo,
@@ -306,6 +318,7 @@ impl glade::View for PubkeyDlg {
                 me.update_ui()
             }));
         }
+
         for ctl in &[
             &me.borrow().purpose_index,
             &me.borrow().asset_index,
@@ -314,9 +327,10 @@ impl glade::View for PubkeyDlg {
         ] {
             ctl.connect_changed(clone!(@weak me => move |_| {
                 let me = me.borrow();
-                me.update_ui()
+                me.set_derive_type(DeriveType::Bip44)
             }));
         }
+
         for ctl in &[
             &me.borrow().purpose_chk,
             &me.borrow().asset_chk,
@@ -326,7 +340,7 @@ impl glade::View for PubkeyDlg {
         ] {
             ctl.connect_toggled(clone!(@weak me => move |_| {
                 let me = me.borrow();
-                me.update_ui()
+                me.set_derive_type(DeriveType::Bip44)
             }));
         }
 
@@ -345,12 +359,11 @@ impl glade::View for PubkeyDlg {
             &me.borrow().taproot_display,
             &me.borrow().bech_display,
         ] {
-            ctl.connect_icon_press(clone!(@weak me => move |_, _, _| {
-                let me = me.borrow();
-                let val = me.uncompressed_display.get_text();
+            ctl.connect_icon_press(clone!(@weak ctl, @weak me => move |_, _, _| {
+                let val = ctl.get_text();
                 gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD)
                     .set_text(&val);
-                me.display_info(format!("Value {} copied to clipboard", val));
+                me.borrow().display_info(format!("Value {} copied to clipboard", val));
             }));
         }
 
@@ -360,14 +373,7 @@ impl glade::View for PubkeyDlg {
 
 impl PubkeyDlg {
     pub fn run(&self) {
-        self.set_key_type(
-            if self.sk_radio.get_active() {
-                PkType::Single
-            } else {
-                PkType::Hd
-            },
-            false,
-        );
+        self.update_ui();
         self.dialog.run();
         self.dialog.hide();
     }
@@ -381,17 +387,64 @@ impl PubkeyDlg {
         self.msg_box.set_visible(true);
     }
 
-    pub fn set_key_type(&self, pk_type: PkType, activate: bool) {
-        self.pubkey_field.set_sensitive(pk_type == PkType::Single);
-        self.xpub_field.set_sensitive(pk_type == PkType::Hd);
-        if activate {
-            self.sk_radio.set_active(pk_type == PkType::Single);
-            self.hd_radio.set_active(pk_type == PkType::Hd);
-        }
+    pub fn set_key_type(&self, pk_type: PkType) {
+        self.sk_radio.set_active(pk_type == PkType::Single);
+        self.hd_radio.set_active(pk_type == PkType::Hd);
+        self.update_ui();
+    }
+
+    pub fn set_derive_type(&self, derive_type: DeriveType) {
+        self.bip44_radio
+            .set_active(derive_type == DeriveType::Bip44);
+        self.custom_radio
+            .set_active(derive_type == DeriveType::Custom);
         self.update_ui();
     }
 
     pub fn update_ui(&self) {
+        self.pubkey_field.set_sensitive(self.sk_radio.get_active());
+        self.xpub_field.set_sensitive(self.hd_radio.get_active());
+        self.derivation_field
+            .set_sensitive(self.custom_radio.get_active());
+        self.range_field.set_sensitive(self.range_chk.get_active());
+        self.range_chk.set_sensitive(self.hd_radio.get_active());
+
+        self.offset_index.set_sensitive(self.hd_radio.get_active());
+        self.offset_chk.set_sensitive(self.hd_radio.get_active());
+
+        for ctl in &[&self.bip44_radio, &self.custom_radio] {
+            ctl.set_sensitive(self.hd_radio.get_active());
+        }
+
+        for ctl in &[&self.purpose_combo, &self.asset_combo, &self.change_combo]
+        {
+            ctl.set_sensitive(
+                self.hd_radio.get_active() && self.bip44_radio.get_active(),
+            );
+        }
+
+        for ctl in &[
+            &self.purpose_index,
+            &self.asset_index,
+            &self.account_index,
+            &self.change_index,
+        ] {
+            ctl.set_sensitive(
+                self.hd_radio.get_active() && self.bip44_radio.get_active(),
+            );
+        }
+
+        for ctl in &[
+            &self.purpose_chk,
+            &self.asset_chk,
+            &self.account_chk,
+            &self.change_chk,
+        ] {
+            ctl.set_sensitive(
+                self.hd_radio.get_active() && self.bip44_radio.get_active(),
+            );
+        }
+
         match self.update_ui_internal() {
             Ok(None) => {
                 self.msg_box.set_visible(false);
@@ -424,7 +477,7 @@ impl PubkeyDlg {
             _ => Err("Unsupported blockchain")?,
         };
 
-        let pk_type = if self.sk_radio.get_active() {
+        if self.sk_radio.get_active() {
             let pk_str = self.pubkey_field.get_text();
             let pk = secp256k1::PublicKey::from_str(&pk_str)
                 .map_err(|err| err.to_string())?;
@@ -457,11 +510,8 @@ impl PubkeyDlg {
                     .to_string(),
             );
             self.taproot_display.set_text("Not yet supported");
-
-            PkType::Single
         } else {
-            PkType::Hd
-        };
+        }
 
         Ok(None)
     }
