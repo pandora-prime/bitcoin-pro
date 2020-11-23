@@ -2,7 +2,22 @@
 <!-- Generated with glade 3.36.0 -->
 <interface>
   <requires lib="gtk+" version="3.22"/>
-  <object class="GtkAdjustment" id="adjBIP32">
+  <object class="GtkAdjustment" id="adjAsset">
+    <property name="upper">4294967296</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="adjChange">
+    <property name="upper">4294967296</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="adjExport">
+    <property name="upper">4294967296</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="adjPurpose">
     <property name="upper">4294967296</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
@@ -214,21 +229,6 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="halign">end</property>
-                            <property name="label" translatable="yes">index:</property>
-                            <attributes>
-                              <attribute name="style" value="oblique"/>
-                            </attributes>
-                          </object>
-                          <packing>
-                            <property name="left_attach">0</property>
-                            <property name="top_attach">4</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="halign">end</property>
                             <property name="label" translatable="yes">change:</property>
                             <attributes>
                               <attribute name="style" value="oblique"/>
@@ -254,7 +254,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkCheckButton" id="assetsCheck">
+                          <object class="GtkCheckButton" id="assetCheck">
                             <property name="label" translatable="yes">hardened</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -287,7 +287,7 @@
                             <property name="can_focus">True</property>
                             <property name="hexpand">True</property>
                             <property name="input_purpose">number</property>
-                            <property name="adjustment">adjBIP32</property>
+                            <property name="adjustment">adjPurpose</property>
                             <property name="numeric">True</property>
                           </object>
                           <packing>
@@ -296,12 +296,12 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkSpinButton" id="assetsCounter">
+                          <object class="GtkSpinButton" id="assetCounter">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="hexpand">True</property>
                             <property name="input_purpose">number</property>
-                            <property name="adjustment">adjBIP32</property>
+                            <property name="adjustment">adjAsset</property>
                             <property name="numeric">True</property>
                           </object>
                           <packing>
@@ -325,21 +325,6 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkSpinButton" id="indexCounter">
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="hexpand">True</property>
-                            <property name="max_length">10</property>
-                            <property name="input_purpose">number</property>
-                            <property name="numeric">True</property>
-                          </object>
-                          <packing>
-                            <property name="left_attach">1</property>
-                            <property name="top_attach">4</property>
-                            <property name="width">2</property>
-                          </packing>
-                        </child>
-                        <child>
                           <object class="GtkComboBoxText" id="purposeCombo">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
@@ -359,7 +344,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkComboBoxText" id="assetsCombo">
+                          <object class="GtkComboBoxText" id="assetCombo">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="active">2</property>
@@ -412,25 +397,12 @@
                             <property name="can_focus">True</property>
                             <property name="hexpand">True</property>
                             <property name="input_purpose">number</property>
-                            <property name="adjustment">adjBIP32</property>
+                            <property name="adjustment">adjChange</property>
                             <property name="numeric">True</property>
                           </object>
                           <packing>
                             <property name="left_attach">2</property>
                             <property name="top_attach">3</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkCheckButton" id="indexCheck">
-                            <property name="label" translatable="yes">hardened</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">False</property>
-                            <property name="draw_indicator">True</property>
-                          </object>
-                          <packing>
-                            <property name="left_attach">3</property>
-                            <property name="top_attach">4</property>
                           </packing>
                         </child>
                       </object>
@@ -440,7 +412,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkEntry" id="indexRangeField">
+                      <object class="GtkEntry" id="rangeField">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="hexpand">True</property>
@@ -455,7 +427,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkCheckButton" id="indexRangeCheck">
+                      <object class="GtkCheckButton" id="rangeCheck">
                         <property name="label" translatable="yes">Index ranges:</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
@@ -643,7 +615,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="halign">end</property>
-                            <property name="label" translatable="yes">Final index:</property>
+                            <property name="label" translatable="yes">With index</property>
                           </object>
                           <packing>
                             <property name="left_attach">3</property>
@@ -657,7 +629,7 @@
                             <property name="width_chars">6</property>
                             <property name="max_width_chars">6</property>
                             <property name="input_purpose">number</property>
-                            <property name="adjustment">adjBIP32</property>
+                            <property name="adjustment">adjExport</property>
                             <property name="numeric">True</property>
                           </object>
                           <packing>
@@ -666,7 +638,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkCheckButton" id="exportCheck">
+                          <object class="GtkCheckButton" id="exportHCheck">
                             <property name="label" translatable="yes">hardened</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -724,7 +696,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkEntry" id="xpubDisplay">
+                              <object class="GtkEntry" id="xpubidDisplay">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="hexpand">True</property>
@@ -841,7 +813,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkEntry" id="xpubDispla">
+                              <object class="GtkEntry" id="xpubDisplay">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="hexpand">True</property>

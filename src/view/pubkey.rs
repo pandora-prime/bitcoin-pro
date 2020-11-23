@@ -46,7 +46,34 @@ pub struct PubkeyDlg {
     bip44_radio: gtk::RadioButton,
     custom_radio: gtk::RadioButton,
 
+    purpose_combo: gtk::ComboBox,
+    purpose_index: gtk::SpinButton,
+    purpose_chk: gtk::CheckButton,
+
+    asset_combo: gtk::ComboBox,
+    asset_index: gtk::SpinButton,
+    asset_chk: gtk::CheckButton,
+
+    account_index: gtk::SpinButton,
+    account_chk: gtk::CheckButton,
+
+    change_combo: gtk::ComboBox,
+    change_index: gtk::SpinButton,
+    change_chk: gtk::CheckButton,
+
+    range_chk: gtk::CheckButton,
+    range_field: gtk::Entry,
+    derivation_field: gtk::Entry,
+
     network_combo: gtk::ComboBox,
+    offset_index: gtk::SpinButton,
+    offset_chk: gtk::CheckButton,
+
+    xpubid_display: gtk::Entry,
+    fingerprint_display: gtk::Entry,
+    derivation_display: gtk::Entry,
+    descriptor_display: gtk::Entry,
+    xpub_display: gtk::Entry,
 
     uncompressed_display: gtk::Entry,
     compressed_display: gtk::Entry,
@@ -56,6 +83,8 @@ pub struct PubkeyDlg {
     wpkh_display: gtk::Entry,
     wpkh_sh_display: gtk::Entry,
     taproot_display: gtk::Entry,
+
+    bech_display: gtk::Entry,
 }
 
 impl glade::View for PubkeyDlg {
@@ -94,8 +123,77 @@ impl glade::View for PubkeyDlg {
             .get_object("deriveCustom")
             .ok_or(glade::Error::WidgetNotFound)?;
 
+        let purpose_combo = builder
+            .get_object("purposeCombo")
+            .ok_or(glade::Error::WidgetNotFound)?;
+        let purpose_index = builder
+            .get_object("purposeCounter")
+            .ok_or(glade::Error::WidgetNotFound)?;
+        let purpose_chk = builder
+            .get_object("purposeCheck")
+            .ok_or(glade::Error::WidgetNotFound)?;
+
+        let asset_combo = builder
+            .get_object("assetCombo")
+            .ok_or(glade::Error::WidgetNotFound)?;
+        let asset_index = builder
+            .get_object("assetCounter")
+            .ok_or(glade::Error::WidgetNotFound)?;
+        let asset_chk = builder
+            .get_object("assetCheck")
+            .ok_or(glade::Error::WidgetNotFound)?;
+
+        let account_index = builder
+            .get_object("accountCounter")
+            .ok_or(glade::Error::WidgetNotFound)?;
+        let account_chk = builder
+            .get_object("accountCheck")
+            .ok_or(glade::Error::WidgetNotFound)?;
+
+        let change_combo = builder
+            .get_object("changeCombo")
+            .ok_or(glade::Error::WidgetNotFound)?;
+        let change_index = builder
+            .get_object("changeCounter")
+            .ok_or(glade::Error::WidgetNotFound)?;
+        let change_chk = builder
+            .get_object("changeCheck")
+            .ok_or(glade::Error::WidgetNotFound)?;
+
+        let range_chk = builder
+            .get_object("rangeCheck")
+            .ok_or(glade::Error::WidgetNotFound)?;
+        let range_field = builder
+            .get_object("rangeField")
+            .ok_or(glade::Error::WidgetNotFound)?;
+        let derivation_field = builder
+            .get_object("derivationField")
+            .ok_or(glade::Error::WidgetNotFound)?;
+
         let network_combo = builder
             .get_object("blockchainCombo")
+            .ok_or(glade::Error::WidgetNotFound)?;
+        let offset_index = builder
+            .get_object("exportIndex")
+            .ok_or(glade::Error::WidgetNotFound)?;
+        let offset_chk = builder
+            .get_object("exportHCheck")
+            .ok_or(glade::Error::WidgetNotFound)?;
+
+        let xpubid_display = builder
+            .get_object("xpubidDisplay")
+            .ok_or(glade::Error::WidgetNotFound)?;
+        let fingerprint_display = builder
+            .get_object("fingerprintDisplay")
+            .ok_or(glade::Error::WidgetNotFound)?;
+        let derivation_display = builder
+            .get_object("derivationDisplay")
+            .ok_or(glade::Error::WidgetNotFound)?;
+        let descriptor_display = builder
+            .get_object("descriptorDisplay")
+            .ok_or(glade::Error::WidgetNotFound)?;
+        let xpub_display = builder
+            .get_object("xpubDisplay")
             .ok_or(glade::Error::WidgetNotFound)?;
 
         let uncompressed_display = builder
@@ -121,6 +219,10 @@ impl glade::View for PubkeyDlg {
             .get_object("taprootDisplay")
             .ok_or(glade::Error::WidgetNotFound)?;
 
+        let bech_display = builder
+            .get_object("bechDisplay")
+            .ok_or(glade::Error::WidgetNotFound)?;
+
         let me = Rc::new(RefCell::new(Self {
             dialog: glade_load!(builder, "pubkeyDlg")?,
             msg_box,
@@ -133,7 +235,28 @@ impl glade::View for PubkeyDlg {
             hd_radio,
             bip44_radio,
             custom_radio,
+            purpose_combo,
+            purpose_index,
+            purpose_chk,
+            asset_combo,
+            asset_index,
+            asset_chk,
+            account_index,
+            account_chk,
+            change_combo,
+            change_index,
+            change_chk,
+            range_chk,
+            range_field,
+            derivation_field,
             network_combo,
+            offset_index,
+            offset_chk,
+            xpubid_display,
+            fingerprint_display,
+            derivation_display,
+            descriptor_display,
+            xpub_display,
             uncompressed_display,
             compressed_display,
             xcoordonly_display,
@@ -141,106 +264,95 @@ impl glade::View for PubkeyDlg {
             wpkh_display,
             wpkh_sh_display,
             taproot_display,
+            bech_display,
         }));
 
-        me.as_ref().borrow().pubkey_field.connect_changed(
-            clone!(@weak me => move |_| {
+        me.borrow()
+            .pubkey_field
+            .connect_changed(clone!(@weak me => move |_| {
                 let me = me.borrow();
                 me.set_key_type(PkType::Single, true)
-            }),
-        );
-
-        me.as_ref().borrow().xpub_field.connect_changed(
-            clone!(@weak me => move |_| {
-                let me = me.borrow();
-                me.set_key_type(PkType::Hd, true)
-            }),
-        );
-
-        me.as_ref().borrow().sk_radio.connect_toggled(
-            clone!(@weak me => move |_| {
-                let me = me.borrow();
-                me.set_key_type(PkType::Single, false)
-            }),
-        );
-
-        me.as_ref().borrow().hd_radio.connect_toggled(
-            clone!(@weak me => move |_| {
-                let me = me.borrow();
-                me.set_key_type(PkType::Hd, false)
-            }),
-        );
-
-        me.as_ref().borrow().network_combo.connect_changed(
-            clone!(@weak me => move |_| {
-                let me = me.borrow();
-                me.update_ui()
-            }),
-        );
-
-        me.as_ref()
-            .borrow()
-            .uncompressed_display
-            .connect_icon_press(clone!(@weak me => move |_, _, _| {
-                let me = me.borrow();
-                gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD)
-                    .set_text(&me.uncompressed_display.get_text());
-                me.display_info("Key copied to clipboard");
             }));
 
-        me.as_ref().borrow().compressed_display.connect_icon_press(
-            clone!(@weak me => move |_, _, _| {
+        me.borrow()
+            .xpub_field
+            .connect_changed(clone!(@weak me => move |_| {
                 let me = me.borrow();
-                gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD)
-                    .set_text(&me.compressed_display.get_text());
-                me.display_info("Key copied to clipboard");
-            }),
-        );
+                me.set_key_type(PkType::Hd, true)
+            }));
 
-        me.as_ref().borrow().xcoordonly_display.connect_icon_press(
-            clone!(@weak me => move |_, _, _| {
+        me.borrow()
+            .sk_radio
+            .connect_toggled(clone!(@weak me => move |_| {
                 let me = me.borrow();
-                gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD)
-                    .set_text(&me.xcoordonly_display.get_text());
-                me.display_info("Key copied to clipboard");
-            }),
-        );
+                me.set_key_type(PkType::Single, false)
+            }));
 
-        me.as_ref().borrow().pkh_display.connect_icon_press(
-            clone!(@weak me => move |_, _, _| {
+        me.borrow()
+            .hd_radio
+            .connect_toggled(clone!(@weak me => move |_| {
                 let me = me.borrow();
-                gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD)
-                    .set_text(&me.pkh_display.get_text());
-                me.display_info("Address copied to clipboard");
-            }),
-        );
+                me.set_key_type(PkType::Hd, false)
+            }));
 
-        me.as_ref().borrow().wpkh_display.connect_icon_press(
-            clone!(@weak me => move |_, _, _| {
+        for ctl in &[
+            &me.borrow().purpose_combo,
+            &me.borrow().asset_combo,
+            &me.borrow().change_combo,
+            &me.borrow().network_combo,
+        ] {
+            ctl.connect_changed(clone!(@weak me => move |_| {
                 let me = me.borrow();
-                gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD)
-                    .set_text(&me.wpkh_display.get_text());
-                me.display_info("Address copied to clipboard");
-            }),
-        );
+                me.update_ui()
+            }));
+        }
+        for ctl in &[
+            &me.borrow().purpose_index,
+            &me.borrow().asset_index,
+            &me.borrow().account_index,
+            &me.borrow().change_index,
+        ] {
+            ctl.connect_changed(clone!(@weak me => move |_| {
+                let me = me.borrow();
+                me.update_ui()
+            }));
+        }
+        for ctl in &[
+            &me.borrow().purpose_chk,
+            &me.borrow().asset_chk,
+            &me.borrow().account_chk,
+            &me.borrow().change_chk,
+            &me.borrow().range_chk,
+        ] {
+            ctl.connect_toggled(clone!(@weak me => move |_| {
+                let me = me.borrow();
+                me.update_ui()
+            }));
+        }
 
-        me.as_ref().borrow().wpkh_sh_display.connect_icon_press(
-            clone!(@weak me => move |_, _, _| {
+        for ctl in &[
+            &me.borrow().xpubid_display,
+            &me.borrow().fingerprint_display,
+            &me.borrow().derivation_display,
+            &me.borrow().descriptor_display,
+            &me.borrow().xpub_display,
+            &me.borrow().uncompressed_display,
+            &me.borrow().compressed_display,
+            &me.borrow().xcoordonly_display,
+            &me.borrow().pkh_display,
+            &me.borrow().wpkh_display,
+            &me.borrow().wpkh_sh_display,
+            &me.borrow().taproot_display,
+            &me.borrow().bech_display,
+        ] {
+            ctl.connect_icon_press(clone!(@weak me => move |_, _, _| {
                 let me = me.borrow();
+                let val = me.uncompressed_display.get_text();
                 gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD)
-                    .set_text(&me.wpkh_sh_display.get_text());
-                me.display_info("Address copied to clipboard");
-            }),
-        );
-
-        me.as_ref().borrow().taproot_display.connect_icon_press(
-            clone!(@weak me => move |_, _, _| {
-                let me = me.borrow();
-                gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD)
-                    .set_text(&me.taproot_display.get_text());
-                me.display_info("Address copied to clipboard");
-            }),
-        );
+                    .set_text(&val);
+                me.display_info(format!("Value {} copied to clipboard", val));
+            }));
+        }
 
         Ok(me)
     }
