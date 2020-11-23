@@ -328,13 +328,12 @@
                           <object class="GtkComboBoxText" id="purposeCombo">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="active">3</property>
+                            <property name="active">2</property>
                             <items>
-                              <item translatable="yes">None</item>
-                              <item translatable="yes">Legacy pubkey (44')</item>
-                              <item translatable="yes">Legacy scripts (49')</item>
-                              <item translatable="yes">SegWit (84')</item>
-                              <item translatable="yes">Taproot (340')</item>
+                              <item id="44" translatable="yes">Legacy pubkey (44')</item>
+                              <item id="49" translatable="yes">Legacy scripts (49')</item>
+                              <item id="84" translatable="yes">SegWit (84')</item>
+                              <item id="340" translatable="yes">Taproot (340')</item>
                               <item translatable="yes">Custom</item>
                             </items>
                           </object>
@@ -347,13 +346,13 @@
                           <object class="GtkComboBoxText" id="assetCombo">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="active">2</property>
+                            <property name="active">1</property>
                             <items>
-                              <item translatable="yes">None</item>
                               <item translatable="yes">Bitcoin (0')</item>
-                              <item translatable="yes">Testnet (1')</item>
-                              <item translatable="yes">Liquid (1776')</item>
-                              <item translatable="yes">RGB (827166')</item>
+                              <item id="1" translatable="yes">Testnet (1')</item>
+                              <item id="1776" translatable="yes">Liquid (1776')</item>
+                              <item id="827166" translatable="yes">RGB (827166')</item>
+                              <item translatable="yes">Custom</item>
                             </items>
                           </object>
                           <packing>
@@ -365,11 +364,10 @@
                           <object class="GtkComboBoxText" id="changeCombo">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="active">1</property>
+                            <property name="active">0</property>
                             <items>
-                              <item translatable="yes">None</item>
-                              <item translatable="yes">Normal (0)</item>
-                              <item translatable="yes">Change (1)</item>
+                              <item id="0" translatable="yes">Normal (0)</item>
+                              <item id="1" translatable="yes">Change (1)</item>
                               <item translatable="yes">Custom</item>
                             </items>
                           </object>
@@ -745,7 +743,7 @@
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="editable">False</property>
-                                    <property name="width_chars">10</property>
+                                    <property name="width_chars">20</property>
                                     <property name="caps_lock_warning">False</property>
                                     <property name="secondary_icon_stock">gtk-copy</property>
                                   </object>
@@ -1229,7 +1227,6 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
-            <property name="action_name">dlg.cancel</property>
           </object>
         </child>
         <child>
@@ -1238,7 +1235,6 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
-            <property name="action_name">dlg.save</property>
           </object>
           <packing>
             <property name="pack_type">end</property>

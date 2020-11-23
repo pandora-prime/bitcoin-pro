@@ -16,7 +16,8 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use std::str::FromStr;
 
-use lnpbp::{bitcoin, secp256k1};
+use lnpbp::bitcoin;
+use lnpbp::bitcoin::util::bip32::{DerivationPath, ExtendedPubKey};
 
 static UI: &'static str = include_str!("../../ui/pubkey.glade");
 
@@ -42,6 +43,8 @@ pub struct PubkeyDlg {
     msg_box: gtk::Box,
     msg_label: gtk::Label,
     msg_image: gtk::Image,
+    save_btn: gtk::Button,
+    cancel_btn: gtk::Button,
 
     name_field: gtk::Entry,
     pubkey_field: gtk::Entry,
@@ -97,6 +100,13 @@ pub struct PubkeyDlg {
 impl glade::View for PubkeyDlg {
     fn load_glade() -> Result<Rc<RefCell<Self>>, glade::Error> {
         let builder = gtk::Builder::from_string(UI);
+
+        let save_btn = builder
+            .get_object("save")
+            .ok_or(glade::Error::WidgetNotFound)?;
+        let cancel_btn = builder
+            .get_object("cancel")
+            .ok_or(glade::Error::WidgetNotFound)?;
 
         let msg_box = builder
             .get_object("messageBox")
@@ -232,6 +242,8 @@ impl glade::View for PubkeyDlg {
 
         let me = Rc::new(RefCell::new(Self {
             dialog: glade_load!(builder, "pubkeyDlg")?,
+            save_btn,
+            cancel_btn,
             msg_box,
             msg_image,
             msg_label,
@@ -273,6 +285,13 @@ impl glade::View for PubkeyDlg {
             taproot_display,
             bech_display,
         }));
+
+        me.borrow()
+            .name_field
+            .connect_changed(clone!(@weak me => move |_| {
+                let me = me.borrow();
+                me.update_ui();
+            }));
 
         me.borrow()
             .pubkey_field
@@ -344,6 +363,20 @@ impl glade::View for PubkeyDlg {
             }));
         }
 
+        me.borrow()
+            .offset_index
+            .connect_changed(clone!(@weak me => move |_| {
+                let me = me.borrow();
+                me.update_ui();
+            }));
+
+        me.borrow()
+            .offset_chk
+            .connect_toggled(clone!(@weak me => move |_| {
+                let me = me.borrow();
+                me.update_ui();
+            }));
+
         for ctl in &[
             &me.borrow().xpubid_display,
             &me.borrow().fingerprint_display,
@@ -372,8 +405,22 @@ impl glade::View for PubkeyDlg {
 }
 
 impl PubkeyDlg {
-    pub fn run(&self) {
+    pub fn run(
+        &self,
+        on_save: impl Fn(&gtk::Button) + 'static,
+        on_cancel: impl Fn() + 'static,
+    ) {
         self.update_ui();
+
+        self.save_btn.connect_clicked(on_save);
+
+        let dlg = &self.dialog;
+        self.cancel_btn
+            .connect_clicked(clone!(@weak dlg => move |_| {
+                dlg.hide();
+                on_cancel()
+            }));
+
         self.dialog.run();
         self.dialog.hide();
     }
@@ -445,6 +492,42 @@ impl PubkeyDlg {
             );
         }
 
+        if self.purpose_combo.get_active() != Some(4) {
+            self.purpose_index.set_sensitive(false);
+            self.purpose_chk.set_sensitive(false);
+            self.purpose_index.set_value(
+                self.purpose_combo
+                    .get_active_id()
+                    .map(|s| f64::from_str(&s).unwrap_or_default())
+                    .unwrap_or_default(),
+            );
+            self.purpose_chk.set_active(true);
+        }
+
+        if self.asset_combo.get_active() != Some(4) {
+            self.asset_index.set_sensitive(false);
+            self.asset_chk.set_sensitive(false);
+            self.asset_index.set_value(
+                self.asset_combo
+                    .get_active_id()
+                    .map(|s| f64::from_str(&s).unwrap_or_default())
+                    .unwrap_or_default(),
+            );
+            self.asset_chk.set_active(true);
+        }
+
+        if self.change_combo.get_active() != Some(2) {
+            self.change_index.set_sensitive(false);
+            self.change_chk.set_sensitive(false);
+            self.change_index.set_value(
+                self.change_combo
+                    .get_active_id()
+                    .map(|s| f64::from_str(&s).unwrap_or_default())
+                    .unwrap_or_default(),
+            );
+            self.change_chk.set_active(false);
+        }
+
         match self.update_ui_internal() {
             Ok(None) => {
                 self.msg_box.set_visible(false);
@@ -477,40 +560,123 @@ impl PubkeyDlg {
             _ => Err("Unsupported blockchain")?,
         };
 
-        if self.sk_radio.get_active() {
+        let pk = if self.sk_radio.get_active() {
             let pk_str = self.pubkey_field.get_text();
-            let pk = secp256k1::PublicKey::from_str(&pk_str)
+            bitcoin::PublicKey::from_str(&pk_str)
+                .map_err(|err| err.to_string())?
+        } else {
+            let master = ExtendedPubKey::from_str(&self.xpub_field.get_text())
                 .map_err(|err| err.to_string())?;
 
-            self.uncompressed_display.set_text(
-                &bitcoin::PublicKey {
-                    compressed: false,
-                    key: pk,
-                }
-                .to_string(),
-            );
-
-            let pk = bitcoin::PublicKey {
-                compressed: true,
-                key: pk,
+            let derivation = if self.bip44_radio.get_active() {
+                DerivationPath::from_str(&format!(
+                    "m/{}{}/{}{}/{}{}/{}{}",
+                    self.purpose_index.get_value() as u32,
+                    if self.purpose_chk.get_active() {
+                        "'"
+                    } else {
+                        ""
+                    },
+                    self.asset_index.get_value() as u32,
+                    if self.asset_chk.get_active() { "'" } else { "" },
+                    self.account_index.get_value() as u32,
+                    if self.account_chk.get_active() {
+                        "'"
+                    } else {
+                        ""
+                    },
+                    self.change_index.get_value() as u32,
+                    if self.change_chk.get_active() {
+                        "'"
+                    } else {
+                        ""
+                    }
+                ))
+                .map_err(|err| err.to_string())?
+            } else {
+                DerivationPath::from_str(&self.derivation_field.get_text())
+                    .map_err(|err| err.to_string())?
             };
-            self.compressed_display.set_text(&pk.to_string());
-            self.xcoordonly_display.set_text("Not yet supported");
 
-            self.pkh_display
-                .set_text(&bitcoin::Address::p2pkh(&pk, network).to_string());
-            self.wpkh_display.set_text(
-                &bitcoin::Address::p2wpkh(&pk, network)
-                    .expect("The key is compressed")
-                    .to_string(),
+            let s = format!(
+                "m/{}{}",
+                self.offset_index.get_value() as u32,
+                if self.offset_chk.get_active() {
+                    "'"
+                } else {
+                    ""
+                }
             );
-            self.wpkh_sh_display.set_text(
-                &bitcoin::Address::p2shwpkh(&pk, network)
-                    .expect("The key is compressed")
-                    .to_string(),
+            let derivation = derivation.extend(
+                DerivationPath::from_str(&s).map_err(|err| err.to_string())?,
             );
-            self.taproot_display.set_text("Not yet supported");
+
+            let xpubkey = master
+                .derive_pub(&lnpbp::SECP256K1, &derivation)
+                .map_err(|err| err.to_string())?;
+
+            self.xpubid_display
+                .set_text(&xpubkey.identifier().to_string());
+            self.fingerprint_display
+                .set_text(&xpubkey.fingerprint().to_string());
+            self.derivation_display.set_text(&derivation.to_string());
+            self.descriptor_display.set_text(&format!(
+                "[{}]{}",
+                master.fingerprint(),
+                derivation
+            ));
+            self.xpub_display.set_text(&xpubkey.to_string());
+
+            xpubkey.public_key
+        };
+
+        self.uncompressed_display.set_text(
+            &bitcoin::PublicKey {
+                compressed: false,
+                key: pk.key,
+            }
+            .to_string(),
+        );
+
+        let pkc = bitcoin::PublicKey {
+            compressed: true,
+            key: pk.key,
+        };
+        self.compressed_display.set_text(&pkc.to_string());
+        self.xcoordonly_display.set_text("Not yet supported");
+
+        self.pkh_display
+            .set_text(&bitcoin::Address::p2pkh(&pk, network).to_string());
+        self.wpkh_display.set_text(
+            &bitcoin::Address::p2wpkh(&pkc, network)
+                .expect("The key is compressed")
+                .to_string(),
+        );
+        self.wpkh_sh_display.set_text(
+            &bitcoin::Address::p2shwpkh(&pkc, network)
+                .expect("The key is compressed")
+                .to_string(),
+        );
+        self.taproot_display.set_text("Not yet supported");
+
+        if self.name_field.get_text().is_empty() {
+            let err = "You must provide a non-empty name";
+            self.name_field.set_icon_from_icon_name(
+                gtk::EntryIconPosition::Secondary,
+                Some("dialog-error"),
+            );
+            self.name_field.set_icon_tooltip_text(
+                gtk::EntryIconPosition::Secondary,
+                Some(&err),
+            );
+            Err(err)?;
         } else {
+            self.name_field.set_icon_from_icon_name(
+                gtk::EntryIconPosition::Secondary,
+                None,
+            );
+            self.name_field
+                .set_icon_tooltip_text(gtk::EntryIconPosition::Secondary, None);
         }
 
         Ok(None)
