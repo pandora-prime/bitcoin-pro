@@ -22,6 +22,9 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
+  <object class="GtkEntryBuffer" id="entrybuffer1">
+    <property name="text" translatable="yes">m/0</property>
+  </object>
   <object class="GtkDialog" id="pubkeyDlg">
     <property name="can_focus">False</property>
     <property name="window_position">center</property>
@@ -497,6 +500,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="hexpand">True</property>
+                        <property name="buffer">entrybuffer1</property>
                         <property name="width_chars">64</property>
                         <property name="placeholder_text" translatable="yes">Use BIP 44 format without leading "m", like "/1'/0/"</property>
                       </object>
@@ -670,7 +674,6 @@
                       <object class="GtkExpander">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="expanded">True</property>
                         <property name="label_fill">True</property>
                         <property name="resize_toplevel">True</property>
                         <child>
@@ -958,6 +961,7 @@
                       <object class="GtkExpander">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
+                        <property name="expanded">True</property>
                         <property name="resize_toplevel">True</property>
                         <child>
                           <object class="GtkGrid">
@@ -1092,7 +1096,6 @@
                       <object class="GtkExpander">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="expanded">True</property>
                         <property name="label_fill">True</property>
                         <property name="resize_toplevel">True</property>
                         <child>

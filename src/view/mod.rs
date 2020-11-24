@@ -12,7 +12,7 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 mod app_window;
-mod pubkey;
+mod pubkey_dlg;
 
 pub use app_window::{AppWindow, Error as AppError};
-pub use pubkey::PubkeyDlg;
+pub use pubkey_dlg::PubkeyDlg;

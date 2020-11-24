@@ -17,6 +17,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use super::PubkeyDlg;
+use crate::model::Profile;
 
 static UI: &'static str = include_str!("../../ui/main.glade");
 
@@ -30,6 +31,7 @@ pub enum Error {
 
 pub struct AppWindow {
     window: gtk::ApplicationWindow,
+    doc: Profile,
 }
 
 impl View for AppWindow {
@@ -46,6 +48,7 @@ impl View for AppWindow {
 
         Ok(Rc::new(RefCell::new(Self {
             window: glade_load!(builder, "appWindow")?,
+            doc: Profile::default(),
         })))
     }
 }

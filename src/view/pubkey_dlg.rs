@@ -13,13 +13,40 @@
 
 use gtk::prelude::*;
 use std::cell::RefCell;
+use std::collections::HashSet;
+use std::ops::RangeInclusive;
 use std::rc::Rc;
 use std::str::FromStr;
 
-use lnpbp::bitcoin;
-use lnpbp::bitcoin::util::bip32::{DerivationPath, ExtendedPubKey};
+use lnpbp::bitcoin::util::bip32::{
+    self, ChildNumber, DerivationPath, ExtendedPrivKey, ExtendedPubKey,
+};
+use lnpbp::{bitcoin, secp256k1};
+
+use crate::model::{DerivationComponents, TrackingAccount, TrackingKey};
 
 static UI: &'static str = include_str!("../../ui/pubkey.glade");
+
+#[derive(
+    Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Display, From, Error,
+)]
+#[display(doc_comments)]
+/// Errors from processing public key derivation data
+pub enum Error {
+    /// BIP32-specific error
+    #[display(internal)]
+    #[from]
+    Bip32(bip32::Error),
+
+    /// Unable to parse '{0}' as index at position {1}
+    WrongIndexNumber(String, usize),
+
+    /// Unable to parse '{0}' as range at position {1}
+    WrongRange(String, usize),
+
+    /// Empty range specifier position {0}
+    EmptyRange(usize),
+}
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Display)]
 #[display(Debug)]
@@ -407,28 +434,184 @@ impl glade::View for PubkeyDlg {
 impl PubkeyDlg {
     pub fn run(
         &self,
-        on_save: impl Fn(&gtk::Button) + 'static,
+        on_save: impl Fn(TrackingAccount) + 'static,
         on_cancel: impl Fn() + 'static,
     ) {
-        self.update_ui();
-
-        self.save_btn.connect_clicked(on_save);
-
         let dlg = &self.dialog;
+        let me = self;
+
+        self.save_btn
+            .connect_clicked(clone!(@weak dlg, me => move |_| {
+                match me.tracking_account() {
+                    Ok(tracking_account) => {
+                        me.dialog.hide();
+                        on_save(tracking_account);
+                    },
+                    Err(err) => {
+                        self.display_error(err);
+                        self.save_btn.set_sensitive(false);
+                    }
+                }
+            }));
+
         self.cancel_btn
             .connect_clicked(clone!(@weak dlg => move |_| {
                 dlg.hide();
                 on_cancel()
             }));
 
+        self.update_ui();
         self.dialog.run();
         self.dialog.hide();
+    }
+
+    pub fn tracking_account(&self) -> Result<TrackingAccount, Error> {
+        let key = if self.sk_radio.get_active() {
+            TrackingKey::SingleKey(secp256k1::PublicKey::from_str(
+                &self.pubkey_field.get_text(),
+            )?)
+        } else {
+            TrackingKey::HdKeySet(self.derivation_components()?)
+        };
+
+        Ok(TrackingAccount {
+            name: self.name_field.get_text().to_string(),
+            key,
+        })
+    }
+
+    pub fn derivation_path(&self) -> DerivationPath {
+        let derivation = if self.bip44_radio.get_active() {
+            DerivationPath::from_str(&format!(
+                "m/{}{}/{}{}/{}{}/{}{}",
+                self.purpose_index.get_value() as u32,
+                if self.purpose_chk.get_active() {
+                    "'"
+                } else {
+                    ""
+                },
+                self.asset_index.get_value() as u32,
+                if self.asset_chk.get_active() { "'" } else { "" },
+                self.account_index.get_value() as u32,
+                if self.account_chk.get_active() {
+                    "'"
+                } else {
+                    ""
+                },
+                self.change_index.get_value() as u32,
+                if self.change_chk.get_active() {
+                    "'"
+                } else {
+                    ""
+                }
+            ))
+            .map_err(|err| err.to_string())?
+        } else {
+            DerivationPath::from_str(&self.derivation_field.get_text())
+                .map_err(|err| err.to_string())?
+        };
+
+        let s = format!(
+            "m/{}{}",
+            self.offset_index.get_value() as u32,
+            if self.offset_chk.get_active() {
+                "'"
+            } else {
+                ""
+            }
+        );
+        derivation.extend(
+            DerivationPath::from_str(&s).map_err(|err| err.to_string())?,
+        )
+    }
+
+    pub fn derivation_components(&self) -> Result<DerivationComponents, Error> {
+        let derivation = self.derivation_path();
+        let mut path_iter = derivation.as_ref().into_iter().rev();
+        let terminal_path = path_iter
+            .by_ref()
+            .map_while(|child| {
+                if let ChildNumber::Normal { index } = child {
+                    Some(index)
+                } else {
+                    None
+                }
+            })
+            .rev()
+            .collect();
+        let branch_path = path_iter.rev().collect();
+
+        let index_ranges = self.index_ranges()?;
+
+        if let Ok(master_priv) =
+            ExtendedPrivKey::from_str(&self.xpub_field.get_text())
+        {
+            let master =
+                ExtendedPubKey::from_private(&lnpbp::SECP256K1, &master_priv);
+            let branch_xpub =
+                master.derive_pub(&lnpbp::SECP256K1, &branch_path)?;
+            Ok(DerivationComponents {
+                branch_xpub,
+                branch_source: (master.fingerprint(), branch_path),
+                terminal_path,
+                index_ranges,
+            })
+        } else if branch_path.as_ref().is_empty() {
+            Ok(DerivationComponents {
+                branch_xpub: ExtendedPubKey::from_str(
+                    &self.xpub_field.get_text(),
+                )?,
+                branch_source: (branch_xpub.fingerprint(), branch_path),
+                terminal_path,
+                index_ranges,
+            })
+        } else {
+            Err(bip32::Error::CannotDeriveFromHardenedKey)?
+        }
+    }
+
+    pub fn index_ranges(&self) -> Result<HashSet<RangeInclusive<u32>>, Error> {
+        let mut index_ranges = set![];
+        for (pos, elem) in
+            self.range_field.get_text().as_str().split(',').enumerate()
+        {
+            let mut split = elem.trim().split('-');
+            let range = match (split.next(), split.next(), split.next()) {
+                (None, None, None) => return Err(Error::EmptyRange(pos)),
+                (Some(num), None, None) => {
+                    let idx = num.parse().map_err(|_| {
+                        Error::WrongIndexNumber(num.to_string(), pos)
+                    })?;
+                    RangeInclusive(idx, idx)
+                }
+                (Some(num), Some(num), None) => RangeInclusive::new(
+                    num.parse().map_err(|_| {
+                        Error::WrongIndexNumber(num.to_string(), pos)
+                    })?,
+                    num.parse().map_err(|_| {
+                        Error::WrongIndexNumber(num.to_string(), pos)
+                    })?,
+                ),
+                _ => return Err(Error::WrongRange(elem.to_string(), pos)),
+            };
+            index_ranges.insert(range);
+        }
+        Ok(index_ranges)
     }
 
     pub fn display_info(&self, msg: impl ToString) {
         self.msg_label.set_text(&msg.to_string());
         self.msg_image.set_from_icon_name(
             Some("dialog-information"),
+            gtk::IconSize::SmallToolbar,
+        );
+        self.msg_box.set_visible(true);
+    }
+
+    pub fn display_error(&self, msg: impl std::error::Error) {
+        self.msg_label.set_text(&msg.to_string());
+        self.msg_image.set_from_icon_name(
+            Some("dialog-error"),
             gtk::IconSize::SmallToolbar,
         );
         self.msg_box.set_visible(true);
@@ -531,22 +714,15 @@ impl PubkeyDlg {
         match self.update_ui_internal() {
             Ok(None) => {
                 self.msg_box.set_visible(false);
+                self.save_btn.set_sensitive(true);
             }
             Ok(Some(msg)) => {
-                self.msg_label.set_text(&msg);
-                self.msg_image.set_from_icon_name(
-                    Some("dialog-information"),
-                    gtk::IconSize::SmallToolbar,
-                );
-                self.msg_box.set_visible(true);
+                self.display_info(msg);
+                self.save_btn.set_sensitive(true);
             }
             Err(err) => {
-                self.msg_label.set_text(&err);
-                self.msg_image.set_from_icon_name(
-                    Some("dialog-error"),
-                    gtk::IconSize::SmallToolbar,
-                );
-                self.msg_box.set_visible(true);
+                self.display_error(err);
+                self.save_btn.set_sensitive(false);
             }
         }
     }
@@ -568,48 +744,7 @@ impl PubkeyDlg {
             let master = ExtendedPubKey::from_str(&self.xpub_field.get_text())
                 .map_err(|err| err.to_string())?;
 
-            let derivation = if self.bip44_radio.get_active() {
-                DerivationPath::from_str(&format!(
-                    "m/{}{}/{}{}/{}{}/{}{}",
-                    self.purpose_index.get_value() as u32,
-                    if self.purpose_chk.get_active() {
-                        "'"
-                    } else {
-                        ""
-                    },
-                    self.asset_index.get_value() as u32,
-                    if self.asset_chk.get_active() { "'" } else { "" },
-                    self.account_index.get_value() as u32,
-                    if self.account_chk.get_active() {
-                        "'"
-                    } else {
-                        ""
-                    },
-                    self.change_index.get_value() as u32,
-                    if self.change_chk.get_active() {
-                        "'"
-                    } else {
-                        ""
-                    }
-                ))
-                .map_err(|err| err.to_string())?
-            } else {
-                DerivationPath::from_str(&self.derivation_field.get_text())
-                    .map_err(|err| err.to_string())?
-            };
-
-            let s = format!(
-                "m/{}{}",
-                self.offset_index.get_value() as u32,
-                if self.offset_chk.get_active() {
-                    "'"
-                } else {
-                    ""
-                }
-            );
-            let derivation = derivation.extend(
-                DerivationPath::from_str(&s).map_err(|err| err.to_string())?,
-            );
+            let derivation = self.derivation_path();
 
             let xpubkey = master
                 .derive_pub(&lnpbp::SECP256K1, &derivation)

@@ -11,29 +11,11 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-#![allow(dead_code)]
+pub mod operation;
+mod profile;
+mod tracking;
+mod utxo;
 
-#[macro_use]
-extern crate amplify;
-#[macro_use]
-extern crate amplify_derive;
-#[macro_use]
-extern crate glade;
-#[macro_use]
-extern crate glib;
-#[macro_use]
-extern crate serde_with;
-
-mod model;
-mod view;
-
-fn main() -> Result<(), view::AppError> {
-    gtk::init().expect("GTK initialization error");
-
-    let app = view::AppWindow::new()?;
-    let mut app = app.borrow_mut();
-    app.update();
-    app.run();
-
-    Ok(())
-}
+pub use profile::Profile;
+pub use tracking::{DerivationComponents, TrackingAccount, TrackingKey};
+pub use utxo::UtxoEntry;
