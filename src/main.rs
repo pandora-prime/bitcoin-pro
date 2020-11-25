@@ -35,7 +35,6 @@ fn main() -> Result<(), view::AppError> {
 
     let app = view::AppWindow::new()?;
     let mut app = app.borrow_mut();
-    app.update();
     app.run();
 
     Ok(())

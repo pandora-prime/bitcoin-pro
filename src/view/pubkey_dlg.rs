@@ -151,144 +151,60 @@ impl PubkeyDlg {
     pub fn load_glade() -> Result<Rc<Self>, glade::Error> {
         let builder = gtk::Builder::from_string(UI);
 
-        let save_btn = builder
-            .get_object("save")
-            .ok_or(glade::Error::WidgetNotFound)?;
-        let cancel_btn = builder
-            .get_object("cancel")
-            .ok_or(glade::Error::WidgetNotFound)?;
+        let save_btn = builder.get_object("save")?;
+        let cancel_btn = builder.get_object("cancel")?;
 
-        let msg_box = builder
-            .get_object("messageBox")
-            .ok_or(glade::Error::WidgetNotFound)?;
-        let msg_image = builder
-            .get_object("messageImage")
-            .ok_or(glade::Error::WidgetNotFound)?;
-        let msg_label = builder
-            .get_object("messageLabel")
-            .ok_or(glade::Error::WidgetNotFound)?;
+        let msg_box = builder.get_object("messageBox")?;
+        let msg_image = builder.get_object("messageImage")?;
+        let msg_label = builder.get_object("messageLabel")?;
 
-        let name_field = builder
-            .get_object("nameField")
-            .ok_or(glade::Error::WidgetNotFound)?;
-        let pubkey_field = builder
-            .get_object("pubkeyField")
-            .ok_or(glade::Error::WidgetNotFound)?;
-        let xpub_field = builder
-            .get_object("xpubField")
-            .ok_or(glade::Error::WidgetNotFound)?;
-        let sk_radio = builder
-            .get_object("singleKey")
-            .ok_or(glade::Error::WidgetNotFound)?;
-        let hd_radio = builder
-            .get_object("hdKey")
-            .ok_or(glade::Error::WidgetNotFound)?;
-        let bip44_radio = builder
-            .get_object("deriveBip44")
-            .ok_or(glade::Error::WidgetNotFound)?;
-        let custom_radio = builder
-            .get_object("deriveCustom")
-            .ok_or(glade::Error::WidgetNotFound)?;
+        let name_field = builder.get_object("nameField")?;
+        let pubkey_field = builder.get_object("pubkeyField")?;
+        let xpub_field = builder.get_object("xpubField")?;
+        let sk_radio = builder.get_object("singleKey")?;
+        let hd_radio = builder.get_object("hdKey")?;
+        let bip44_radio = builder.get_object("deriveBip44")?;
+        let custom_radio = builder.get_object("deriveCustom")?;
 
-        let purpose_combo = builder
-            .get_object("purposeCombo")
-            .ok_or(glade::Error::WidgetNotFound)?;
-        let purpose_index = builder
-            .get_object("purposeCounter")
-            .ok_or(glade::Error::WidgetNotFound)?;
-        let purpose_chk = builder
-            .get_object("purposeCheck")
-            .ok_or(glade::Error::WidgetNotFound)?;
+        let purpose_combo = builder.get_object("purposeCombo")?;
+        let purpose_index = builder.get_object("purposeCounter")?;
+        let purpose_chk = builder.get_object("purposeCheck")?;
 
-        let asset_combo = builder
-            .get_object("assetCombo")
-            .ok_or(glade::Error::WidgetNotFound)?;
-        let asset_index = builder
-            .get_object("assetCounter")
-            .ok_or(glade::Error::WidgetNotFound)?;
-        let asset_chk = builder
-            .get_object("assetCheck")
-            .ok_or(glade::Error::WidgetNotFound)?;
+        let asset_combo = builder.get_object("assetCombo")?;
+        let asset_index = builder.get_object("assetCounter")?;
+        let asset_chk = builder.get_object("assetCheck")?;
 
-        let account_index = builder
-            .get_object("accountCounter")
-            .ok_or(glade::Error::WidgetNotFound)?;
-        let account_chk = builder
-            .get_object("accountCheck")
-            .ok_or(glade::Error::WidgetNotFound)?;
+        let account_index = builder.get_object("accountCounter")?;
+        let account_chk = builder.get_object("accountCheck")?;
 
-        let change_combo = builder
-            .get_object("changeCombo")
-            .ok_or(glade::Error::WidgetNotFound)?;
-        let change_index = builder
-            .get_object("changeCounter")
-            .ok_or(glade::Error::WidgetNotFound)?;
-        let change_chk = builder
-            .get_object("changeCheck")
-            .ok_or(glade::Error::WidgetNotFound)?;
+        let change_combo = builder.get_object("changeCombo")?;
+        let change_index = builder.get_object("changeCounter")?;
+        let change_chk = builder.get_object("changeCheck")?;
 
-        let range_chk = builder
-            .get_object("rangeCheck")
-            .ok_or(glade::Error::WidgetNotFound)?;
-        let range_field = builder
-            .get_object("rangeField")
-            .ok_or(glade::Error::WidgetNotFound)?;
-        let derivation_field = builder
-            .get_object("derivationField")
-            .ok_or(glade::Error::WidgetNotFound)?;
+        let range_chk = builder.get_object("rangeCheck")?;
+        let range_field = builder.get_object("rangeField")?;
+        let derivation_field = builder.get_object("derivationField")?;
 
-        let network_combo = builder
-            .get_object("blockchainCombo")
-            .ok_or(glade::Error::WidgetNotFound)?;
-        let offset_index = builder
-            .get_object("exportIndex")
-            .ok_or(glade::Error::WidgetNotFound)?;
-        let offset_chk = builder
-            .get_object("exportHCheck")
-            .ok_or(glade::Error::WidgetNotFound)?;
+        let network_combo = builder.get_object("blockchainCombo")?;
+        let offset_index = builder.get_object("exportIndex")?;
+        let offset_chk = builder.get_object("exportHCheck")?;
 
-        let xpubid_display = builder
-            .get_object("xpubidDisplay")
-            .ok_or(glade::Error::WidgetNotFound)?;
-        let fingerprint_display = builder
-            .get_object("fingerprintDisplay")
-            .ok_or(glade::Error::WidgetNotFound)?;
-        let derivation_display = builder
-            .get_object("derivationDisplay")
-            .ok_or(glade::Error::WidgetNotFound)?;
-        let descriptor_display = builder
-            .get_object("descriptorDisplay")
-            .ok_or(glade::Error::WidgetNotFound)?;
-        let xpub_display = builder
-            .get_object("xpubDisplay")
-            .ok_or(glade::Error::WidgetNotFound)?;
+        let xpubid_display = builder.get_object("xpubidDisplay")?;
+        let fingerprint_display = builder.get_object("fingerprintDisplay")?;
+        let derivation_display = builder.get_object("derivationDisplay")?;
+        let descriptor_display = builder.get_object("descriptorDisplay")?;
+        let xpub_display = builder.get_object("xpubDisplay")?;
 
-        let uncompressed_display = builder
-            .get_object("uncompressedDisplay")
-            .ok_or(glade::Error::WidgetNotFound)?;
-        let compressed_display = builder
-            .get_object("compressedDisplay")
-            .ok_or(glade::Error::WidgetNotFound)?;
-        let xcoordonly_display = builder
-            .get_object("xonlyDisplay")
-            .ok_or(glade::Error::WidgetNotFound)?;
+        let uncompressed_display = builder.get_object("uncompressedDisplay")?;
+        let compressed_display = builder.get_object("compressedDisplay")?;
+        let xcoordonly_display = builder.get_object("xonlyDisplay")?;
 
-        let pkh_display = builder
-            .get_object("pkhDisplay")
-            .ok_or(glade::Error::WidgetNotFound)?;
-        let wpkh_display = builder
-            .get_object("wpkhDisplay")
-            .ok_or(glade::Error::WidgetNotFound)?;
-        let wpkh_sh_display = builder
-            .get_object("wpkhShDisplay")
-            .ok_or(glade::Error::WidgetNotFound)?;
-        let taproot_display = builder
-            .get_object("taprootDisplay")
-            .ok_or(glade::Error::WidgetNotFound)?;
+        let pkh_display = builder.get_object("pkhDisplay")?;
+        let wpkh_display = builder.get_object("wpkhDisplay")?;
+        let wpkh_sh_display = builder.get_object("wpkhShDisplay")?;
+        let taproot_display = builder.get_object("taprootDisplay")?;
 
-        let bech_display = builder
-            .get_object("bechDisplay")
-            .ok_or(glade::Error::WidgetNotFound)?;
+        let bech_display = builder.get_object("bechDisplay")?;
 
         let me = Rc::new(Self {
             dialog: glade_load!(builder, "pubkeyDlg")?,

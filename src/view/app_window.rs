@@ -31,6 +31,8 @@ pub enum Error {
 
 pub struct AppWindow {
     window: gtk::ApplicationWindow,
+    pubkey_tree: gtk::TreeView,
+    pubkey_store: gtk::TreeStore,
     doc: Profile,
 }
 
@@ -38,18 +40,32 @@ impl View for AppWindow {
     fn load_glade() -> Result<Rc<RefCell<Self>>, glade::Error> {
         let builder = gtk::Builder::from_string(UI);
 
+        let pubkey_tree = builder.get_object("pubkeyTree")?;
+        let pubkey_store = builder.get_object("pubkeyStore")?;
+
+        let me = Rc::new(RefCell::new(Self {
+            window: glade_load!(builder, "appWindow")?,
+            pubkey_tree,
+            pubkey_store,
+            doc: Profile::default(),
+        }));
+
         let tb: gtk::ToolButton = builder
             .get_object("pubkeyAdd")
             .ok_or(glade::Error::WidgetNotFound)?;
-        tb.connect_clicked(move |_| {
+        tb.connect_clicked(clone!(@weak me => move |_| {
             let pubkey_dlg = PubkeyDlg::load_glade().expect("Must load");
-            pubkey_dlg.run(|_| {}, || {});
-        });
+            pubkey_dlg.run(clone!(@weak me =>
+                move |tracking_account| {
+                    let mut me = me.borrow_mut();
+                    me.doc.tracking.push(tracking_account);
+                    me.update_ui();
+                }),
+                || {},
+            );
+        }));
 
-        Ok(Rc::new(RefCell::new(Self {
-            window: glade_load!(builder, "appWindow")?,
-            doc: Profile::default(),
-        })))
+        Ok(me)
     }
 }
 
@@ -60,10 +76,10 @@ impl AppWindow {
     }
 
     pub fn run(&mut self) {
-        self.update();
+        self.update_ui();
         self.window.show_all();
         gtk::main();
     }
 
-    pub fn update(&mut self) {}
+    pub fn update_ui(&mut self) {}
 }
