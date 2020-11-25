@@ -16,7 +16,7 @@ mod profile;
 mod tracking;
 mod utxo;
 
-pub use profile::{Document, Profile};
+pub use profile::{Document, Error, Profile};
 pub use tracking::{
     DerivationComponents, DerivationRange, TrackingAccount, TrackingKey,
 };

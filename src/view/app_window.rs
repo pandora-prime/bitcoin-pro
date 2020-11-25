@@ -11,9 +11,9 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-use glade::View;
 use gtk::prelude::*;
 use std::cell::RefCell;
+use std::path::PathBuf;
 use std::rc::Rc;
 
 use super::PubkeyDlg;
@@ -28,6 +28,11 @@ pub enum Error {
     /// Glade error: {0}
     #[from]
     GladeError(glade::Error),
+
+    /// Document-based error
+    #[from]
+    #[display("{0}")]
+    Document(crate::model::Error),
 }
 
 pub struct AppWindow {
@@ -35,17 +40,29 @@ pub struct AppWindow {
     pubkey_tree: gtk::TreeView,
     pubkey_store: gtk::TreeStore,
     header_bar: gtk::HeaderBar,
+    new_btn: gtk::Button,
+    open_btn: gtk::Button,
 }
 
-impl View for AppWindow {
-    fn load_glade() -> Result<Rc<RefCell<Self>>, glade::Error> {
-        let doc = Rc::new(RefCell::new(Document::new()));
+impl AppWindow {
+    fn load_glade(
+        doc: Option<Document>,
+    ) -> Result<Rc<RefCell<Self>>, glade::Error> {
+        let doc = Rc::new(RefCell::new(if let Some(doc) = doc {
+            doc
+        } else {
+            Document::new()
+        }));
 
         let builder = gtk::Builder::from_string(UI);
 
+        let new_btn: gtk::Button = builder.get_object("new")?;
+        let open_btn: gtk::Button = builder.get_object("open")?;
         let pubkey_tree: gtk::TreeView = builder.get_object("pubkeyTree")?;
         let pubkey_store = builder.get_object("pubkeyStore")?;
         let header_bar: gtk::HeaderBar = builder.get_object("headerBar")?;
+
+        doc.borrow().fill_tracking_store(&pubkey_store);
         pubkey_tree.set_model(Some(&pubkey_store));
         pubkey_tree.expand_all();
 
@@ -56,6 +73,8 @@ impl View for AppWindow {
             pubkey_tree,
             pubkey_store,
             header_bar,
+            new_btn,
+            open_btn,
         }));
 
         let tb: gtk::ToolButton = builder.get_object("pubkeyAdd")?;
@@ -80,16 +99,6 @@ impl View for AppWindow {
             );
         }));
 
-        /*
-        let tb: gtk::Button = builder.get_object("open")?;
-        tb.connect_clicked(clone!(@strong doc => move |_| {
-            let open_dlg = OpenDlg::load_glade().expect("Must load");
-            open_dlg.run(clone!(@strong doc => move |path| {
-                let _ = doc.borrow().open(path);
-            }), || {})
-        }));
-         */
-
         let tb: gtk::Button = builder.get_object("save")?;
         tb.connect_clicked(clone!(@strong doc, @weak tb => move |_| {
             let save_dlg = SaveDlg::load_glade().expect("Must load");
@@ -109,13 +118,21 @@ impl View for AppWindow {
 }
 
 impl AppWindow {
-    pub fn new() -> Result<Rc<RefCell<Self>>, Error> {
-        let me = Self::load_glade()?;
+    pub fn new(path: Option<PathBuf>) -> Result<Rc<RefCell<Self>>, Error> {
+        let doc = if let Some(path) = path {
+            Some(Document::load(path)?)
+        } else {
+            None
+        };
+        let me = Self::load_glade(doc)?;
         Ok(me)
     }
 
-    pub fn run(&self) {
+    pub fn run(&self, on_open: impl Fn() + 'static) {
         self.update_ui();
+
+        self.open_btn.connect_clicked(move |_| on_open());
+
         self.window.show_all();
         gtk::main();
     }

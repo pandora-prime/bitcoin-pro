@@ -7,7 +7,7 @@
       <pattern>*.bpro</pattern>
     </patterns>
   </object>
-  <object class="GtkFileChooserDialog" id="saveDlg">
+  <object class="GtkFileChooserDialog" id="openDlg">
     <property name="can_focus">False</property>
     <property name="type_hint">dialog</property>
     <property name="create_folders">False</property>

@@ -32,12 +32,24 @@ extern crate serde_with;
 mod model;
 mod view;
 
+use std::path::PathBuf;
+
+use crate::view::OpenDlg;
+
 fn main() -> Result<(), view::AppError> {
     gtk::init().expect("GTK initialization error");
 
-    let app = view::AppWindow::new()?;
-    let app = app.borrow();
-    app.run();
+    fn new_app(path: Option<PathBuf>) {
+        if let Ok(app) = view::AppWindow::new(path) {
+            let app = app.borrow();
+            app.run(|| {
+                let open_dlg = OpenDlg::load_glade().expect("Must load");
+                open_dlg.run(move |path| new_app(Some(path)), || {})
+            });
+        }
+    }
+
+    new_app(None);
 
     Ok(())
 }

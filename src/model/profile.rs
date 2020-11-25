@@ -12,6 +12,7 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 use amplify::internet::InetSocketAddr;
+use gtk::prelude::*;
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{self, Seek, SeekFrom};
@@ -62,7 +63,8 @@ impl Document {
         }
     }
 
-    pub fn load(file: File, path: PathBuf) -> Result<Document, Error> {
+    pub fn load(path: PathBuf) -> Result<Document, Error> {
+        let file = File::open(path.clone())?;
         let profile = Profile::strict_decode(&file)?;
         Ok(Document {
             file: Some(file),
@@ -108,6 +110,21 @@ impl Document {
 
     pub fn name(&self) -> String {
         self.name.clone()
+    }
+
+    pub fn fill_tracking_store(&self, store: &gtk::TreeStore) {
+        self.profile.tracking.iter().for_each(|tracking_account| {
+            store.insert_with_values(
+                None,
+                None,
+                &[0, 1, 2],
+                &[
+                    &tracking_account.name(),
+                    &tracking_account.details(),
+                    &tracking_account.count(),
+                ],
+            );
+        });
     }
 
     pub fn tracking_account(&self, pos: usize) -> Option<TrackingAccount> {
