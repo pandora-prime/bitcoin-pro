@@ -13,6 +13,8 @@
 
 mod app_window;
 mod pubkey_dlg;
+mod save_dlg;
 
 pub use app_window::{AppWindow, Error as AppError};
 pub use pubkey_dlg::PubkeyDlg;
+pub use save_dlg::SaveDlg;
