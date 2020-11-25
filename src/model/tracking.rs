@@ -11,17 +11,32 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+use std::fmt::{self, Display, Formatter};
 use std::io;
+use std::iter::FromIterator;
 use std::ops::RangeInclusive;
 
-use lnpbp::bitcoin::util::bip32::{ExtendedPubKey, KeySource};
+use amplify::Wrapper;
+use lnpbp::bitcoin::util::bip32::{
+    ChildNumber, DerivationPath, ExtendedPubKey, KeySource,
+};
 use lnpbp::secp256k1;
 use lnpbp::strict_encoding::{self, StrictDecode, StrictEncode};
 
-#[derive(Clone, PartialEq, Eq, Debug, StrictEncode, StrictDecode)]
+#[derive(Getters, Clone, PartialEq, Eq, Debug, StrictEncode, StrictDecode)]
 pub struct TrackingAccount {
     pub name: String,
     pub key: TrackingKey,
+}
+
+impl TrackingAccount {
+    pub fn details(&self) -> String {
+        self.key.details()
+    }
+
+    pub fn count(&self) -> u32 {
+        self.key.count()
+    }
 }
 
 #[derive(Clone, PartialEq, Eq, Debug, StrictEncode, StrictDecode)]
@@ -30,17 +45,89 @@ pub enum TrackingKey {
     HdKeySet(DerivationComponents),
 }
 
+impl TrackingKey {
+    pub fn details(&self) -> String {
+        match self {
+            TrackingKey::SingleKey(ref pubkey) => pubkey.to_string(),
+            TrackingKey::HdKeySet(ref keyset) => keyset.to_string(),
+        }
+    }
+
+    pub fn count(&self) -> u32 {
+        match self {
+            TrackingKey::SingleKey(_) => 1,
+            TrackingKey::HdKeySet(ref keyset) => keyset.count(),
+        }
+    }
+}
+
 // TODO: Consider moving to LNP/BP Core library
 #[derive(Clone, PartialEq, Eq, Debug, StrictEncode, StrictDecode)]
 pub struct DerivationComponents {
     pub branch_xpub: ExtendedPubKey,
     pub branch_source: KeySource,
     pub terminal_path: Vec<u32>,
-    pub index_ranges: Vec<DerivationRange>,
+    pub index_ranges: Option<Vec<DerivationRange>>,
+}
+
+impl DerivationComponents {
+    pub fn count(&self) -> u32 {
+        match self.index_ranges {
+            None => u32::MAX,
+            Some(ref ranges) => {
+                ranges.iter().fold(0u32, |sum, range| sum + range.count())
+            }
+        }
+    }
+}
+
+impl Display for DerivationComponents {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}{}{}/",
+            self.branch_source.0,
+            self.branch_source.1,
+            DerivationPath::from_iter(
+                self.terminal_path
+                    .iter()
+                    .map(|i| ChildNumber::Normal { index: *i })
+            )
+        )?;
+        if let Some(ref ranges) = self.index_ranges {
+            f.write_str(
+                &ranges
+                    .iter()
+                    .map(DerivationRange::to_string)
+                    .collect::<Vec<_>>()
+                    .join(","),
+            )
+        } else {
+            f.write_str("*")
+        }
+    }
 }
 
 #[derive(Wrapper, Clone, PartialEq, Eq, Debug, From)]
 pub struct DerivationRange(RangeInclusive<u32>);
+
+impl DerivationRange {
+    pub fn count(&self) -> u32 {
+        let inner = self.as_inner();
+        inner.end() - inner.start()
+    }
+}
+
+impl Display for DerivationRange {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let inner = self.as_inner();
+        if inner.start() == inner.end() {
+            write!(f, "{}", inner.start())
+        } else {
+            write!(f, "{}-{}", inner.start(), inner.end())
+        }
+    }
+}
 
 impl StrictEncode for DerivationRange {
     type Error = strict_encoding::Error;

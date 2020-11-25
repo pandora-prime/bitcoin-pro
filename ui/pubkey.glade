@@ -463,8 +463,8 @@
                             <property name="can_focus">True</property>
                             <property name="hexpand">True</property>
                             <property name="width_chars">66</property>
-                            <property name="primary_icon_tooltip_text" translatable="yes">BIP 32 or bech32-encoded extended public key</property>
-                            <property name="placeholder_text" translatable="yes">BIP 32 or bech32-encoded extended public key</property>
+                            <property name="primary_icon_tooltip_text" translatable="yes">BIP 32 or bech32-encoded extended public or private key</property>
+                            <property name="placeholder_text" translatable="yes">BIP 32 or bech32-encoded extended public or private key</property>
                             <signal name="changed" handler="xpubkeyChanged" swapped="no"/>
                           </object>
                           <packing>

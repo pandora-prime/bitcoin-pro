@@ -34,7 +34,7 @@ fn main() -> Result<(), view::AppError> {
     gtk::init().expect("GTK initialization error");
 
     let app = view::AppWindow::new()?;
-    let mut app = app.borrow_mut();
+    let app = app.borrow();
     app.run();
 
     Ok(())

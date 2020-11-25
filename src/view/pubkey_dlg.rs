@@ -488,7 +488,7 @@ impl PubkeyDlg {
         }
     }
 
-    pub fn index_ranges(&self) -> Result<Vec<DerivationRange>, Error> {
+    pub fn index_ranges(&self) -> Result<Option<Vec<DerivationRange>>, Error> {
         let mut index_ranges = vec![];
         for (pos, elem) in
             self.range_field.get_text().as_str().split(',').enumerate()
@@ -515,7 +515,11 @@ impl PubkeyDlg {
             };
             index_ranges.push(range);
         }
-        Ok(index_ranges)
+        Ok(if index_ranges.is_empty() {
+            None
+        } else {
+            Some(index_ranges)
+        })
     }
 
     pub fn display_info(&self, msg: impl ToString) {
