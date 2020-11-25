@@ -11,7 +11,7 @@ readme = "README.md"
 name = "bitcoin-pro"
 
 [dependencies]
-amplify = "~2.3.1"
+amplify = { version = "~2.3.1", features = ["serde"] }
 amplify_derive = "~2.3.1"
 lazy_static = "~1.4.0"
 serde = { version = "~1.0.106", features = ["derive"] }
@@ -26,7 +26,7 @@ glib = { version = "~0.10.3", features = ["v2_64"] }
 glade = { git = "git://github.com/dr-orlovsky/rust-glade", branch = "master" }
 lnpbp = { version = "~0.2.0-beta.2", features = ["lnp", "rgb", "tor", "url", "keygen", "elgamal"] }
 lnpbp_derive = "~0.2.0-beta.2"
-rgb_node = { version = "~0.2.0-beta.3" }
+# rgb_node = { version = "~0.2.0-beta.3" }
 
 [patch.crates-io]
 # Remove this once https://github.com/jean-airoldie/zeromq-src-rs/pull/15 got merged

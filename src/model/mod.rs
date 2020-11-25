@@ -17,5 +17,7 @@ mod tracking;
 mod utxo;
 
 pub use profile::Profile;
-pub use tracking::{DerivationComponents, TrackingAccount, TrackingKey};
+pub use tracking::{
+    DerivationComponents, DerivationRange, TrackingAccount, TrackingKey,
+};
 pub use utxo::UtxoEntry;

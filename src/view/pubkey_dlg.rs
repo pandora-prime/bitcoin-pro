@@ -13,7 +13,6 @@
 
 use gtk::prelude::*;
 use std::cell::RefCell;
-use std::collections::HashSet;
 use std::ops::RangeInclusive;
 use std::rc::Rc;
 use std::str::FromStr;
@@ -21,20 +20,38 @@ use std::str::FromStr;
 use lnpbp::bitcoin::util::bip32::{
     self, ChildNumber, DerivationPath, ExtendedPrivKey, ExtendedPubKey,
 };
+use lnpbp::bitcoin::util::{base58, key};
 use lnpbp::{bitcoin, secp256k1};
 
-use crate::model::{DerivationComponents, TrackingAccount, TrackingKey};
+use crate::model::{
+    DerivationComponents, DerivationRange, TrackingAccount, TrackingKey,
+};
 
 static UI: &'static str = include_str!("../../ui/pubkey.glade");
 
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, Display, From, Error)]
+#[derive(Debug, Display, From, Error)]
 #[display(doc_comments)]
 /// Errors from processing public key derivation data
 pub enum Error {
+    /// Wrong public key data
+    #[display("{0}")]
+    #[from]
+    Secp(secp256k1::Error),
+
+    /// BIP32-specific error
+    #[display("{0}")]
+    #[from]
+    Key(key::Error),
+
     /// BIP32-specific error
     #[display("{0}")]
     #[from]
     Bip32(bip32::Error),
+
+    /// Wrong extended public key data
+    #[display("{0}")]
+    #[from]
+    Base58(base58::Error),
 
     /// Unable to parse '{0}' as index at position {1}
     WrongIndexNumber(String, usize),
@@ -44,6 +61,15 @@ pub enum Error {
 
     /// Empty range specifier position {0}
     EmptyRange(usize),
+
+    /// Unsupported blockchain
+    UnsupportedBlockchain,
+
+    /// You need to specify blockchain type
+    UnspecifiedBlockchain,
+
+    /// You must provide a non-empty name
+    EmptyName,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Display)]
@@ -431,26 +457,14 @@ impl glade::View for PubkeyDlg {
 
 impl PubkeyDlg {
     pub fn run(
-        &self,
+        self: Rc<Self>,
         on_save: impl Fn(TrackingAccount) + 'static,
         on_cancel: impl Fn() + 'static,
     ) {
         let dlg = &self.dialog;
         let me = self;
 
-        self.save_btn
-            .connect_clicked(clone!(@weak dlg, @weak me => move |_| {
-                match me.tracking_account() {
-                    Ok(tracking_account) => {
-                        me.dialog.hide();
-                        on_save(tracking_account);
-                    },
-                    Err(err) => {
-                        self.display_error(err);
-                        self.save_btn.set_sensitive(false);
-                    }
-                }
-            }));
+        self.update_ui();
 
         self.cancel_btn
             .connect_clicked(clone!(@weak dlg => move |_| {
@@ -458,9 +472,21 @@ impl PubkeyDlg {
                 on_cancel()
             }));
 
-        self.update_ui();
-        self.dialog.run();
-        self.dialog.hide();
+        self.save_btn.connect_clicked(
+            clone!(@weak me => move |_| match self.tracking_account() {
+                Ok(tracking_account) => {
+                    self.dialog.hide();
+                    on_save(tracking_account);
+                }
+                Err(err) => {
+                    self.display_error(err);
+                    self.save_btn.set_sensitive(false);
+                }
+            }),
+        );
+
+        dlg.run();
+        dlg.hide();
     }
 
     pub fn tracking_account(&self) -> Result<TrackingAccount, Error> {
@@ -478,7 +504,7 @@ impl PubkeyDlg {
         })
     }
 
-    pub fn derivation_path(&self) -> DerivationPath {
+    pub fn derivation_path(&self) -> Result<DerivationPath, Error> {
         let derivation = if self.bip44_radio.get_active() {
             DerivationPath::from_str(&format!(
                 "m/{}{}/{}{}/{}{}/{}{}",
@@ -502,11 +528,9 @@ impl PubkeyDlg {
                 } else {
                     ""
                 }
-            ))
-            .map_err(|err| err.to_string())?
+            ))?
         } else {
-            DerivationPath::from_str(&self.derivation_field.get_text())
-                .map_err(|err| err.to_string())?
+            DerivationPath::from_str(&self.derivation_field.get_text())?
         };
 
         let s = format!(
@@ -518,15 +542,13 @@ impl PubkeyDlg {
                 ""
             }
         );
-        derivation.extend(
-            DerivationPath::from_str(&s).map_err(|err| err.to_string())?,
-        )
+        Ok(derivation.extend(DerivationPath::from_str(&s)?))
     }
 
     pub fn derivation_components(&self) -> Result<DerivationComponents, Error> {
-        let derivation = self.derivation_path();
+        let derivation = self.derivation_path()?;
         let mut path_iter = derivation.as_ref().into_iter().rev();
-        let terminal_path = path_iter
+        let terminal_path: Vec<u32> = path_iter
             .by_ref()
             .map_while(|child| {
                 if let ChildNumber::Normal { index } = child {
@@ -535,9 +557,10 @@ impl PubkeyDlg {
                     None
                 }
             })
-            .rev()
+            .cloned()
             .collect();
-        let branch_path = path_iter.rev().collect();
+        let terminal_path = terminal_path.into_iter().rev().collect();
+        let branch_path = path_iter.rev().cloned().collect();
 
         let index_ranges = self.index_ranges()?;
 
@@ -568,8 +591,8 @@ impl PubkeyDlg {
         }
     }
 
-    pub fn index_ranges(&self) -> Result<HashSet<RangeInclusive<u32>>, Error> {
-        let mut index_ranges = set![];
+    pub fn index_ranges(&self) -> Result<Vec<DerivationRange>, Error> {
+        let mut index_ranges = vec![];
         for (pos, elem) in
             self.range_field.get_text().as_str().split(',').enumerate()
         {
@@ -580,7 +603,7 @@ impl PubkeyDlg {
                     let idx = num.parse().map_err(|_| {
                         Error::WrongIndexNumber(num.to_string(), pos)
                     })?;
-                    RangeInclusive::new(idx, idx)
+                    RangeInclusive::new(idx, idx).into()
                 }
                 (Some(num1), Some(num2), None) => RangeInclusive::new(
                     num1.parse().map_err(|_| {
@@ -589,10 +612,11 @@ impl PubkeyDlg {
                     num2.parse().map_err(|_| {
                         Error::WrongIndexNumber(num2.to_string(), pos)
                     })?,
-                ),
+                )
+                .into(),
                 _ => return Err(Error::WrongRange(elem.to_string(), pos)),
             };
-            index_ranges.insert(range);
+            index_ranges.push(range);
         }
         Ok(index_ranges)
     }
@@ -725,28 +749,24 @@ impl PubkeyDlg {
         }
     }
 
-    pub fn update_ui_internal(&self) -> Result<Option<String>, String> {
+    pub fn update_ui_internal(&self) -> Result<Option<String>, Error> {
         let network = match self.network_combo.get_active() {
             Some(0) => bitcoin::Network::Bitcoin,
             Some(1) => bitcoin::Network::Testnet,
             Some(2) => bitcoin::Network::Testnet,
-            None => Err("You need to specify blockchain type")?,
-            _ => Err("Unsupported blockchain")?,
+            None => Err(Error::UnspecifiedBlockchain)?,
+            _ => Err(Error::UnsupportedBlockchain)?,
         };
 
         let pk = if self.sk_radio.get_active() {
             let pk_str = self.pubkey_field.get_text();
-            bitcoin::PublicKey::from_str(&pk_str)
-                .map_err(|err| err.to_string())?
+            bitcoin::PublicKey::from_str(&pk_str)?
         } else {
-            let master = ExtendedPubKey::from_str(&self.xpub_field.get_text())
-                .map_err(|err| err.to_string())?;
+            let master = ExtendedPubKey::from_str(&self.xpub_field.get_text())?;
 
-            let derivation = self.derivation_path();
+            let derivation = self.derivation_path()?;
 
-            let xpubkey = master
-                .derive_pub(&lnpbp::SECP256K1, &derivation)
-                .map_err(|err| err.to_string())?;
+            let xpubkey = master.derive_pub(&lnpbp::SECP256K1, &derivation)?;
 
             self.xpubid_display
                 .set_text(&xpubkey.identifier().to_string());
@@ -793,14 +813,14 @@ impl PubkeyDlg {
         self.taproot_display.set_text("Not yet supported");
 
         if self.name_field.get_text().is_empty() {
-            let err = "You must provide a non-empty name";
+            let err = Error::EmptyName;
             self.name_field.set_icon_from_icon_name(
                 gtk::EntryIconPosition::Secondary,
                 Some("dialog-error"),
             );
             self.name_field.set_icon_tooltip_text(
                 gtk::EntryIconPosition::Secondary,
-                Some(&err),
+                Some(&err.to_string()),
             );
             Err(err)?;
         } else {

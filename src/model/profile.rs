@@ -11,29 +11,14 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-use serde_with::DisplayFromStr;
-
 use amplify::internet::InetSocketAddr;
-use amplify::ToYamlString;
 use lnpbp::bp::Chain;
 use lnpbp::lnp::{NodeAddr, RemoteNodeAddr};
 // use rgb::fungible;
 
 use super::{operation, TrackingAccount, UtxoEntry};
 
-#[derive(
-    Clone,
-    PartialEq,
-    Eq,
-    Debug,
-    Display,
-    Default,
-    Serialize,
-    Deserialize,
-    StrictEncode,
-    StrictDecode,
-)]
-#[display(Profile::to_yaml_string)]
+#[derive(Clone, PartialEq, Eq, Debug, Default, StrictEncode, StrictDecode)]
 pub struct Profile {
     pub name: String,
     pub description: Option<String>,
@@ -44,17 +29,7 @@ pub struct Profile {
     pub settings: Settings,
 }
 
-#[derive(
-    Clone,
-    PartialEq,
-    Eq,
-    Debug,
-    Display,
-    Serialize,
-    Deserialize,
-    StrictEncode,
-    StrictDecode,
-)]
+#[derive(Clone, PartialEq, Eq, Debug, Display, StrictEncode, StrictDecode)]
 pub enum ChainResolver {
     #[display("bitcoinCore({0})")]
     BitcoinCore(InetSocketAddr),
@@ -74,28 +49,9 @@ impl Default for ChainResolver {
     }
 }
 
-#[serde_as]
-#[derive(
-    Clone,
-    PartialEq,
-    Eq,
-    Debug,
-    Display,
-    Default,
-    Serialize,
-    Deserialize,
-    StrictEncode,
-    StrictDecode,
-)]
-#[display(Profile::to_yaml_string)]
+#[derive(Clone, PartialEq, Eq, Debug, Default, StrictEncode, StrictDecode)]
 pub struct Settings {
-    #[serde_as(as = "DisplayFromStr")]
     pub chain: Chain,
-    #[serde_as(as = "DisplayFromStr")]
     pub resolver: ChainResolver,
-    #[serde_as(as = "DisplayFromStr")]
-    pub bifrost: RemoteNodeAddr,
+    pub bifrost: Option<RemoteNodeAddr>,
 }
-
-impl ToYamlString for Profile {}
-impl ToYamlString for Settings {}

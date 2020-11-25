@@ -43,7 +43,7 @@ impl View for AppWindow {
             .ok_or(glade::Error::WidgetNotFound)?;
         let pubkey_dlg = PubkeyDlg::load_glade()?;
         tb.connect_clicked(move |_| {
-            pubkey_dlg.borrow().run(|_| {}, || {});
+            pubkey_dlg.into_inner().run(|_| {}, || {});
         });
 
         Ok(Rc::new(RefCell::new(Self {
