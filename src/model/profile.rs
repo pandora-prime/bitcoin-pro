@@ -12,15 +12,144 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 use amplify::internet::InetSocketAddr;
+use std::ffi::OsStr;
+use std::fs::File;
+use std::io::{self, Seek, SeekFrom};
+use std::path::PathBuf;
+
 use lnpbp::bp::Chain;
 use lnpbp::lnp::{NodeAddr, RemoteNodeAddr};
+use lnpbp::strict_encoding::{self, StrictDecode, StrictEncode};
 // use rgb::fungible;
 
 use super::{operation, TrackingAccount, UtxoEntry};
 
+#[derive(Clone, PartialEq, Eq, Debug, Display, From, Error)]
+#[display(doc_comments)]
+/// Document-specific errors that may happen during file opening, saving and
+/// internal consistency validation
+pub enum Error {
+    /// File data encoding error
+    #[display("{0}")]
+    #[from]
+    DataEncoding(strict_encoding::Error),
+
+    /// I/O error (file etc)
+    Io(io::ErrorKind),
+
+    /// Wrong position: no item exists at position {0}
+    WrongPosition(usize),
+}
+
+impl From<io::Error> for Error {
+    fn from(err: io::Error) -> Self {
+        Error::Io(err.kind())
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct Document {
+    name: String,
+    file: Option<File>,
+    profile: Profile,
+}
+
+impl Document {
+    pub fn new() -> Document {
+        Document {
+            name: s!("Untitled"),
+            ..Default::default()
+        }
+    }
+
+    pub fn load(file: File, path: PathBuf) -> Result<Document, Error> {
+        let profile = Profile::strict_decode(&file)?;
+        Ok(Document {
+            file: Some(file),
+            name: path
+                .file_stem()
+                .and_then(OsStr::to_str)
+                .unwrap_or("Untitled")
+                .to_owned(),
+            profile,
+        })
+    }
+
+    pub fn save(&mut self) -> Result<bool, Error> {
+        if self.file.is_some() {
+            self.save_internal()?;
+            Ok(true)
+        } else {
+            Ok(false)
+        }
+    }
+
+    pub fn save_as(&mut self, path: PathBuf) -> Result<(), Error> {
+        let file = File::create(path)?;
+        self.file = Some(file);
+        self.save_internal()?;
+        Ok(())
+    }
+
+    fn save_internal(&mut self) -> Result<(), Error> {
+        let file = self
+            .file
+            .as_mut()
+            .expect("Method always called with file initialized");
+        file.seek(SeekFrom::Start(0))?;
+        file.set_len(0)?;
+        self.profile.strict_encode(file)?;
+        Ok(())
+    }
+
+    pub fn is_dirty(&self) -> bool {
+        self.file.is_some()
+    }
+
+    pub fn name(&self) -> String {
+        self.name.clone()
+    }
+
+    pub fn tracking_account(&self, pos: usize) -> Option<TrackingAccount> {
+        self.profile.tracking.get(pos).cloned()
+    }
+
+    pub fn add_tracking_account(
+        &mut self,
+        tracking_account: TrackingAccount,
+    ) -> Result<bool, Error> {
+        self.profile.tracking.push(tracking_account);
+        self.save()
+    }
+
+    pub fn update_tracking_account(
+        &mut self,
+        pos: usize,
+        tracking_account: TrackingAccount,
+    ) -> Result<bool, Error> {
+        if self.profile.tracking.len() <= pos {
+            Err(Error::WrongPosition(pos))
+        } else {
+            self.profile.tracking[pos] = tracking_account;
+            self.save()
+        }
+    }
+
+    pub fn remove_tracking_account_at(
+        &mut self,
+        pos: usize,
+    ) -> Result<bool, Error> {
+        if self.profile.tracking.len() <= pos {
+            Err(Error::WrongPosition(pos))
+        } else {
+            self.profile.tracking.remove(pos);
+            self.save()
+        }
+    }
+}
+
 #[derive(Clone, PartialEq, Eq, Debug, Default, StrictEncode, StrictDecode)]
 pub struct Profile {
-    pub name: String,
     pub description: Option<String>,
     pub tracking: Vec<TrackingAccount>,
     pub utxo_cache: Vec<UtxoEntry>,

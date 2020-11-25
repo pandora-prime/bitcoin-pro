@@ -12,9 +12,11 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 mod app_window;
+mod open_dlg;
 mod pubkey_dlg;
 mod save_dlg;
 
 pub use app_window::{AppWindow, Error as AppError};
+pub use open_dlg::OpenDlg;
 pub use pubkey_dlg::PubkeyDlg;
 pub use save_dlg::SaveDlg;
