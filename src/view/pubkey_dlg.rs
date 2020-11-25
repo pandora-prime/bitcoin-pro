@@ -12,7 +12,6 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 use gtk::prelude::*;
-use std::cell::RefCell;
 use std::ops::RangeInclusive;
 use std::rc::Rc;
 use std::str::FromStr;
@@ -148,8 +147,8 @@ pub struct PubkeyDlg {
     bech_display: gtk::Entry,
 }
 
-impl glade::View for PubkeyDlg {
-    fn load_glade() -> Result<Rc<RefCell<Self>>, glade::Error> {
+impl PubkeyDlg {
+    pub fn load_glade() -> Result<Rc<Self>, glade::Error> {
         let builder = gtk::Builder::from_string(UI);
 
         let save_btn = builder
@@ -291,7 +290,7 @@ impl glade::View for PubkeyDlg {
             .get_object("bechDisplay")
             .ok_or(glade::Error::WidgetNotFound)?;
 
-        let me = Rc::new(RefCell::new(Self {
+        let me = Rc::new(Self {
             dialog: glade_load!(builder, "pubkeyDlg")?,
             save_btn,
             cancel_btn,
@@ -335,119 +334,102 @@ impl glade::View for PubkeyDlg {
             wpkh_sh_display,
             taproot_display,
             bech_display,
+        });
+
+        me.name_field.connect_changed(clone!(@weak me => move |_| {
+            me.update_ui();
         }));
 
-        me.borrow()
-            .name_field
+        me.pubkey_field
             .connect_changed(clone!(@weak me => move |_| {
-                let me = me.borrow();
-                me.update_ui();
-            }));
-
-        me.borrow()
-            .pubkey_field
-            .connect_changed(clone!(@weak me => move |_| {
-                let me = me.borrow();
                 me.set_key_type(PkType::Single)
             }));
 
-        for ctl in &[&me.borrow().xpub_field, &me.borrow().range_field] {
+        for ctl in &[&me.xpub_field, &me.range_field] {
             ctl.connect_changed(clone!(@weak me => move |_| {
-                let me = me.borrow();
                 me.set_key_type(PkType::Hd)
             }));
         }
 
-        me.borrow().derivation_field.connect_changed(
-            clone!(@weak me => move |_| {
-                let me = me.borrow();
-                me.set_derive_type(DeriveType::Custom)
-            }),
-        );
-
-        for ctl in &[
-            &me.borrow().sk_radio,
-            &me.borrow().hd_radio,
-            &me.borrow().bip44_radio,
-            &me.borrow().custom_radio,
-        ] {
-            ctl.connect_toggled(clone!(@weak me => move |_| {
-                let me = me.borrow();
-                me.update_ui()
-            }));
-        }
-
-        for ctl in &[
-            &me.borrow().purpose_combo,
-            &me.borrow().asset_combo,
-            &me.borrow().change_combo,
-            &me.borrow().network_combo,
-        ] {
-            ctl.connect_changed(clone!(@weak me => move |_| {
-                let me = me.borrow();
-                me.update_ui()
-            }));
-        }
-
-        for ctl in &[
-            &me.borrow().purpose_index,
-            &me.borrow().asset_index,
-            &me.borrow().account_index,
-            &me.borrow().change_index,
-        ] {
-            ctl.connect_changed(clone!(@weak me => move |_| {
-                let me = me.borrow();
-                me.set_derive_type(DeriveType::Bip44)
-            }));
-        }
-
-        for ctl in &[
-            &me.borrow().purpose_chk,
-            &me.borrow().asset_chk,
-            &me.borrow().account_chk,
-            &me.borrow().change_chk,
-            &me.borrow().range_chk,
-        ] {
-            ctl.connect_toggled(clone!(@weak me => move |_| {
-                let me = me.borrow();
-                me.set_derive_type(DeriveType::Bip44)
-            }));
-        }
-
-        me.borrow()
-            .offset_index
+        me.derivation_field
             .connect_changed(clone!(@weak me => move |_| {
-                let me = me.borrow();
-                me.update_ui();
-            }));
-
-        me.borrow()
-            .offset_chk
-            .connect_toggled(clone!(@weak me => move |_| {
-                let me = me.borrow();
-                me.update_ui();
+                me.set_derive_type(DeriveType::Custom)
             }));
 
         for ctl in &[
-            &me.borrow().xpubid_display,
-            &me.borrow().fingerprint_display,
-            &me.borrow().derivation_display,
-            &me.borrow().descriptor_display,
-            &me.borrow().xpub_display,
-            &me.borrow().uncompressed_display,
-            &me.borrow().compressed_display,
-            &me.borrow().xcoordonly_display,
-            &me.borrow().pkh_display,
-            &me.borrow().wpkh_display,
-            &me.borrow().wpkh_sh_display,
-            &me.borrow().taproot_display,
-            &me.borrow().bech_display,
+            &me.sk_radio,
+            &me.hd_radio,
+            &me.bip44_radio,
+            &me.custom_radio,
+        ] {
+            ctl.connect_toggled(clone!(@weak me => move |_| {
+                me.update_ui()
+            }));
+        }
+
+        for ctl in &[
+            &me.purpose_combo,
+            &me.asset_combo,
+            &me.change_combo,
+            &me.network_combo,
+        ] {
+            ctl.connect_changed(clone!(@weak me => move |_| {
+                me.update_ui()
+            }));
+        }
+
+        for ctl in &[
+            &me.purpose_index,
+            &me.asset_index,
+            &me.account_index,
+            &me.change_index,
+        ] {
+            ctl.connect_changed(clone!(@weak me => move |_| {
+                me.set_derive_type(DeriveType::Bip44)
+            }));
+        }
+
+        for ctl in &[
+            &me.purpose_chk,
+            &me.asset_chk,
+            &me.account_chk,
+            &me.change_chk,
+            &me.range_chk,
+        ] {
+            ctl.connect_toggled(clone!(@weak me => move |_| {
+                me.set_derive_type(DeriveType::Bip44)
+            }));
+        }
+
+        me.offset_index
+            .connect_changed(clone!(@weak me => move |_| {
+                me.update_ui();
+            }));
+
+        me.offset_chk.connect_toggled(clone!(@weak me => move |_| {
+            me.update_ui();
+        }));
+
+        for ctl in &[
+            &me.xpubid_display,
+            &me.fingerprint_display,
+            &me.derivation_display,
+            &me.descriptor_display,
+            &me.xpub_display,
+            &me.uncompressed_display,
+            &me.compressed_display,
+            &me.xcoordonly_display,
+            &me.pkh_display,
+            &me.wpkh_display,
+            &me.wpkh_sh_display,
+            &me.taproot_display,
+            &me.bech_display,
         ] {
             ctl.connect_icon_press(clone!(@weak ctl, @weak me => move |_, _, _| {
                 let val = ctl.get_text();
                 gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD)
                     .set_text(&val);
-                me.borrow().display_info(format!("Value {} copied to clipboard", val));
+                me.display_info(format!("Value {} copied to clipboard", val));
             }));
         }
 
@@ -461,32 +443,31 @@ impl PubkeyDlg {
         on_save: impl Fn(TrackingAccount) + 'static,
         on_cancel: impl Fn() + 'static,
     ) {
-        let dlg = &self.dialog;
-        let me = self;
+        let me = self.clone();
 
-        self.update_ui();
+        me.update_ui();
 
-        self.cancel_btn
-            .connect_clicked(clone!(@weak dlg => move |_| {
-                dlg.hide();
+        me.cancel_btn
+            .connect_clicked(clone!(@weak self as me => move |_| {
+                me.dialog.hide();
                 on_cancel()
             }));
 
-        self.save_btn.connect_clicked(
-            clone!(@weak me => move |_| match self.tracking_account() {
+        me.save_btn.connect_clicked(
+            clone!(@weak self as me => move |_| match self.tracking_account() {
                 Ok(tracking_account) => {
-                    self.dialog.hide();
+                    me.dialog.hide();
                     on_save(tracking_account);
                 }
                 Err(err) => {
-                    self.display_error(err);
-                    self.save_btn.set_sensitive(false);
+                    me.display_error(err);
+                    me.save_btn.set_sensitive(false);
                 }
             }),
         );
 
-        dlg.run();
-        dlg.hide();
+        me.dialog.run();
+        me.dialog.hide();
     }
 
     pub fn tracking_account(&self) -> Result<TrackingAccount, Error> {

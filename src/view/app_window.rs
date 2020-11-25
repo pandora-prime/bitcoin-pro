@@ -41,9 +41,9 @@ impl View for AppWindow {
         let tb: gtk::ToolButton = builder
             .get_object("pubkeyAdd")
             .ok_or(glade::Error::WidgetNotFound)?;
-        let pubkey_dlg = PubkeyDlg::load_glade()?;
         tb.connect_clicked(move |_| {
-            pubkey_dlg.into_inner().run(|_| {}, || {});
+            let pubkey_dlg = PubkeyDlg::load_glade().expect("Must load");
+            pubkey_dlg.run(|_| {}, || {});
         });
 
         Ok(Rc::new(RefCell::new(Self {
