@@ -487,13 +487,16 @@ impl PubkeyDlg {
         if let Ok(master_priv) =
             ExtendedPrivKey::from_str(&self.xpub_field.get_text())
         {
-            let master =
+            let master_xpub =
                 ExtendedPubKey::from_private(&lnpbp::SECP256K1, &master_priv);
+            let branch_xpriv =
+                master_priv.derive_priv(&lnpbp::SECP256K1, &branch_path)?;
             let branch_xpub =
-                master.derive_pub(&lnpbp::SECP256K1, &branch_path)?;
+                ExtendedPubKey::from_private(&lnpbp::SECP256K1, &branch_xpriv);
             Ok(DerivationComponents {
+                master_xpub,
                 branch_xpub,
-                branch_source: (master.fingerprint(), branch_path),
+                branch_path,
                 terminal_path,
                 index_ranges,
             })
@@ -501,8 +504,9 @@ impl PubkeyDlg {
             let branch_xpub =
                 ExtendedPubKey::from_str(&self.xpub_field.get_text())?;
             Ok(DerivationComponents {
+                master_xpub: branch_xpub.clone(),
                 branch_xpub,
-                branch_source: (branch_xpub.fingerprint(), branch_path),
+                branch_path,
                 terminal_path,
                 index_ranges,
             })
@@ -692,8 +696,25 @@ impl PubkeyDlg {
             bitcoin::PublicKey::from_str(&pk_str)?
         } else {
             let derivation = self.derivation_path(true)?;
-            let master = ExtendedPubKey::from_str(&self.xpub_field.get_text())?;
-            let xpubkey = master.derive_pub(&lnpbp::SECP256K1, &derivation)?;
+
+            let (xpubkey, master) = if let Ok(master_priv) =
+                ExtendedPrivKey::from_str(&self.xpub_field.get_text())
+            {
+                let master = ExtendedPubKey::from_private(
+                    &lnpbp::SECP256K1,
+                    &master_priv,
+                );
+                let prv =
+                    master_priv.derive_priv(&lnpbp::SECP256K1, &derivation)?;
+                (
+                    ExtendedPubKey::from_private(&lnpbp::SECP256K1, &prv),
+                    master,
+                )
+            } else {
+                let master =
+                    ExtendedPubKey::from_str(&self.xpub_field.get_text())?;
+                (master.derive_pub(&lnpbp::SECP256K1, &derivation)?, master)
+            };
 
             self.xpubid_display
                 .set_text(&xpubkey.identifier().to_string());
@@ -711,13 +732,16 @@ impl PubkeyDlg {
             self.xpub_display.set_text(&xpubkey.to_string());
 
             if self.range_chk.get_active() {
-                let mut lower = 0u32;
-                let mut upper = u32::MAX;
+                let mut lower = u32::MAX;
+                let mut upper = 0;
                 if let Some(ranges) = self.derivation_ranges()? {
                     ranges.into_iter().for_each(|range| {
-                        lower = lower.max(range.start());
-                        upper = upper.min(range.end());
+                        lower = lower.min(range.start());
+                        upper = upper.max(range.end());
                     });
+                } else {
+                    lower = 0;
+                    upper = u32::MAX;
                 }
                 self.offset_adj.set_lower(lower as f64);
                 self.offset_adj.set_upper(upper as f64);

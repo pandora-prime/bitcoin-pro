@@ -15,8 +15,6 @@
 #![allow(dead_code)]
 
 #[macro_use]
-extern crate amplify;
-#[macro_use]
 extern crate amplify_derive;
 #[macro_use]
 extern crate lnpbp;

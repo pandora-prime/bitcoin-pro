@@ -18,7 +18,7 @@ use std::ops::RangeInclusive;
 
 use amplify::Wrapper;
 use lnpbp::bitcoin::util::bip32::{
-    ChildNumber, DerivationPath, ExtendedPubKey, KeySource,
+    ChildNumber, DerivationPath, ExtendedPubKey,
 };
 use lnpbp::secp256k1;
 use lnpbp::strict_encoding::{self, StrictDecode, StrictEncode};
@@ -63,9 +63,11 @@ impl TrackingKey {
 
 // TODO: Consider moving to LNP/BP Core library
 #[derive(Clone, PartialEq, Eq, Debug, StrictEncode, StrictDecode)]
+// master_xpub/branch_path=branch_xpub/terminal_path/index_ranges
 pub struct DerivationComponents {
+    pub master_xpub: ExtendedPubKey,
+    pub branch_path: DerivationPath,
     pub branch_xpub: ExtendedPubKey,
-    pub branch_source: KeySource,
     pub terminal_path: Vec<u32>,
     pub index_ranges: Option<Vec<DerivationRange>>,
 }
@@ -79,6 +81,23 @@ impl DerivationComponents {
             }
         }
     }
+
+    pub fn terminal_path(&self) -> DerivationPath {
+        DerivationPath::from_iter(
+            self.terminal_path
+                .iter()
+                .map(|i| ChildNumber::Normal { index: *i }),
+        )
+    }
+
+    pub fn child(&self, child: u32) -> ExtendedPubKey {
+        let derivation = self
+            .terminal_path()
+            .into_child(ChildNumber::Normal { index: child });
+        self.branch_xpub
+            .derive_pub(&lnpbp::SECP256K1, &derivation)
+            .expect("Non-hardened derivation does not fail")
+    }
 }
 
 impl Display for DerivationComponents {
@@ -86,12 +105,11 @@ impl Display for DerivationComponents {
         write!(
             f,
             "[{}]{}{}/",
-            self.branch_source.0,
-            self.branch_source
-                .1
+            self.master_xpub.fingerprint(),
+            self.branch_path
                 .to_string()
                 .strip_prefix("m")
-                .ok_or(fmt::Error)?,
+                .unwrap_or(&self.branch_path.to_string()),
             DerivationPath::from_iter(
                 self.terminal_path
                     .iter()
