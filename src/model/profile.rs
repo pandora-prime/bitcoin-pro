@@ -11,11 +11,13 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+use serde_with::DisplayFromStr;
+
 use amplify::internet::InetSocketAddr;
 use amplify::ToYamlString;
 use lnpbp::bp::Chain;
 use lnpbp::lnp::{NodeAddr, RemoteNodeAddr};
-use rgb::fungible;
+// use rgb::fungible;
 
 use super::{operation, TrackingAccount, UtxoEntry};
 
@@ -28,8 +30,8 @@ use super::{operation, TrackingAccount, UtxoEntry};
     Default,
     Serialize,
     Deserialize,
-    StrictEncoding,
-    StrictDecoding,
+    StrictEncode,
+    StrictDecode,
 )]
 #[display(Profile::to_yaml_string)]
 pub struct Profile {
@@ -37,7 +39,7 @@ pub struct Profile {
     pub description: Option<String>,
     pub tracking: Vec<TrackingAccount>,
     pub utxo_cache: Vec<UtxoEntry>,
-    pub assets_cache: Vec<fungible::Asset>,
+    // pub assets_cache: Vec<fungible::Asset>,
     pub history: Vec<operation::LogEntry>,
     pub settings: Settings,
 }
@@ -50,8 +52,8 @@ pub struct Profile {
     Display,
     Serialize,
     Deserialize,
-    StrictEncoding,
-    StrictDecoding,
+    StrictEncode,
+    StrictDecode,
 )]
 pub enum ChainResolver {
     #[display("bitcoinCore({0})")]
@@ -82,8 +84,8 @@ impl Default for ChainResolver {
     Default,
     Serialize,
     Deserialize,
-    StrictEncoding,
-    StrictDecoding,
+    StrictEncode,
+    StrictDecode,
 )]
 #[display(Profile::to_yaml_string)]
 pub struct Settings {

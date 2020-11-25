@@ -27,14 +27,12 @@ use crate::model::{DerivationComponents, TrackingAccount, TrackingKey};
 
 static UI: &'static str = include_str!("../../ui/pubkey.glade");
 
-#[derive(
-    Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Display, From, Error,
-)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, Display, From, Error)]
 #[display(doc_comments)]
 /// Errors from processing public key derivation data
 pub enum Error {
     /// BIP32-specific error
-    #[display(internal)]
+    #[display("{0}")]
     #[from]
     Bip32(bip32::Error),
 
@@ -441,7 +439,7 @@ impl PubkeyDlg {
         let me = self;
 
         self.save_btn
-            .connect_clicked(clone!(@weak dlg, me => move |_| {
+            .connect_clicked(clone!(@weak dlg, @weak me => move |_| {
                 match me.tracking_account() {
                     Ok(tracking_account) => {
                         me.dialog.hide();
@@ -557,10 +555,10 @@ impl PubkeyDlg {
                 index_ranges,
             })
         } else if branch_path.as_ref().is_empty() {
+            let branch_xpub =
+                ExtendedPubKey::from_str(&self.xpub_field.get_text())?;
             Ok(DerivationComponents {
-                branch_xpub: ExtendedPubKey::from_str(
-                    &self.xpub_field.get_text(),
-                )?,
+                branch_xpub,
                 branch_source: (branch_xpub.fingerprint(), branch_path),
                 terminal_path,
                 index_ranges,
@@ -582,14 +580,14 @@ impl PubkeyDlg {
                     let idx = num.parse().map_err(|_| {
                         Error::WrongIndexNumber(num.to_string(), pos)
                     })?;
-                    RangeInclusive(idx, idx)
+                    RangeInclusive::new(idx, idx)
                 }
-                (Some(num), Some(num), None) => RangeInclusive::new(
-                    num.parse().map_err(|_| {
-                        Error::WrongIndexNumber(num.to_string(), pos)
+                (Some(num1), Some(num2), None) => RangeInclusive::new(
+                    num1.parse().map_err(|_| {
+                        Error::WrongIndexNumber(num1.to_string(), pos)
                     })?,
-                    num.parse().map_err(|_| {
-                        Error::WrongIndexNumber(num.to_string(), pos)
+                    num2.parse().map_err(|_| {
+                        Error::WrongIndexNumber(num2.to_string(), pos)
                     })?,
                 ),
                 _ => return Err(Error::WrongRange(elem.to_string(), pos)),

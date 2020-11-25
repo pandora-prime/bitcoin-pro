@@ -19,8 +19,8 @@
     Display,
     Serialize,
     Deserialize,
-    StrictEncoding,
-    StrictDecoding,
+    StrictEncode,
+    StrictDecode,
 )]
 #[display("")]
 pub struct UtxoEntry {}

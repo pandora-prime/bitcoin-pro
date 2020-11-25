@@ -14,7 +14,7 @@
 use std::collections::HashSet;
 use std::ops::RangeInclusive;
 
-use lnpbp::bitcoin::util::bip32::{DerivationPath, ExtendedPubKey, KeySource};
+use lnpbp::bitcoin::util::bip32::{ExtendedPubKey, KeySource};
 use lnpbp::secp256k1;
 
 #[derive(
@@ -25,8 +25,8 @@ use lnpbp::secp256k1;
     Display,
     Serialize,
     Deserialize,
-    StrictEncoding,
-    StrictDecoding,
+    StrictEncode,
+    StrictDecode,
 )]
 #[display("tracking account '{name}' {key}")]
 pub struct TrackingAccount {
@@ -42,8 +42,8 @@ pub struct TrackingAccount {
     Display,
     Serialize,
     Deserialize,
-    StrictEncoding,
-    StrictDecoding,
+    StrictEncode,
+    StrictDecode,
 )]
 pub enum TrackingKey {
     #[display("pubkey {0}")]
@@ -61,8 +61,8 @@ pub enum TrackingKey {
     Display,
     Serialize,
     Deserialize,
-    StrictEncoding,
-    StrictDecoding,
+    StrictEncode,
+    StrictDecode,
 )]
 #[display("{branch_source}={branch_xpub}")]
 pub struct DerivationComponents {
