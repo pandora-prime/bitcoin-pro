@@ -85,14 +85,21 @@ impl Display for DerivationComponents {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "{}{}{}/",
+            "[{}]{}{}/",
             self.branch_source.0,
-            self.branch_source.1,
+            self.branch_source
+                .1
+                .to_string()
+                .strip_prefix("m")
+                .ok_or(fmt::Error)?,
             DerivationPath::from_iter(
                 self.terminal_path
                     .iter()
                     .map(|i| ChildNumber::Normal { index: *i })
             )
+            .to_string()
+            .strip_prefix("m")
+            .ok_or(fmt::Error)?
         )?;
         if let Some(ref ranges) = self.index_ranges {
             f.write_str(
@@ -114,7 +121,15 @@ pub struct DerivationRange(RangeInclusive<u32>);
 impl DerivationRange {
     pub fn count(&self) -> u32 {
         let inner = self.as_inner();
-        inner.end() - inner.start()
+        inner.end() - inner.start() + 1
+    }
+
+    pub fn start(&self) -> u32 {
+        *self.as_inner().start()
+    }
+
+    pub fn end(&self) -> u32 {
+        *self.as_inner().end()
     }
 }
 
@@ -132,15 +147,21 @@ impl Display for DerivationRange {
 impl StrictEncode for DerivationRange {
     type Error = strict_encoding::Error;
 
-    fn strict_encode<E: io::Write>(&self, e: E) -> Result<usize, Self::Error> {
-        unimplemented!()
+    fn strict_encode<E: io::Write>(
+        &self,
+        mut e: E,
+    ) -> Result<usize, Self::Error> {
+        Ok(strict_encode_list!(e; self.start(), self.end()))
     }
 }
 
 impl StrictDecode for DerivationRange {
     type Error = strict_encoding::Error;
 
-    fn strict_decode<D: io::Read>(d: D) -> Result<Self, Self::Error> {
-        unimplemented!()
+    fn strict_decode<D: io::Read>(mut d: D) -> Result<Self, Self::Error> {
+        Ok(Self::from_inner(RangeInclusive::new(
+            u32::strict_decode(&mut d)?,
+            u32::strict_decode(&mut d)?,
+        )))
     }
 }

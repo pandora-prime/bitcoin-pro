@@ -52,13 +52,16 @@ pub enum Error {
     #[from]
     Base58(base58::Error),
 
+    /// Index range must not be empty
+    RangeNotSpecified,
+
     /// Unable to parse '{0}' as index at position {1}
     WrongIndexNumber(String, usize),
 
     /// Unable to parse '{0}' as range at position {1}
     WrongRange(String, usize),
 
-    /// Empty range specifier position {0}
+    /// Empty range specifier at position {0}
     EmptyRange(usize),
 
     /// Unsupported blockchain
@@ -128,6 +131,7 @@ pub struct PubkeyDlg {
     network_combo: gtk::ComboBox,
     offset_index: gtk::SpinButton,
     offset_chk: gtk::CheckButton,
+    offset_adj: gtk::Adjustment,
 
     xpubid_display: gtk::Entry,
     fingerprint_display: gtk::Entry,
@@ -188,6 +192,7 @@ impl PubkeyDlg {
         let network_combo = builder.get_object("blockchainCombo")?;
         let offset_index = builder.get_object("exportIndex")?;
         let offset_chk = builder.get_object("exportHCheck")?;
+        let offset_adj = builder.get_object("adjExport")?;
 
         let xpubid_display = builder.get_object("xpubidDisplay")?;
         let fingerprint_display = builder.get_object("fingerprintDisplay")?;
@@ -237,6 +242,7 @@ impl PubkeyDlg {
             network_combo,
             offset_index,
             offset_chk,
+            offset_adj,
             xpubid_display,
             fingerprint_display,
             derivation_display,
@@ -260,6 +266,17 @@ impl PubkeyDlg {
             .connect_changed(clone!(@weak me => move |_| {
                 me.set_key_type(PkType::Single)
             }));
+
+        me.range_field.connect_changed(clone!(@weak me => move |_| {
+            me.set_key_type(PkType::Hd)
+        }));
+
+        me.range_chk.connect_toggled(clone!(@weak me => move |_| {
+            if me.range_chk.get_active() && me.range_field.get_text().is_empty() {
+                me.range_field.set_text(&format!("0-{}", u32::MAX));
+            }
+            me.set_key_type(PkType::Hd)
+        }));
 
         for ctl in &[&me.xpub_field, &me.range_field] {
             ctl.connect_changed(clone!(@weak me => move |_| {
@@ -310,7 +327,6 @@ impl PubkeyDlg {
             &me.asset_chk,
             &me.account_chk,
             &me.change_chk,
-            &me.range_chk,
         ] {
             ctl.connect_toggled(clone!(@weak me => move |_| {
                 me.set_derive_type(DeriveType::Bip44)
@@ -401,8 +417,11 @@ impl PubkeyDlg {
         })
     }
 
-    pub fn derivation_path(&self) -> Result<DerivationPath, Error> {
-        let derivation = if self.bip44_radio.get_active() {
+    pub fn derivation_path(
+        &self,
+        extended: bool,
+    ) -> Result<DerivationPath, Error> {
+        let mut derivation = if self.bip44_radio.get_active() {
             DerivationPath::from_str(&format!(
                 "m/{}{}/{}{}/{}{}/{}{}",
                 self.purpose_index.get_value() as u32,
@@ -430,20 +449,24 @@ impl PubkeyDlg {
             DerivationPath::from_str(&self.derivation_field.get_text())?
         };
 
-        let s = format!(
-            "m/{}{}",
-            self.offset_index.get_value() as u32,
-            if self.offset_chk.get_active() {
-                "'"
-            } else {
-                ""
-            }
-        );
-        Ok(derivation.extend(DerivationPath::from_str(&s)?))
+        if extended {
+            derivation = derivation.into_child(self.derivation_export_offset());
+        }
+
+        Ok(derivation)
+    }
+
+    pub fn derivation_export_offset(&self) -> ChildNumber {
+        let index = self.offset_index.get_value() as u32;
+        if self.offset_chk.get_active() {
+            ChildNumber::Hardened { index }
+        } else {
+            ChildNumber::Normal { index }
+        }
     }
 
     pub fn derivation_components(&self) -> Result<DerivationComponents, Error> {
-        let derivation = self.derivation_path()?;
+        let derivation = self.derivation_path(false)?;
         let mut path_iter = derivation.as_ref().into_iter().rev();
         let terminal_path: Vec<u32> = path_iter
             .by_ref()
@@ -459,7 +482,7 @@ impl PubkeyDlg {
         let terminal_path = terminal_path.into_iter().rev().collect();
         let branch_path = path_iter.rev().cloned().collect();
 
-        let index_ranges = self.index_ranges()?;
+        let index_ranges = self.derivation_ranges()?;
 
         if let Ok(master_priv) =
             ExtendedPrivKey::from_str(&self.xpub_field.get_text())
@@ -488,7 +511,12 @@ impl PubkeyDlg {
         }
     }
 
-    pub fn index_ranges(&self) -> Result<Option<Vec<DerivationRange>>, Error> {
+    pub fn derivation_ranges(
+        &self,
+    ) -> Result<Option<Vec<DerivationRange>>, Error> {
+        if !self.range_chk.get_active() {
+            return Ok(None);
+        }
         let mut index_ranges = vec![];
         for (pos, elem) in
             self.range_field.get_text().as_str().split(',').enumerate()
@@ -515,11 +543,11 @@ impl PubkeyDlg {
             };
             index_ranges.push(range);
         }
-        Ok(if index_ranges.is_empty() {
-            None
+        if index_ranges.is_empty() {
+            Err(Error::RangeNotSpecified)
         } else {
-            Some(index_ranges)
-        })
+            Ok(Some(index_ranges))
+        }
     }
 
     pub fn display_info(&self, msg: impl ToString) {
@@ -663,10 +691,8 @@ impl PubkeyDlg {
             let pk_str = self.pubkey_field.get_text();
             bitcoin::PublicKey::from_str(&pk_str)?
         } else {
+            let derivation = self.derivation_path(true)?;
             let master = ExtendedPubKey::from_str(&self.xpub_field.get_text())?;
-
-            let derivation = self.derivation_path()?;
-
             let xpubkey = master.derive_pub(&lnpbp::SECP256K1, &derivation)?;
 
             self.xpubid_display
@@ -678,8 +704,31 @@ impl PubkeyDlg {
                 "[{}]{}",
                 master.fingerprint(),
                 derivation
+                    .to_string()
+                    .strip_prefix("m")
+                    .unwrap_or(&derivation.to_string())
             ));
             self.xpub_display.set_text(&xpubkey.to_string());
+
+            if self.range_chk.get_active() {
+                let mut lower = 0u32;
+                let mut upper = u32::MAX;
+                if let Some(ranges) = self.derivation_ranges()? {
+                    ranges.into_iter().for_each(|range| {
+                        lower = lower.max(range.start());
+                        upper = upper.min(range.end());
+                    });
+                }
+                self.offset_adj.set_lower(lower as f64);
+                self.offset_adj.set_upper(upper as f64);
+
+                if lower > self.offset_index.get_value_as_int() as u32 {
+                    self.offset_index.set_value(lower as f64);
+                }
+                if upper < self.offset_index.get_value_as_int() as u32 {
+                    self.offset_index.set_value(upper as f64);
+                }
+            }
 
             xpubkey.public_key
         };

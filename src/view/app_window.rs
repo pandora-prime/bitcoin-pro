@@ -17,7 +17,6 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use super::PubkeyDlg;
-use crate::model::Profile;
 
 static UI: &'static str = include_str!("../../ui/main.glade");
 

@@ -61,6 +61,10 @@
               <placeholder/>
             </child>
           </object>
+          <packing>
+            <property name="reorderable">True</property>
+            <property name="detachable">True</property>
+          </packing>
         </child>
         <child type="tab">
           <object class="GtkLabel">
@@ -90,6 +94,8 @@
           </object>
           <packing>
             <property name="position">1</property>
+            <property name="reorderable">True</property>
+            <property name="detachable">True</property>
           </packing>
         </child>
         <child type="tab">
@@ -121,6 +127,8 @@
           </object>
           <packing>
             <property name="position">2</property>
+            <property name="reorderable">True</property>
+            <property name="detachable">True</property>
           </packing>
         </child>
         <child type="tab">
@@ -152,6 +160,8 @@
           </object>
           <packing>
             <property name="position">3</property>
+            <property name="reorderable">True</property>
+            <property name="detachable">True</property>
           </packing>
         </child>
         <child type="tab">
@@ -296,6 +306,9 @@
           </object>
           <packing>
             <property name="position">4</property>
+            <property name="tab_expand">True</property>
+            <property name="reorderable">True</property>
+            <property name="detachable">True</property>
           </packing>
         </child>
         <child type="tab">
@@ -509,6 +522,8 @@
           </object>
           <packing>
             <property name="position">5</property>
+            <property name="reorderable">True</property>
+            <property name="detachable">True</property>
           </packing>
         </child>
         <child type="tab">
