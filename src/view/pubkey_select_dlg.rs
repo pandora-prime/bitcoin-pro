@@ -15,7 +15,7 @@ use gtk::prelude::*;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::model::{Document, TrackingAccount};
+use crate::model::Document;
 
 static UI: &'static str = include_str!("../../ui/pubkey_select.glade");
 
@@ -30,6 +30,7 @@ pub enum Error {
 pub struct PubkeySelectDlg {
     dialog: gtk::Dialog,
     pubkey_store: gtk::ListStore,
+    pubkey_selection: gtk::TreeSelection,
     select_btn: gtk::Button,
     cancel_btn: gtk::Button,
 }
@@ -39,6 +40,7 @@ impl PubkeySelectDlg {
         let builder = gtk::Builder::from_string(UI);
 
         let pubkey_store = builder.get_object("pubkeyStore")?;
+        let pubkey_selection = builder.get_object("pubkeySelection")?;
 
         let select_btn = builder.get_object("select")?;
         let cancel_btn = builder.get_object("cancel")?;
@@ -46,6 +48,7 @@ impl PubkeySelectDlg {
         let me = Rc::new(Self {
             dialog: glade_load!(builder, "pubkeyDlg")?,
             pubkey_store,
+            pubkey_selection,
             select_btn,
             cancel_btn,
         });
@@ -58,7 +61,7 @@ impl PubkeySelectDlg {
     pub fn run(
         self: Rc<Self>,
         doc: Rc<RefCell<Document>>,
-        on_select: impl Fn(TrackingAccount) + 'static,
+        on_select: impl Fn(String) + 'static,
         on_cancel: impl Fn() + 'static,
     ) {
         let me = self.clone();
@@ -72,10 +75,10 @@ impl PubkeySelectDlg {
             }));
 
         me.select_btn.connect_clicked(
-            clone!(@weak self as me => move |_| match self.tracking_account() {
-                Some(tracking_account) => {
+            clone!(@weak self as me => move |_| match self.selected_pubkey() {
+                Some(selected_pubkey) => {
                     me.dialog.hide();
-                    on_select(tracking_account);
+                    on_select(selected_pubkey);
                 }
                 None => {
                     me.select_btn.set_sensitive(false);
@@ -87,7 +90,13 @@ impl PubkeySelectDlg {
         me.dialog.hide();
     }
 
-    pub fn tracking_account(&self) -> Option<TrackingAccount> {
-        None
+    pub fn selected_pubkey(&self) -> Option<String> {
+        self.pubkey_selection.get_selected().map(|(model, iter)| {
+            model
+                .get_value(&iter, 1)
+                .get::<String>()
+                .expect("Pubkey selection not found")
+                .expect("Pubkey kye string not found")
+        })
     }
 }

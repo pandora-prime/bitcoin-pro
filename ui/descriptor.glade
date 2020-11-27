@@ -197,12 +197,12 @@
                     <property name="can_focus">False</property>
                     <property name="spacing">6</property>
                     <child>
-                      <object class="GtkEntry" id="epochEntry">
+                      <object class="GtkEntry" id="pubkeyEntry">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can_focus">True</property>
                         <property name="hexpand">True</property>
                         <property name="caps_lock_warning">False</property>
-                        <property name="placeholder_text" translatable="yes">Select a key from the registered keys</property>
+                        <property name="placeholder_text" translatable="yes">Enter pubkey or it from the registered keys</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>

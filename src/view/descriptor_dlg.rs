@@ -35,6 +35,7 @@ pub struct DescriptorDlg {
     msg_label: gtk::Label,
     msg_image: gtk::Image,
 
+    pubkey_entry: gtk::Entry,
     select_pk_btn: gtk::Button,
 
     save_btn: gtk::Button,
@@ -52,6 +53,7 @@ impl DescriptorDlg {
         let msg_image = builder.get_object("messageImage")?;
         let msg_label = builder.get_object("messageLabel")?;
 
+        let pubkey_entry = builder.get_object("pubkeyEntry")?;
         let select_pk_btn: gtk::Button = builder.get_object("selectPubkey")?;
 
         let me = Rc::new(Self {
@@ -60,6 +62,7 @@ impl DescriptorDlg {
             msg_image,
             msg_label,
 
+            pubkey_entry,
             select_pk_btn,
 
             save_btn,
@@ -81,10 +84,16 @@ impl DescriptorDlg {
 
         me.update_ui();
 
-        me.select_pk_btn.connect_clicked(move |_| {
+        me.select_pk_btn.connect_clicked(clone!(@weak me => move |_| {
             let pubkey_dlg = PubkeySelectDlg::load_glade().expect("Must load");
-            pubkey_dlg.run(doc.clone(), |tracking_account| {}, || {});
-        });
+            pubkey_dlg.run(
+                doc.clone(),
+                clone!(@weak me => move |pubkey| {
+                    me.pubkey_entry.set_text(&pubkey);
+                }),
+                || {},
+            );
+        }));
 
         me.cancel_btn
             .connect_clicked(clone!(@weak self as me => move |_| {
