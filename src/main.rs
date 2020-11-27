@@ -23,6 +23,8 @@ extern crate lnpbp;
 #[macro_use]
 extern crate lnpbp_derive;
 #[macro_use]
+extern crate lazy_static;
+#[macro_use]
 extern crate glade;
 #[macro_use]
 extern crate glib;
@@ -32,24 +34,35 @@ extern crate serde_with;
 mod model;
 mod view;
 
+use gio::prelude::*;
 use std::path::PathBuf;
 
 use crate::view::OpenDlg;
 
-fn main() -> Result<(), view::AppError> {
-    gtk::init().expect("GTK initialization error");
+fn main() {
+    let application =
+        gtk::Application::new(Some("com.pandoracore.BitcoinPro"), default!())
+            .expect("BitcoinPro failed to initialize GTK environment");
 
-    fn new_app(path: Option<PathBuf>) {
-        if let Ok(app) = view::AppWindow::new(path) {
-            let app = app.borrow();
-            app.run(|| {
-                let open_dlg = OpenDlg::load_glade().expect("Must load");
-                open_dlg.run(move |path| new_app(Some(path)), || {})
-            });
+    application.connect_activate(|app| {
+        fn new_app(path: Option<PathBuf>) {
+            if let Ok(app_window) = view::AppWindow::new(path) {
+                let app_window = app_window.borrow();
+                app_window.run(
+                    || {
+                        let open_dlg =
+                            OpenDlg::load_glade().expect("Must load");
+                        open_dlg.run(move |path| new_app(Some(path)), || {})
+                    },
+                    || {
+                        new_app(None);
+                    },
+                );
+            }
         }
-    }
 
-    new_app(None);
+        new_app(None);
+    });
 
-    Ok(())
+    application.run(&std::env::args().collect::<Vec<_>>());
 }

@@ -15,8 +15,6 @@ use gtk::prelude::*;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use glade::View;
-
 use crate::model::{DescriptorParams, Document};
 use crate::view::PubkeySelectDlg;
 

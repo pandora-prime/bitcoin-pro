@@ -177,9 +177,14 @@ impl AppWindow {
         Ok(me)
     }
 
-    pub fn run(&self, on_open: impl Fn() + 'static) {
+    pub fn run(
+        &self,
+        on_open: impl Fn() + 'static,
+        on_new: impl Fn() + 'static,
+    ) {
         self.update_ui();
 
+        self.new_btn.connect_clicked(move |_| on_new());
         self.open_btn.connect_clicked(move |_| on_open());
 
         self.window.show_all();

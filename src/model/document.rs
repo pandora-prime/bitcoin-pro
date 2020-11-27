@@ -17,6 +17,7 @@ use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{self, Seek, SeekFrom};
 use std::path::PathBuf;
+use std::sync::Mutex;
 
 use lnpbp::bp::Chain;
 use lnpbp::lnp::{NodeAddr, RemoteNodeAddr};
@@ -24,6 +25,11 @@ use lnpbp::strict_encoding::{self, StrictDecode, StrictEncode};
 // use rgb::fungible;
 
 use super::{operation, TrackingAccount, UtxoEntry};
+
+const DOC_NAME: &'static str = "Untitled";
+lazy_static! {
+    static ref DOC_NO: Mutex<u32> = Mutex::new(0);
+}
 
 #[derive(Clone, PartialEq, Eq, Debug, Display, From, Error)]
 #[display(doc_comments)]
@@ -57,8 +63,9 @@ pub struct Document {
 
 impl Document {
     pub fn new() -> Document {
+        *DOC_NO.lock().unwrap() += 1;
         Document {
-            name: s!("Untitled"),
+            name: format!("{}{}", DOC_NAME, *DOC_NO.lock().unwrap()),
             ..Default::default()
         }
     }
@@ -71,8 +78,11 @@ impl Document {
             name: path
                 .file_stem()
                 .and_then(OsStr::to_str)
-                .unwrap_or("Untitled")
-                .to_owned(),
+                .map(str::to_owned)
+                .unwrap_or_else(|| {
+                    *DOC_NO.lock().unwrap() += 1;
+                    format!("{}{}", DOC_NAME, *DOC_NO.lock().unwrap())
+                }),
             profile,
         })
     }
