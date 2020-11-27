@@ -37,8 +37,8 @@ pub struct PubkeySelectDlg {
     cancel_btn: gtk::Button,
 }
 
-impl glade::View for PubkeySelectDlg {
-    fn load_glade() -> Result<Rc<RefCell<Self>>, glade::Error> {
+impl PubkeySelectDlg {
+    pub fn load_glade() -> Result<Rc<Self>, glade::Error> {
         let builder = gtk::Builder::from_string(UI);
 
         let pubkey_store = builder.get_object("pubkeyStore")?;
@@ -47,13 +47,13 @@ impl glade::View for PubkeySelectDlg {
         let select_btn = builder.get_object("select")?;
         let cancel_btn = builder.get_object("cancel")?;
 
-        let me = Rc::new(RefCell::new(Self {
+        let me = Rc::new(Self {
             dialog: glade_load!(builder, "pubkeyDlg")?,
             pubkey_store,
             pubkey_selection,
             select_btn,
             cancel_btn,
-        }));
+        });
 
         Ok(me)
     }
@@ -61,34 +61,33 @@ impl glade::View for PubkeySelectDlg {
 
 impl PubkeySelectDlg {
     pub fn run(
-        me: Rc<RefCell<Self>>,
+        self: Rc<Self>,
         doc: Rc<RefCell<Document>>,
         on_select: impl Fn(String) + 'static,
         on_cancel: impl Fn() + 'static,
     ) {
-        doc.borrow().fill_tracking_store(&me.borrow().pubkey_store);
+        doc.borrow().fill_tracking_store(&self.pubkey_store);
 
-        me.borrow()
-            .cancel_btn
-            .connect_clicked(clone!(@weak me => move |_| {
-                me.borrow().dialog.response(ResponseType::Cancel);
+        self.cancel_btn
+            .connect_clicked(clone!(@weak self as me => move |_| {
+                me.dialog.response(ResponseType::Cancel);
                 on_cancel();
             }));
 
-        me.borrow().select_btn.connect_clicked(
-            clone!(@weak me => move |_| match me.clone().borrow().selected_pubkey() {
+        self.select_btn.connect_clicked(
+            clone!(@weak self as me => move |_| match me.clone().selected_pubkey() {
                 Some(selected_pubkey) => {
-                    me.borrow().dialog.response(ResponseType::Ok);
+                    me.dialog.response(ResponseType::Ok);
                     on_select(selected_pubkey);
                 }
                 None => {
-                    me.borrow().select_btn.set_sensitive(false);
+                    me.select_btn.set_sensitive(false);
                 }
             }),
         );
 
-        me.borrow().dialog.run();
-        me.borrow().dialog.hide();
+        self.dialog.run();
+        self.dialog.hide();
     }
 
     pub fn selected_pubkey(&self) -> Option<String> {

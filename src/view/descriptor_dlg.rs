@@ -101,12 +101,10 @@ impl DescriptorDlg {
 
         me.update_ui();
 
-        let pubkey_dlg = PubkeySelectDlg::load_glade().expect("Must load");
-
         me.select_pk_btn.connect_clicked(
-            clone!(@weak me, @strong doc, @strong pubkey_dlg => move |_| {
-                PubkeySelectDlg::run(
-                    pubkey_dlg.clone(),
+            clone!(@weak me, @strong doc => move |_| {
+                let pubkey_dlg = PubkeySelectDlg::load_glade().expect("Must load");
+                pubkey_dlg.run(
                     doc.clone(),
                     clone!(@weak me => move |pubkey| {
                         me.pubkey_entry.set_text(&pubkey);
@@ -117,9 +115,9 @@ impl DescriptorDlg {
         );
 
         me.add_pk_btn.connect_clicked(
-            clone!(@weak me, @strong doc, @strong pubkey_dlg => move |_| {
-                PubkeySelectDlg::run(
-                    pubkey_dlg.clone(),
+            clone!(@weak me, @strong doc => move |_| {
+                let pubkey_dlg = PubkeySelectDlg::load_glade().expect("Must load");
+                pubkey_dlg.run(
                     doc.clone(),
                     clone!(@weak me, @strong doc => move |pubkey| {
                         if let Some(tracking_account) = doc.borrow().tracking_account_by_key(&pubkey) {
@@ -136,9 +134,9 @@ impl DescriptorDlg {
         );
 
         me.insert_pk_btn.connect_clicked(
-            clone!(@weak me, @strong doc, @strong pubkey_dlg => move |_| {
-                PubkeySelectDlg::run(
-                    pubkey_dlg.clone(),
+            clone!(@weak me, @strong doc => move |_| {
+                let pubkey_dlg = PubkeySelectDlg::load_glade().expect("Must load");
+                pubkey_dlg.run(
                     doc.clone(),
                     clone!(@weak me => move |pubkey| {
                         me.script_buffer.insert_at_cursor(&pubkey);
