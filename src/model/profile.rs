@@ -112,10 +112,9 @@ impl Document {
         self.name.clone()
     }
 
-    pub fn fill_tracking_store(&self, store: &gtk::TreeStore) {
+    pub fn fill_tracking_store(&self, store: &gtk::ListStore) {
         self.profile.tracking.iter().for_each(|tracking_account| {
             store.insert_with_values(
-                None,
                 None,
                 &[0, 1, 2],
                 &[

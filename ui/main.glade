@@ -59,7 +59,7 @@
     <property name="can_focus">False</property>
     <property name="icon_name">list-add</property>
   </object>
-  <object class="GtkTreeStore" id="locatorStore">
+  <object class="GtkListStore" id="locatorStore">
     <columns>
       <!-- column-name name -->
       <column type="gchararray"/>
@@ -69,7 +69,7 @@
       <column type="gchararray"/>
     </columns>
   </object>
-  <object class="GtkTreeStore" id="pubkeyStore">
+  <object class="GtkListStore" id="pubkeyStore">
     <columns>
       <!-- column-name name -->
       <column type="gchararray"/>

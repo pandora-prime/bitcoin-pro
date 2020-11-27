@@ -12,9 +12,11 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 use gtk::prelude::*;
+use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::model::DescriptorParams;
+use crate::model::{DescriptorParams, Document};
+use crate::view::PubkeySelectDlg;
 
 static UI: &'static str = include_str!("../../ui/descriptor.glade");
 
@@ -28,9 +30,12 @@ pub enum Error {
 
 pub struct DescriptorDlg {
     dialog: gtk::Dialog,
+
     msg_box: gtk::Box,
     msg_label: gtk::Label,
     msg_image: gtk::Image,
+
+    select_pk_btn: gtk::Button,
 
     save_btn: gtk::Button,
     cancel_btn: gtk::Button,
@@ -47,11 +52,15 @@ impl DescriptorDlg {
         let msg_image = builder.get_object("messageImage")?;
         let msg_label = builder.get_object("messageLabel")?;
 
+        let select_pk_btn: gtk::Button = builder.get_object("selectPubkey")?;
+
         let me = Rc::new(Self {
             dialog: glade_load!(builder, "descriptorDlg")?,
             msg_box,
             msg_image,
             msg_label,
+
+            select_pk_btn,
 
             save_btn,
             cancel_btn,
@@ -64,12 +73,18 @@ impl DescriptorDlg {
 impl DescriptorDlg {
     pub fn run(
         self: Rc<Self>,
+        doc: Rc<RefCell<Document>>,
         on_save: impl Fn(DescriptorParams) + 'static,
         on_cancel: impl Fn() + 'static,
     ) {
         let me = self.clone();
 
         me.update_ui();
+
+        me.select_pk_btn.connect_clicked(move |_| {
+            let pubkey_dlg = PubkeySelectDlg::load_glade().expect("Must load");
+            pubkey_dlg.run(doc.clone(), |tracking_account| {}, || {});
+        });
 
         me.cancel_btn
             .connect_clicked(clone!(@weak self as me => move |_| {

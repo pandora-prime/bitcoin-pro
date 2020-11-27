@@ -16,6 +16,7 @@ mod descriptor_dlg;
 mod issue_dlg;
 mod open_dlg;
 mod pubkey_dlg;
+mod pubkey_select_dlg;
 mod save_dlg;
 
 pub use app_window::{AppWindow, Error as AppError};
@@ -23,4 +24,5 @@ pub use descriptor_dlg::DescriptorDlg;
 pub use issue_dlg::IssueDlg;
 pub use open_dlg::OpenDlg;
 pub use pubkey_dlg::PubkeyDlg;
+pub use pubkey_select_dlg::PubkeySelectDlg;
 pub use save_dlg::SaveDlg;

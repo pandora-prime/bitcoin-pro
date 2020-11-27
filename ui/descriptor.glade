@@ -19,7 +19,7 @@
     <property name="can_focus">False</property>
     <property name="icon_name">document-open</property>
   </object>
-  <object class="GtkTreeStore" id="pubkeyStore">
+  <object class="GtkListStore" id="pubkeyStore">
     <columns>
       <!-- column-name name -->
       <column type="gchararray"/>
@@ -211,7 +211,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton">
+                      <object class="GtkButton" id="selectPubkey">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
@@ -323,7 +323,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <child>
-                          <object class="GtkToolButton" id="addIssue">
+                          <object class="GtkToolButton" id="addPubkey">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="tooltip_text" translatable="yes">Add asset allocation - an unspent bitcoin transaction output which will contain the issued asset</property>
@@ -338,7 +338,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkToolButton" id="removeIssue">
+                          <object class="GtkToolButton" id="removePubkey">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="tooltip_text" translatable="yes">Remove selected asset allocation</property>
@@ -346,19 +346,6 @@
                             <property name="label" translatable="yes">Remove</property>
                             <property name="use_underline">True</property>
                             <property name="icon_name">list-remove</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="homogeneous">False</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkToolButton" id="editIssue">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="is_important">True</property>
-                            <property name="label" translatable="yes">Edit</property>
-                            <property name="use_underline">True</property>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -427,7 +414,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <child>
-                          <object class="GtkToolButton" id="addMsKey">
+                          <object class="GtkToolButton" id="insertPubkey">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="tooltip_text" translatable="yes">Add asset allocation - an unspent bitcoin transaction output which will contain the issued asset</property>
@@ -442,7 +429,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkMenuToolButton" id="addOp">
+                          <object class="GtkMenuToolButton" id="insertOperation">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="is_important">True</property>

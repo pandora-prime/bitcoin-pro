@@ -37,7 +37,7 @@ pub enum Error {
 pub struct AppWindow {
     window: gtk::ApplicationWindow,
     pubkey_tree: gtk::TreeView,
-    pubkey_store: gtk::TreeStore,
+    pubkey_store: gtk::ListStore,
     header_bar: gtk::HeaderBar,
     new_btn: gtk::Button,
     open_btn: gtk::Button,
@@ -86,7 +86,6 @@ impl AppWindow {
                     let me = me.borrow();
                     me.pubkey_store.insert_with_values(
                         None,
-                        None,
                         &[0, 1, 2],
                         &[
                             &tracking_account.name(),
@@ -103,7 +102,7 @@ impl AppWindow {
         let tb: gtk::ToolButton = builder.get_object("descriptorAdd")?;
         tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
             let descriptor_dlg = DescriptorDlg::load_glade().expect("Must load");
-            descriptor_dlg.run(clone!(@weak me, @strong doc =>
+            descriptor_dlg.run(doc.clone(), clone!(@weak me, @strong doc =>
                 move |descriptor_params| {
                     let me = me.borrow();
                     /* TODO: Perform assst creation
