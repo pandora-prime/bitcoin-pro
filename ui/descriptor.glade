@@ -2,17 +2,11 @@
 <!-- Generated with glade 3.36.0 -->
 <interface>
   <requires lib="gtk+" version="3.22"/>
-  <object class="GtkMenu" id="opMenu">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <child>
-      <object class="GtkMenuItem">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="label" translatable="yes">And</property>
-        <property name="use_underline">True</property>
-      </object>
-    </child>
+  <object class="GtkAdjustment" id="multisigAdj">
+    <property name="lower">1</property>
+    <property name="upper">5</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">1</property>
   </object>
   <object class="GtkImage" id="openImage">
     <property name="visible">True</property>
@@ -29,6 +23,7 @@
       <column type="gulong"/>
     </columns>
   </object>
+  <object class="GtkTextBuffer" id="scriptBuffer"/>
   <object class="GtkImage" id="updateImage">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -108,7 +103,7 @@
               <object class="GtkLabel" id="messageLabel">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">You need to specify asset ticker</property>
+                <property name="label" translatable="yes">Error message</property>
                 <attributes>
                   <attribute name="style" value="oblique"/>
                 </attributes>
@@ -165,11 +160,80 @@
           </packing>
         </child>
         <child>
-          <object class="GtkBox">
+          <object class="GtkGrid">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="orientation">vertical</property>
-            <property name="spacing">6</property>
+            <property name="row_spacing">6</property>
+            <property name="column_spacing">6</property>
+            <child>
+              <object class="GtkRadioButton" id="singlesigRadio">
+                <property name="label" translatable="yes">Single signature:</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="active">True</property>
+                <property name="draw_indicator">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkRadioButton" id="miltisigRadio">
+                <property name="label" translatable="yes">Multisig or MuSig:</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="active">True</property>
+                <property name="draw_indicator">True</property>
+                <property name="group">singlesigRadio</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkBox" id="singlesigBox">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="hexpand">True</property>
+                <property name="spacing">6</property>
+                <child>
+                  <object class="GtkEntry" id="pubkeyEntry">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="hexpand">True</property>
+                    <property name="caps_lock_warning">False</property>
+                    <property name="placeholder_text" translatable="yes">Enter pubkey or choose  it from the registered keys</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="selectPubkey">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="image">openImage</property>
+                    <property name="always_show_image">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
@@ -181,64 +245,32 @@
                 </attributes>
               </object>
               <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
+                <property name="left_attach">0</property>
+                <property name="top_attach">0</property>
+                <property name="width">2</property>
               </packing>
             </child>
             <child>
-              <object class="GtkNotebook" id="scriptTabs">
+              <object class="GtkRadioButton" id="scriptRadio">
+                <property name="label" translatable="yes">Custom script:</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <child>
-                  <object class="GtkBox">
-                    <property name="height_request">-1</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="spacing">6</property>
-                    <child>
-                      <object class="GtkEntry" id="pubkeyEntry">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="hexpand">True</property>
-                        <property name="caps_lock_warning">False</property>
-                        <property name="placeholder_text" translatable="yes">Enter pubkey or it from the registered keys</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="selectPubkey">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="image">openImage</property>
-                        <property name="always_show_image">True</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="tab_fill">False</property>
-                  </packing>
-                </child>
-                <child type="tab">
-                  <object class="GtkLabel">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Single key</property>
-                  </object>
-                  <packing>
-                    <property name="tab_fill">False</property>
-                  </packing>
-                </child>
+                <property name="receives_default">False</property>
+                <property name="draw_indicator">True</property>
+                <property name="group">singlesigRadio</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">4</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkFrame" id="multisigFrame">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="margin_start">24</property>
+                <property name="label_xalign">0</property>
+                <property name="shadow_type">out</property>
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
@@ -360,48 +392,41 @@
                       </packing>
                     </child>
                   </object>
-                  <packing>
-                    <property name="position">1</property>
-                  </packing>
                 </child>
-                <child type="tab">
-                  <object class="GtkLabel">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Multisig / MuSig</property>
-                  </object>
-                  <packing>
-                    <property name="position">1</property>
-                    <property name="tab_fill">False</property>
-                  </packing>
+                <child type="label_item">
+                  <placeholder/>
                 </child>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">3</property>
+                <property name="width">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkFrame" id="scriptFrame">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="margin_start">24</property>
+                <property name="label_xalign">0</property>
+                <property name="shadow_type">out</property>
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkFrame">
+                      <object class="GtkTextView" id="scriptText">
+                        <property name="height_request">80</property>
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="vexpand">True</property>
-                        <property name="label_xalign">0</property>
-                        <property name="label_yalign">0</property>
-                        <property name="shadow_type">out</property>
-                        <child>
-                          <object class="GtkTextView" id="miniscriptText">
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="left_margin">6</property>
-                            <property name="right_margin">6</property>
-                            <property name="top_margin">6</property>
-                            <property name="bottom_margin">6</property>
-                            <property name="monospace">True</property>
-                          </object>
-                        </child>
-                        <child type="label_item">
-                          <placeholder/>
-                        </child>
+                        <property name="can_focus">True</property>
+                        <property name="wrap_mode">word</property>
+                        <property name="left_margin">6</property>
+                        <property name="right_margin">6</property>
+                        <property name="top_margin">6</property>
+                        <property name="bottom_margin">6</property>
+                        <property name="buffer">scriptBuffer</property>
+                        <property name="monospace">True</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -429,13 +454,20 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkMenuToolButton" id="insertOperation">
+                          <object class="GtkSeparatorToolItem">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="is_important">True</property>
-                            <property name="label" translatable="yes">Operation</property>
-                            <property name="use_underline">True</property>
-                            <property name="icon_name">window-new</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="homogeneous">True</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkMenuToolButton" id="insertMsLocks">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">after(n)</property>
                             <child type="menu">
                               <object class="GtkMenu">
                                 <property name="visible">True</property>
@@ -444,7 +476,271 @@
                                   <object class="GtkMenuItem">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="label" translatable="yes">AND</property>
+                                    <property name="tooltip_text" translatable="yes">&lt;n&gt; CHECKSEQUENCEVERIFY</property>
+                                    <property name="label" translatable="yes">older(n)</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="tooltip_text" translatable="yes">&lt;n&gt; CHECKLOCKTIMEVERIFY</property>
+                                    <property name="label" translatable="yes">after(n)</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="homogeneous">False</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkMenuToolButton" id="insertMsThresh">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">thresh_m(n, ...)</property>
+                            <child type="menu">
+                              <object class="GtkMenu">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <child>
+                                  <object class="GtkMenuItem">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="tooltip_text" translatable="yes">[X1] [X2] ADD ... [Xi] ADD ... &lt;n&gt; EQUAL</property>
+                                    <property name="label" translatable="yes">thresh_m(n, ...)</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="tooltip_text" translatable="yes">&lt;n&gt; &lt;key1&gt; ... &lt;keyn&gt; &lt;n&gt; CHECKMULTISIG</property>
+                                    <property name="label" translatable="yes">thresh(k, ...)</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="homogeneous">False</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkMenuToolButton" id="insertMsHash">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">hash256(h)</property>
+                            <property name="use_underline">True</property>
+                            <child type="menu">
+                              <object class="GtkMenu">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <child>
+                                  <object class="GtkMenuItem">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="tooltip_text" translatable="yes">SIZE &lt;32&gt; EQUALVERIFY RIPEMD160 &lt;h&gt; EQUAL</property>
+                                    <property name="label" translatable="yes">ripemd160(h)</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="tooltip_text" translatable="yes">SIZE &lt;32&gt; EQUALVERIFY HASH160 &lt;h&gt; EQUAL</property>
+                                    <property name="label" translatable="yes">hash160(h)</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="tooltip_text" translatable="yes">SIZE &lt;32&gt; EQUALVERIFY SHA256 &lt;h&gt; EQUAL</property>
+                                    <property name="label" translatable="yes">sha256(h)</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="tooltip_text" translatable="yes">SIZE &lt;32&gt; EQUALVERIFY HASH256 &lt;h&gt; EQUAL</property>
+                                    <property name="label" translatable="yes">hash256(h)</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="homogeneous">False</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkMenuToolButton" id="insertMsBool">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">andor(X,Y,Z)</property>
+                            <property name="use_underline">True</property>
+                            <child type="menu">
+                              <object class="GtkMenu">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <child>
+                                  <object class="GtkMenuItem">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="tooltip_text" translatable="yes">[X] NOTIF [Z] ELSE [Y] ENDIF</property>
+                                    <property name="label" translatable="yes">andor(X,Y,Z)</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="tooltip_text" translatable="yes">[X] [Y]</property>
+                                    <property name="label" translatable="yes">and_v(X,Y)</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="tooltip_text" translatable="yes">[X] [Y] BOOLAND</property>
+                                    <property name="label" translatable="yes">and_b(X,Y)</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="tooltip_text" translatable="yes">[X] NOTIF 0 ELSE [Y] ENDIF</property>
+                                    <property name="label" translatable="yes">and_n(X,Y)</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="tooltip_text" translatable="yes">[X] [Z] BOOLOR</property>
+                                    <property name="label" translatable="yes">or_b(X,Y)</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="tooltip_text" translatable="yes">[X] NOTIF [Z] ENDIF</property>
+                                    <property name="label" translatable="yes">or_c(X,Y)</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="tooltip_text" translatable="yes">[X] IFDUP NOTIF [Z] ENDIF</property>
+                                    <property name="label" translatable="yes">or_d(X,Y)</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="tooltip_text" translatable="yes">IF [X] ELSE [Z] ENDIF</property>
+                                    <property name="label" translatable="yes">or_i(X,Y)</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="homogeneous">False</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkMenuToolButton" id="insertMsWrap">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">c:X</property>
+                            <property name="use_underline">True</property>
+                            <child type="menu">
+                              <object class="GtkMenu">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <child>
+                                  <object class="GtkMenuItem">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="tooltip_text" translatable="yes">TOALTSTACK [X] FROMALTSTACK</property>
+                                    <property name="label" translatable="yes">a:X</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="tooltip_text" translatable="yes">SWAP [X]</property>
+                                    <property name="label" translatable="yes">s:X</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="tooltip_text" translatable="yes">[X] CHECKSIG</property>
+                                    <property name="label" translatable="yes">c:X</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="tooltip_text" translatable="yes">[X] 1</property>
+                                    <property name="label" translatable="yes">t:X</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="tooltip_text" translatable="yes">DUP IF [X] ENDIF</property>
+                                    <property name="label" translatable="yes">d:X</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="tooltip_text" translatable="yes">[X] VERIFY</property>
+                                    <property name="label" translatable="yes">v:X</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="tooltip_text" translatable="yes">SIZE 0NOTEQUAL IF [X] ENDIF</property>
+                                    <property name="label" translatable="yes">j:X</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="tooltip_text" translatable="yes">[X] 0NOTEQUAL</property>
+                                    <property name="label" translatable="yes">n:X</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="tooltip_text" translatable="yes">IF 0 ELSE [X] ENDIF</property>
+                                    <property name="label" translatable="yes">n:X</property>
                                     <property name="use_underline">True</property>
                                   </object>
                                 </child>
@@ -452,39 +748,8 @@
                                   <object class="GtkMenuItem">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="label" translatable="yes">OR</property>
-                                    <property name="use_underline">True</property>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="GtkMenuItem">
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
-                                    <property name="label" translatable="yes">NOT</property>
-                                    <property name="use_underline">True</property>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="GtkMenuItem">
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
-                                    <property name="label" translatable="yes">THRESHOLD</property>
-                                    <property name="use_underline">True</property>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="GtkMenuItem">
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
-                                    <property name="label" translatable="yes">MULTISIG</property>
-                                    <property name="use_underline">True</property>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="GtkMenuItem">
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
-                                    <property name="label" translatable="yes">LOCK</property>
+                                    <property name="tooltip_text" translatable="yes">IF [X] ELSE 0 ENDIF</property>
+                                    <property name="label" translatable="yes">u:X</property>
                                     <property name="use_underline">True</property>
                                   </object>
                                 </child>
@@ -504,26 +769,118 @@
                       </packing>
                     </child>
                   </object>
-                  <packing>
-                    <property name="position">2</property>
-                  </packing>
                 </child>
-                <child type="tab">
+                <child type="label_item">
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">5</property>
+                <property name="width">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkBox" id="multisigBox">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="spacing">6</property>
+                <child>
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Custom Miniscript</property>
+                    <property name="label" translatable="yes">require</property>
                   </object>
                   <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkSpinButton" id="multisigSpinner">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="progress_fraction">0.66</property>
+                    <property name="adjustment">multisigAdj</property>
+                    <property name="value">1</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">signatures out of</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
                     <property name="position">2</property>
-                    <property name="tab_fill">False</property>
                   </packing>
                 </child>
               </object>
               <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
+                <property name="left_attach">1</property>
+                <property name="top_attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkBox" id="scriptBox">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="spacing">6</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">using</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkComboBoxText" id="scriptCombo">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="active">2</property>
+                    <property name="active_id">miniscript</property>
+                    <items>
+                      <item id="asm" translatable="yes">Op-code assembly</item>
+                      <item id="hex" translatable="yes">Hexadecimal</item>
+                      <item id="miniscript" translatable="yes">Miniscript code</item>
+                      <item id="policy" translatable="yes">Miniscript policy</item>
+                    </items>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">representation</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">4</property>
               </packing>
             </child>
           </object>
@@ -534,11 +891,39 @@
           </packing>
         </child>
         <child>
-          <object class="GtkBox">
+          <object class="GtkGrid">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="orientation">vertical</property>
-            <property name="spacing">6</property>
+            <property name="row_spacing">6</property>
+            <property name="column_spacing">6</property>
+            <child>
+              <object class="GtkCheckButton" id="bareChk">
+                <property name="label" translatable="yes">Bare script</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="halign">start</property>
+                <property name="draw_indicator">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="hashChk">
+                <property name="label" translatable="yes">Non-SegWit</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="halign">start</property>
+                <property name="draw_indicator">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">2</property>
+              </packing>
+            </child>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
@@ -550,14 +935,59 @@
                 </attributes>
               </object>
               <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
+                <property name="left_attach">0</property>
+                <property name="top_attach">0</property>
+                <property name="width">4</property>
               </packing>
             </child>
             <child>
-              <object class="GtkCheckButton">
-                <property name="label" translatable="yes">Bare script (pk, bare)</property>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">pk(), bare()</property>
+                <attributes>
+                  <attribute name="font-desc" value="Monospace 10"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">pkh(), sh()</property>
+                <attributes>
+                  <attribute name="font-desc" value="Monospace 10"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">sh(wpkh()), sh(wsh())</property>
+                <attributes>
+                  <attribute name="font-desc" value="Monospace 10"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="mixedChk">
+                <property name="label" translatable="yes">Legacy SegWit</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
@@ -565,44 +995,28 @@
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
+                <property name="left_attach">0</property>
+                <property name="top_attach">3</property>
               </packing>
             </child>
             <child>
-              <object class="GtkCheckButton">
-                <property name="label" translatable="yes">Legacy non-SwgWit (pkh, sh)</property>
+              <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">False</property>
+                <property name="can_focus">False</property>
                 <property name="halign">start</property>
-                <property name="draw_indicator">True</property>
+                <property name="label" translatable="yes">wpkh(), wsh()</property>
+                <attributes>
+                  <attribute name="font-desc" value="Monospace 10"/>
+                </attributes>
               </object>
               <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">2</property>
+                <property name="left_attach">3</property>
+                <property name="top_attach">1</property>
               </packing>
             </child>
             <child>
-              <object class="GtkCheckButton">
-                <property name="label" translatable="yes">Legacy SegWit (sh(wpkh), sh(wsh))</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">False</property>
-                <property name="halign">start</property>
-                <property name="draw_indicator">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">3</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkCheckButton">
-                <property name="label" translatable="yes">SegWit v0 (wpkh, wsh)</property>
+              <object class="GtkCheckButton" id="witnessChk">
+                <property name="label" translatable="yes">SegWit v0</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
@@ -611,14 +1025,13 @@
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">4</property>
+                <property name="left_attach">2</property>
+                <property name="top_attach">1</property>
               </packing>
             </child>
             <child>
-              <object class="GtkCheckButton">
-                <property name="label" translatable="yes">Taproot (SegWit v1)</property>
+              <object class="GtkCheckButton" id="taprootChk">
+                <property name="label" translatable="yes">SegWit v1 (Taproot)</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
@@ -626,10 +1039,30 @@
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">5</property>
+                <property name="left_attach">2</property>
+                <property name="top_attach">2</property>
               </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">tpk()</property>
+                <attributes>
+                  <attribute name="font-desc" value="Monospace 10"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
             </child>
           </object>
           <packing>
@@ -656,8 +1089,8 @@
             <property name="row_spacing">6</property>
             <property name="column_spacing">6</property>
             <child>
-              <object class="GtkTreeView">
-                <property name="height_request">240</property>
+              <object class="GtkTreeView" id="utxoTree">
+                <property name="height_request">200</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="hexpand">True</property>
@@ -821,7 +1254,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton">
+                  <object class="GtkButton" id="lookupBtn">
                     <property name="label" translatable="yes">Update</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>

@@ -15,6 +15,8 @@ use gtk::prelude::*;
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use glade::View;
+
 use crate::model::{DescriptorParams, Document};
 use crate::view::PubkeySelectDlg;
 
@@ -36,7 +38,12 @@ pub struct DescriptorDlg {
     msg_image: gtk::Image,
 
     pubkey_entry: gtk::Entry,
+    add_pk_btn: gtk::ToolButton,
     select_pk_btn: gtk::Button,
+    insert_pk_btn: gtk::ToolButton,
+
+    pubkey_store: gtk::ListStore,
+    script_buffer: gtk::TextBuffer,
 
     save_btn: gtk::Button,
     cancel_btn: gtk::Button,
@@ -54,7 +61,12 @@ impl DescriptorDlg {
         let msg_label = builder.get_object("messageLabel")?;
 
         let pubkey_entry = builder.get_object("pubkeyEntry")?;
-        let select_pk_btn: gtk::Button = builder.get_object("selectPubkey")?;
+        let select_pk_btn = builder.get_object("selectPubkey")?;
+        let add_pk_btn = builder.get_object("addPubkey")?;
+        let insert_pk_btn = builder.get_object("insertPubkey")?;
+
+        let pubkey_store = builder.get_object("pubkeyStore")?;
+        let script_buffer = builder.get_object("scriptBuffer")?;
 
         let me = Rc::new(Self {
             dialog: glade_load!(builder, "descriptorDlg")?,
@@ -63,7 +75,12 @@ impl DescriptorDlg {
             msg_label,
 
             pubkey_entry,
+            add_pk_btn,
             select_pk_btn,
+            insert_pk_btn,
+
+            pubkey_store,
+            script_buffer,
 
             save_btn,
             cancel_btn,
@@ -84,16 +101,52 @@ impl DescriptorDlg {
 
         me.update_ui();
 
-        me.select_pk_btn.connect_clicked(clone!(@weak me => move |_| {
-            let pubkey_dlg = PubkeySelectDlg::load_glade().expect("Must load");
-            pubkey_dlg.run(
-                doc.clone(),
-                clone!(@weak me => move |pubkey| {
-                    me.pubkey_entry.set_text(&pubkey);
-                }),
-                || {},
-            );
-        }));
+        let pubkey_dlg = PubkeySelectDlg::load_glade().expect("Must load");
+
+        me.select_pk_btn.connect_clicked(
+            clone!(@weak me, @strong doc, @strong pubkey_dlg => move |_| {
+                PubkeySelectDlg::run(
+                    pubkey_dlg.clone(),
+                    doc.clone(),
+                    clone!(@weak me => move |pubkey| {
+                        me.pubkey_entry.set_text(&pubkey);
+                    }),
+                    || {},
+                );
+            }),
+        );
+
+        me.add_pk_btn.connect_clicked(
+            clone!(@weak me, @strong doc, @strong pubkey_dlg => move |_| {
+                PubkeySelectDlg::run(
+                    pubkey_dlg.clone(),
+                    doc.clone(),
+                    clone!(@weak me, @strong doc => move |pubkey| {
+                        if let Some(tracking_account) = doc.borrow().tracking_account_by_key(&pubkey) {
+                            me.pubkey_store.insert_with_values(None, &[0, 1, 2], &[
+                                &tracking_account.name(),
+                                &tracking_account.details(),
+                                &tracking_account.count(),
+                            ]);
+                        }
+                    }),
+                    || {},
+                );
+            }),
+        );
+
+        me.insert_pk_btn.connect_clicked(
+            clone!(@weak me, @strong doc, @strong pubkey_dlg => move |_| {
+                PubkeySelectDlg::run(
+                    pubkey_dlg.clone(),
+                    doc.clone(),
+                    clone!(@weak me => move |pubkey| {
+                        me.script_buffer.insert_at_cursor(&pubkey);
+                    }),
+                    || {},
+                );
+            }),
+        );
 
         me.cancel_btn
             .connect_clicked(clone!(@weak self as me => move |_| {

@@ -13,14 +13,14 @@
 
 mod asset;
 mod descriptor_params;
+mod document;
 pub mod operation;
-mod profile;
 mod tracking;
 mod utxo;
 
 pub use asset::AssetGenesis;
 pub use descriptor_params::DescriptorParams;
-pub use profile::{Document, Error, Profile};
+pub use document::{Document, Error, Profile};
 pub use tracking::{
     DerivationComponents, DerivationRange, TrackingAccount, TrackingKey,
 };

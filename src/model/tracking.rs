@@ -39,7 +39,8 @@ impl TrackingAccount {
     }
 }
 
-#[derive(Clone, PartialEq, Eq, Debug, StrictEncode, StrictDecode)]
+#[derive(Clone, PartialEq, Eq, Debug, Display, StrictEncode, StrictDecode)]
+#[display(TrackingKey::details)]
 pub enum TrackingKey {
     SingleKey(secp256k1::PublicKey),
     HdKeySet(DerivationComponents),

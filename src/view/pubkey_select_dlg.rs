@@ -15,6 +15,8 @@ use gtk::prelude::*;
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use gtk::ResponseType;
+
 use crate::model::Document;
 
 static UI: &'static str = include_str!("../../ui/pubkey_select.glade");
@@ -35,8 +37,8 @@ pub struct PubkeySelectDlg {
     cancel_btn: gtk::Button,
 }
 
-impl PubkeySelectDlg {
-    pub fn load_glade() -> Result<Rc<Self>, glade::Error> {
+impl glade::View for PubkeySelectDlg {
+    fn load_glade() -> Result<Rc<RefCell<Self>>, glade::Error> {
         let builder = gtk::Builder::from_string(UI);
 
         let pubkey_store = builder.get_object("pubkeyStore")?;
@@ -45,13 +47,13 @@ impl PubkeySelectDlg {
         let select_btn = builder.get_object("select")?;
         let cancel_btn = builder.get_object("cancel")?;
 
-        let me = Rc::new(Self {
+        let me = Rc::new(RefCell::new(Self {
             dialog: glade_load!(builder, "pubkeyDlg")?,
             pubkey_store,
             pubkey_selection,
             select_btn,
             cancel_btn,
-        });
+        }));
 
         Ok(me)
     }
@@ -59,35 +61,34 @@ impl PubkeySelectDlg {
 
 impl PubkeySelectDlg {
     pub fn run(
-        self: Rc<Self>,
+        me: Rc<RefCell<Self>>,
         doc: Rc<RefCell<Document>>,
         on_select: impl Fn(String) + 'static,
         on_cancel: impl Fn() + 'static,
     ) {
-        let me = self.clone();
+        doc.borrow().fill_tracking_store(&me.borrow().pubkey_store);
 
-        doc.borrow().fill_tracking_store(&me.pubkey_store);
-
-        me.cancel_btn
-            .connect_clicked(clone!(@weak self as me => move |_| {
-                me.dialog.hide();
-                on_cancel()
+        me.borrow()
+            .cancel_btn
+            .connect_clicked(clone!(@weak me => move |_| {
+                me.borrow().dialog.response(ResponseType::Cancel);
+                on_cancel();
             }));
 
-        me.select_btn.connect_clicked(
-            clone!(@weak self as me => move |_| match self.selected_pubkey() {
+        me.borrow().select_btn.connect_clicked(
+            clone!(@weak me => move |_| match me.clone().borrow().selected_pubkey() {
                 Some(selected_pubkey) => {
-                    me.dialog.hide();
+                    me.borrow().dialog.response(ResponseType::Ok);
                     on_select(selected_pubkey);
                 }
                 None => {
-                    me.select_btn.set_sensitive(false);
+                    me.borrow().select_btn.set_sensitive(false);
                 }
             }),
         );
 
-        me.dialog.run();
-        me.dialog.hide();
+        me.borrow().dialog.run();
+        me.borrow().dialog.hide();
     }
 
     pub fn selected_pubkey(&self) -> Option<String> {

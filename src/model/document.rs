@@ -113,6 +113,7 @@ impl Document {
     }
 
     pub fn fill_tracking_store(&self, store: &gtk::ListStore) {
+        store.clear();
         self.profile.tracking.iter().for_each(|tracking_account| {
             store.insert_with_values(
                 None,
@@ -126,8 +127,19 @@ impl Document {
         });
     }
 
-    pub fn tracking_account(&self, pos: usize) -> Option<TrackingAccount> {
+    pub fn tracking_account_at(&self, pos: usize) -> Option<TrackingAccount> {
         self.profile.tracking.get(pos).cloned()
+    }
+
+    pub fn tracking_account_by_key(
+        &self,
+        key: &str,
+    ) -> Option<TrackingAccount> {
+        self.profile
+            .tracking
+            .iter()
+            .find(|a| a.key.to_string() == key)
+            .cloned()
     }
 
     pub fn add_tracking_account(
