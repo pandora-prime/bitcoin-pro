@@ -57,7 +57,7 @@
       </row>
     </data>
   </object>
-  <object class="GtkDialog">
+  <object class="GtkDialog" id="descriptorDlg">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">UTXO Locator</property>
     <property name="type_hint">dialog</property>
@@ -88,12 +88,12 @@
           </packing>
         </child>
         <child>
-          <object class="GtkBox" id="statusBox">
+          <object class="GtkBox" id="messageBox">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="spacing">6</property>
             <child>
-              <object class="GtkImage" id="statusIcon">
+              <object class="GtkImage" id="messageImage">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="icon_name">dialog-error</property>
@@ -105,7 +105,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="statusLabel">
+              <object class="GtkLabel" id="messageLabel">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">You need to specify asset ticker</property>
@@ -190,7 +190,6 @@
               <object class="GtkNotebook" id="scriptTabs">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="show_border">False</property>
                 <child>
                   <object class="GtkBox">
                     <property name="height_request">-1</property>
@@ -869,17 +868,17 @@
         <property name="width_request">666</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="title" translatable="yes">UTXO Locator</property>
+        <property name="title" translatable="yes">Descriptor</property>
         <child>
-          <object class="GtkButton" id="close">
-            <property name="label" translatable="yes">Close</property>
+          <object class="GtkButton" id="cancel">
+            <property name="label" translatable="yes">Cancel</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
           </object>
         </child>
         <child>
-          <object class="GtkButton" id="add">
+          <object class="GtkButton" id="save">
             <property name="label" translatable="yes">Add</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>

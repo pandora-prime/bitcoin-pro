@@ -11,17 +11,16 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-mod asset;
-mod descriptor_params;
-pub mod operation;
-mod profile;
-mod tracking;
-mod utxo;
-
-pub use asset::AssetGenesis;
-pub use descriptor_params::DescriptorParams;
-pub use profile::{Document, Error, Profile};
-pub use tracking::{
-    DerivationComponents, DerivationRange, TrackingAccount, TrackingKey,
-};
-pub use utxo::UtxoEntry;
+#[derive(
+    Clone,
+    PartialEq,
+    Eq,
+    Debug,
+    Display,
+    Serialize,
+    Deserialize,
+    StrictEncode,
+    StrictDecode,
+)]
+#[display("")]
+pub struct DescriptorParams {}

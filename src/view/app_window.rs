@@ -17,7 +17,7 @@ use std::path::PathBuf;
 use std::rc::Rc;
 
 use crate::model::Document;
-use crate::view::{IssueDlg, PubkeyDlg, SaveDlg};
+use crate::view::{DescriptorDlg, IssueDlg, PubkeyDlg, SaveDlg};
 
 static UI: &'static str = include_str!("../../ui/main.glade");
 
@@ -95,6 +95,30 @@ impl AppWindow {
                         ],
                     );
                     let _ = doc.borrow_mut().add_tracking_account(tracking_account);
+                }),
+                || {},
+            );
+        }));
+
+        let tb: gtk::ToolButton = builder.get_object("descriptorAdd")?;
+        tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
+            let descriptor_dlg = DescriptorDlg::load_glade().expect("Must load");
+            descriptor_dlg.run(clone!(@weak me, @strong doc =>
+                move |descriptor_params| {
+                    let me = me.borrow();
+                    /* TODO: Perform assst creation
+                    me.pubkey_store.insert_with_values(
+                        None,
+                        None,
+                        &[0, 1, 2],
+                        &[
+                            &tracking_account.name(),
+                            &tracking_account.details(),
+                            &tracking_account.count(),
+                        ],
+                    );
+                    let _ = doc.borrow_mut().add_tracking_account(tracking_account);
+                     */
                 }),
                 || {},
             );
