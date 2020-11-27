@@ -38,9 +38,11 @@ pub struct DescriptorDlg {
     msg_image: gtk::Image,
 
     pubkey_entry: gtk::Entry,
+    pubkey_tree: gtk::TreeView,
     add_pk_btn: gtk::ToolButton,
     select_pk_btn: gtk::Button,
     insert_pk_btn: gtk::ToolButton,
+    remove_pk_btn: gtk::ToolButton,
 
     pubkey_store: gtk::ListStore,
     script_buffer: gtk::TextBuffer,
@@ -61,9 +63,11 @@ impl DescriptorDlg {
         let msg_label = builder.get_object("messageLabel")?;
 
         let pubkey_entry = builder.get_object("pubkeyEntry")?;
+        let pubkey_tree = builder.get_object("pubkeyTree")?;
         let select_pk_btn = builder.get_object("selectPubkey")?;
         let add_pk_btn = builder.get_object("addPubkey")?;
         let insert_pk_btn = builder.get_object("insertPubkey")?;
+        let remove_pk_btn = builder.get_object("removePubkey")?;
 
         let pubkey_store = builder.get_object("pubkeyStore")?;
         let script_buffer = builder.get_object("scriptBuffer")?;
@@ -75,9 +79,11 @@ impl DescriptorDlg {
             msg_label,
 
             pubkey_entry,
+            pubkey_tree,
             add_pk_btn,
             select_pk_btn,
             insert_pk_btn,
+            remove_pk_btn,
 
             pubkey_store,
             script_buffer,
@@ -143,6 +149,14 @@ impl DescriptorDlg {
                     }),
                     || {},
                 );
+            }),
+        );
+
+        me.remove_pk_btn.connect_clicked(
+            clone!(@weak me => move |_| {
+                if let Some((_, iter)) = me.pubkey_tree.get_selection().get_selected() {
+                    me.pubkey_store.remove(&iter);
+                }
             }),
         );
 
