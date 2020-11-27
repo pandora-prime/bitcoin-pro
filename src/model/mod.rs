@@ -11,11 +11,13 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+mod asset;
 pub mod operation;
 mod profile;
 mod tracking;
 mod utxo;
 
+pub use asset::AssetGenesis;
 pub use profile::{Document, Error, Profile};
 pub use tracking::{
     DerivationComponents, DerivationRange, TrackingAccount, TrackingKey,

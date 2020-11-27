@@ -11,14 +11,16 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-mod app_window;
-mod issue_dlg;
-mod open_dlg;
-mod pubkey_dlg;
-mod save_dlg;
-
-pub use app_window::{AppWindow, Error as AppError};
-pub use issue_dlg::IssueDlg;
-pub use open_dlg::OpenDlg;
-pub use pubkey_dlg::PubkeyDlg;
-pub use save_dlg::SaveDlg;
+#[derive(
+    Clone,
+    PartialEq,
+    Eq,
+    Debug,
+    Display,
+    Serialize,
+    Deserialize,
+    StrictEncode,
+    StrictDecode,
+)]
+#[display("")]
+pub struct AssetGenesis {}

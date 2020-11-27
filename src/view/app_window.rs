@@ -16,9 +16,8 @@ use std::cell::RefCell;
 use std::path::PathBuf;
 use std::rc::Rc;
 
-use super::PubkeyDlg;
 use crate::model::Document;
-use crate::view::SaveDlg;
+use crate::view::{IssueDlg, PubkeyDlg, SaveDlg};
 
 static UI: &'static str = include_str!("../../ui/main.glade");
 
@@ -48,7 +47,9 @@ impl AppWindow {
     fn load_glade(
         doc: Option<Document>,
     ) -> Result<Rc<RefCell<Self>>, glade::Error> {
+        let mut needs_save = true;
         let doc = Rc::new(RefCell::new(if let Some(doc) = doc {
+            needs_save = false;
             doc
         } else {
             Document::new()
@@ -99,7 +100,32 @@ impl AppWindow {
             );
         }));
 
+        let tb: gtk::ToolButton = builder.get_object("assetCreate")?;
+        tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
+            let issue_dlg = IssueDlg::load_glade().expect("Must load");
+            issue_dlg.run(clone!(@weak me, @strong doc =>
+                move |asset_genesis| {
+                    let me = me.borrow();
+                    /* TODO: Perform assst creation
+                    me.pubkey_store.insert_with_values(
+                        None,
+                        None,
+                        &[0, 1, 2],
+                        &[
+                            &tracking_account.name(),
+                            &tracking_account.details(),
+                            &tracking_account.count(),
+                        ],
+                    );
+                    let _ = doc.borrow_mut().add_tracking_account(tracking_account);
+                     */
+                }),
+                || {},
+            );
+        }));
+
         let tb: gtk::Button = builder.get_object("save")?;
+        tb.set_sensitive(needs_save);
         tb.connect_clicked(clone!(@strong doc, @weak tb => move |_| {
             let save_dlg = SaveDlg::load_glade().expect("Must load");
             let name = doc.borrow().name();

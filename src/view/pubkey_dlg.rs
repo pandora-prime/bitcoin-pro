@@ -89,7 +89,7 @@ pub enum DeriveType {
 }
 
 //#[display(Glade)]
-//#[glade(file = "../ui/asset_issue.glade")]
+//#[glade(file = "../ui/asset_create.glade")]
 pub struct PubkeyDlg {
     //#[glade(id = "assetIssue")]
     dialog: gtk::Dialog,
@@ -381,14 +381,14 @@ impl PubkeyDlg {
 
         me.cancel_btn
             .connect_clicked(clone!(@weak self as me => move |_| {
-                me.dialog.hide();
+                me.dialog.close();
                 on_cancel()
             }));
 
         me.save_btn.connect_clicked(
             clone!(@weak self as me => move |_| match self.tracking_account() {
                 Ok(tracking_account) => {
-                    me.dialog.hide();
+                    me.dialog.close();
                     on_save(tracking_account);
                 }
                 Err(err) => {
@@ -399,7 +399,7 @@ impl PubkeyDlg {
         );
 
         me.dialog.run();
-        me.dialog.hide();
+        me.dialog.close();
     }
 
     pub fn tracking_account(&self) -> Result<TrackingAccount, Error> {

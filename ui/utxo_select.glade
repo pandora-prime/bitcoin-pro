@@ -2,15 +2,28 @@
 <!-- Generated with glade 3.36.0 -->
 <interface>
   <requires lib="gtk+" version="3.22"/>
-  <object class="GtkTreeStore" id="locatorStore">
+  <object class="GtkListStore" id="utxoStore">
     <columns>
-      <!-- column-name name -->
+      <!-- column-name txid -->
       <column type="gchararray"/>
-      <!-- column-name details -->
-      <column type="gchararray"/>
-      <!-- column-name count -->
+      <!-- column-name vout -->
+      <column type="guint"/>
+      <!-- column-name amount -->
+      <column type="guint64"/>
+      <!-- column-name height -->
       <column type="gulong"/>
+      <!-- column-name mined -->
+      <column type="gchararray"/>
     </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">92c72675acdecf970d83bd4d1f8ff2d0575f157199756a20b902e37e68eb19ff</col>
+        <col id="1">0</col>
+        <col id="2">22012200</col>
+        <col id="3">658743</col>
+        <col id="4" translatable="yes">2020-11-26 13:05:59</col>
+      </row>
+    </data>
   </object>
   <object class="GtkDialog">
     <property name="can_focus">False</property>
@@ -50,13 +63,12 @@
             <property name="orientation">vertical</property>
             <property name="wide_handle">True</property>
             <child>
-              <object class="GtkTreeView" id="locatorTree">
+              <object class="GtkTreeView" id="utxoTree">
                 <property name="height_request">160</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
-                <property name="model">locatorStore</property>
                 <property name="enable_search">False</property>
                 <property name="search_column">0</property>
                 <child internal-child="selection">
@@ -81,9 +93,25 @@
                 </child>
                 <child>
                   <object class="GtkTreeViewColumn">
+                    <property name="resizable">True</property>
+                    <property name="title" translatable="yes">Type</property>
+                    <property name="clickable">True</property>
+                    <property name="reorderable">True</property>
+                    <property name="sort_column_id">2</property>
+                    <child>
+                      <object class="GtkCellRendererText"/>
+                      <attributes>
+                        <attribute name="text">2</attribute>
+                      </attributes>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkTreeViewColumn">
                     <property name="sizing">autosize</property>
                     <property name="min_width">500</property>
-                    <property name="title" translatable="yes">Generator</property>
+                    <property name="title" translatable="yes">Descriptor</property>
+                    <property name="expand">True</property>
                     <property name="clickable">True</property>
                     <property name="reorderable">True</property>
                     <property name="sort_indicator">True</property>
@@ -92,21 +120,6 @@
                       <object class="GtkCellRendererText"/>
                       <attributes>
                         <attribute name="text">1</attribute>
-                      </attributes>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkTreeViewColumn">
-                    <property name="resizable">True</property>
-                    <property name="title" translatable="yes">Key count</property>
-                    <property name="clickable">True</property>
-                    <property name="reorderable">True</property>
-                    <property name="sort_column_id">2</property>
-                    <child>
-                      <object class="GtkCellRendererText"/>
-                      <attributes>
-                        <attribute name="text">2</attribute>
                       </attributes>
                     </child>
                   </object>
@@ -262,28 +275,5 @@
         </child>
       </object>
     </child>
-  </object>
-  <object class="GtkListStore" id="utxoStore">
-    <columns>
-      <!-- column-name txid -->
-      <column type="gchararray"/>
-      <!-- column-name vout -->
-      <column type="guint"/>
-      <!-- column-name amount -->
-      <column type="guint64"/>
-      <!-- column-name height -->
-      <column type="gulong"/>
-      <!-- column-name mined -->
-      <column type="gchararray"/>
-    </columns>
-    <data>
-      <row>
-        <col id="0" translatable="yes">92c72675acdecf970d83bd4d1f8ff2d0575f157199756a20b902e37e68eb19ff</col>
-        <col id="1">0</col>
-        <col id="2">22012200</col>
-        <col id="3">658743</col>
-        <col id="4" translatable="yes">2020-11-26 13:05:59</col>
-      </row>
-    </data>
   </object>
 </interface>
