@@ -173,6 +173,14 @@ impl Document {
         }
     }
 
+    pub fn remove_tracking_account(
+        &mut self,
+        tracking_account: TrackingAccount,
+    ) -> Result<bool, Error> {
+        self.profile.tracking.remove_item(&tracking_account);
+        self.save()
+    }
+
     pub fn remove_tracking_account_at(
         &mut self,
         pos: usize,

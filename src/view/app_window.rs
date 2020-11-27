@@ -99,6 +99,32 @@ impl AppWindow {
             );
         }));
 
+        let tb: gtk::ToolButton = builder.get_object("pubkeyRemove")?;
+        tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
+            let me = me.borrow();
+            if let Some((model, iter)) = me.pubkey_tree.get_selection().get_selected() {
+                let tracking_account = doc
+                    .borrow()
+                    .tracking_account_by_key(&model.get_value(&iter, 1).get::<String>().unwrap().unwrap())
+                    .expect("Tracking account must be known since it is selected");
+                let dlg = gtk::MessageDialog::new(
+                    Some(&me.window),
+                    gtk::DialogFlags::MODAL,
+                    gtk::MessageType::Question,
+                    gtk::ButtonsType::YesNo,
+                    &format!(
+                        "Please confirm deletion of the public key tracking account for {}", 
+                        tracking_account.key
+                    )
+                );
+                if dlg.run() == gtk::ResponseType::Yes {
+                    me.pubkey_store.remove(&iter);
+                    let _ = doc.borrow_mut().remove_tracking_account(tracking_account);
+                }
+                dlg.hide();
+            }
+        }));
+
         let tb: gtk::ToolButton = builder.get_object("descriptorAdd")?;
         tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
             let descriptor_dlg = DescriptorDlg::load_glade().expect("Must load");
