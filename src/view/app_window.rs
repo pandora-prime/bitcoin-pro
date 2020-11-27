@@ -80,8 +80,8 @@ impl AppWindow {
 
         let tb: gtk::ToolButton = builder.get_object("pubkeyAdd")?;
         tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
-            let pubkey_dlg = PubkeyDlg::load_glade().expect("Must load");
-            pubkey_dlg.run(clone!(@weak me, @strong doc =>
+            let pubkey_dlg = PubkeyDlg::load_glade(false).expect("Must load");
+            pubkey_dlg.run(None, clone!(@weak me, @strong doc =>
                 move |tracking_account| {
                     let me = me.borrow();
                     me.pubkey_store.insert_with_values(
@@ -99,13 +99,35 @@ impl AppWindow {
             );
         }));
 
+        let tb: gtk::ToolButton = builder.get_object("pubkeyEdit")?;
+        tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
+            let meb = me.borrow();
+            let pubkey_dlg = PubkeyDlg::load_glade(true).expect("Must load");
+            if let Some((keyname, model, iter)) = meb.pubkey_selection() {
+                let tracking_account = doc
+                    .borrow()
+                    .tracking_account_by_key(&keyname)
+                    .expect("Tracking account must be known since it is selected");
+                pubkey_dlg.run(Some(tracking_account.clone()), clone!(@weak me, @strong doc =>
+                    move |new_tracking_account| {
+                        let me = me.borrow();
+                        me.pubkey_store.set_value(&iter, 0, &new_tracking_account.name().to_value());
+                        me.pubkey_store.set_value(&iter, 1, &new_tracking_account.details().to_value());
+                        me.pubkey_store.set_value(&iter, 2, &new_tracking_account.count().to_value());
+                        let _ = doc.borrow_mut().update_tracking_account(&tracking_account, new_tracking_account);
+                    }),
+                    || {},
+                );
+            }
+        }));
+
         let tb: gtk::ToolButton = builder.get_object("pubkeyRemove")?;
         tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
             let me = me.borrow();
-            if let Some((model, iter)) = me.pubkey_tree.get_selection().get_selected() {
+            if let Some((keyname, model, iter)) = me.pubkey_selection() {
                 let tracking_account = doc
                     .borrow()
-                    .tracking_account_by_key(&model.get_value(&iter, 1).get::<String>().unwrap().unwrap())
+                    .tracking_account_by_key(&keyname)
                     .expect("Tracking account must be known since it is selected");
                 let dlg = gtk::MessageDialog::new(
                     Some(&me.window),
@@ -215,6 +237,21 @@ impl AppWindow {
 
         self.window.show_all();
         gtk::main();
+    }
+
+    pub fn pubkey_selection(
+        &self,
+    ) -> Option<(String, gtk::TreeModel, gtk::TreeIter)> {
+        self.pubkey_tree.get_selection().get_selected().and_then(
+            |(model, iter)| {
+                model
+                    .get_value(&iter, 1)
+                    .get::<String>()
+                    .ok()
+                    .flatten()
+                    .map(|keyname| (keyname, model, iter))
+            },
+        )
     }
 
     pub fn update_ui(&self) {}

@@ -461,8 +461,8 @@
                         <property name="hexpand">True</property>
                         <property name="max_length">1024</property>
                         <property name="width_chars">64</property>
-                        <property name="primary_icon_tooltip_text" translatable="yes">Use format "from-to". You can specify nultiple ranges with comma delimiters.</property>
-                        <property name="placeholder_text" translatable="yes">Use format "from-to". You can specify nultiple ranges with comma delimiters.</property>
+                        <property name="primary_icon_tooltip_text" translatable="yes">Use format "from-to". You can specify multiple ranges with comma delimiters.</property>
+                        <property name="placeholder_text" translatable="yes">Use format "from-to". You can specify multiple ranges with comma delimiters.</property>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
@@ -480,46 +480,6 @@
                       <packing>
                         <property name="left_attach">0</property>
                         <property name="top_attach">3</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkBox">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="spacing">6</property>
-                        <child>
-                          <object class="GtkLabel">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">Master:</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkEntry" id="xpubField">
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="hexpand">True</property>
-                            <property name="width_chars">66</property>
-                            <property name="primary_icon_tooltip_text" translatable="yes">BIP 32 or bech32-encoded extended public or private key</property>
-                            <property name="placeholder_text" translatable="yes">BIP 32 or bech32-encoded extended public or private key</property>
-                            <signal name="changed" handler="xpubkeyChanged" swapped="no"/>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="left_attach">0</property>
-                        <property name="top_attach">0</property>
-                        <property name="width">2</property>
                       </packing>
                     </child>
                     <child>
@@ -565,6 +525,76 @@
                       <packing>
                         <property name="left_attach">0</property>
                         <property name="top_attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkGrid">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="row_spacing">6</property>
+                        <property name="column_spacing">6</property>
+                        <child>
+                          <object class="GtkEntry" id="xpubField">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="hexpand">True</property>
+                            <property name="width_chars">66</property>
+                            <property name="placeholder_text" translatable="yes">BIP 32 or bech32-encoded extended public or private key</property>
+                            <signal name="changed" handler="xpubkeyChanged" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="left_attach">1</property>
+                            <property name="top_attach">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="label" translatable="yes">Master:</property>
+                          </object>
+                          <packing>
+                            <property name="left_attach">0</property>
+                            <property name="top_attach">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="label" translatable="yes">Account:</property>
+                          </object>
+                          <packing>
+                            <property name="left_attach">0</property>
+                            <property name="top_attach">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkEntry" id="accountField">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="hexpand">True</property>
+                            <property name="width_chars">66</property>
+                            <property name="primary_icon_name">dialog-information</property>
+                            <property name="secondary_icon_name">dialog-warning</property>
+                            <property name="primary_icon_tooltip_text" translatable="yes">Account key is an extended public key for the part of the derivation path after all hardened derivations.
+
+Normally hardened derivation requires extended private key to be provided, but you can avoid this by specifying account public key.</property>
+                            <property name="secondary_icon_tooltip_text" translatable="yes">It is technically impossible to verify that the account key matches extended master public key so use their association at your own risk</property>
+                            <property name="placeholder_text" translatable="yes">Intermediary extended pubkey after hardened path part</property>
+                          </object>
+                          <packing>
+                            <property name="left_attach">1</property>
+                            <property name="top_attach">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">0</property>
+                        <property name="width">2</property>
                       </packing>
                     </child>
                   </object>
@@ -848,7 +878,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="halign">end</property>
-                                <property name="label" translatable="yes">X/Y/Z/* pub:</property>
+                                <property name="label" translatable="yes">Derived pubkey:</property>
                               </object>
                               <packing>
                                 <property name="left_attach">0</property>
@@ -1132,67 +1162,6 @@
                         <property name="expand">True</property>
                         <property name="fill">True</property>
                         <property name="position">3</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkExpander">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="label_fill">True</property>
-                        <property name="resize_toplevel">True</property>
-                        <child>
-                          <object class="GtkGrid">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="margin_left">24</property>
-                            <property name="margin_start">24</property>
-                            <property name="margin_top">6</property>
-                            <property name="row_spacing">6</property>
-                            <property name="column_spacing">6</property>
-                            <child>
-                              <object class="GtkLabel">
-                                <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="halign">end</property>
-                                <property name="label" translatable="yes">LNPBP-173:</property>
-                              </object>
-                              <packing>
-                                <property name="left_attach">0</property>
-                                <property name="top_attach">0</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkEntry" id="bechDisplay">
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="hexpand">True</property>
-                                <property name="editable">False</property>
-                                <property name="width_chars">66</property>
-                                <property name="secondary_icon_stock">gtk-copy</property>
-                              </object>
-                              <packing>
-                                <property name="left_attach">1</property>
-                                <property name="top_attach">0</property>
-                              </packing>
-                            </child>
-                          </object>
-                        </child>
-                        <child type="label">
-                          <object class="GtkLabel">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">Bech32 LNPBP representation</property>
-                            <attributes>
-                              <attribute name="style" value="oblique"/>
-                              <attribute name="weight" value="semibold"/>
-                            </attributes>
-                          </object>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                        <property name="position">4</property>
                       </packing>
                     </child>
                   </object>

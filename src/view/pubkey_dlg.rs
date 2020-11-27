@@ -88,10 +88,8 @@ pub enum DeriveType {
     Custom,
 }
 
-//#[display(Glade)]
-//#[glade(file = "../ui/asset_create.glade")]
 pub struct PubkeyDlg {
-    //#[glade(id = "assetIssue")]
+    edit_mode: bool,
     dialog: gtk::Dialog,
     msg_box: gtk::Box,
     msg_label: gtk::Label,
@@ -147,12 +145,10 @@ pub struct PubkeyDlg {
     wpkh_display: gtk::Entry,
     wpkh_sh_display: gtk::Entry,
     taproot_display: gtk::Entry,
-
-    bech_display: gtk::Entry,
 }
 
 impl PubkeyDlg {
-    pub fn load_glade() -> Result<Rc<Self>, glade::Error> {
+    pub fn load_glade(edit_mode: bool) -> Result<Rc<Self>, glade::Error> {
         let builder = gtk::Builder::from_string(UI);
 
         let save_btn = builder.get_object("save")?;
@@ -209,9 +205,8 @@ impl PubkeyDlg {
         let wpkh_sh_display = builder.get_object("wpkhShDisplay")?;
         let taproot_display = builder.get_object("taprootDisplay")?;
 
-        let bech_display = builder.get_object("bechDisplay")?;
-
         let me = Rc::new(Self {
+            edit_mode,
             dialog: glade_load!(builder, "pubkeyDlg")?,
             save_btn,
             cancel_btn,
@@ -255,7 +250,6 @@ impl PubkeyDlg {
             wpkh_display,
             wpkh_sh_display,
             taproot_display,
-            bech_display,
         });
 
         me.name_field.connect_changed(clone!(@weak me => move |_| {
@@ -355,7 +349,6 @@ impl PubkeyDlg {
             &me.wpkh_display,
             &me.wpkh_sh_display,
             &me.taproot_display,
-            &me.bech_display,
         ] {
             ctl.connect_icon_press(clone!(@weak ctl, @weak me => move |_, _, _| {
                 let val = ctl.get_text();
@@ -372,10 +365,15 @@ impl PubkeyDlg {
 impl PubkeyDlg {
     pub fn run(
         self: Rc<Self>,
+        tracking_account: Option<TrackingAccount>,
         on_save: impl Fn(TrackingAccount) + 'static,
         on_cancel: impl Fn() + 'static,
     ) {
         let me = self.clone();
+
+        if let Some(tracking_account) = tracking_account {
+            self.apply_tracking_account(tracking_account);
+        }
 
         me.update_ui();
 
@@ -400,6 +398,19 @@ impl PubkeyDlg {
 
         me.dialog.run();
         me.dialog.close();
+    }
+
+    pub fn apply_tracking_account(&self, tracking_account: TrackingAccount) {
+        self.name_field.set_text(&tracking_account.name);
+        match tracking_account.key {
+            TrackingKey::SingleKey(pubkey) => {
+                self.set_key_type(PkType::Single);
+                self.pubkey_field.set_text(&pubkey.to_string());
+            }
+            TrackingKey::HdKeySet(keyset) => {
+                self.set_key_type(PkType::Hd);
+            }
+        }
     }
 
     pub fn tracking_account(&self) -> Result<TrackingAccount, Error> {
@@ -587,24 +598,32 @@ impl PubkeyDlg {
     }
 
     pub fn update_ui(&self) {
-        self.pubkey_field.set_sensitive(self.sk_radio.get_active());
-        self.xpub_field.set_sensitive(self.hd_radio.get_active());
+        self.pubkey_field
+            .set_sensitive(self.sk_radio.get_active() && !self.edit_mode);
+        self.xpub_field
+            .set_sensitive(self.hd_radio.get_active() && !self.edit_mode);
         self.derivation_field
-            .set_sensitive(self.custom_radio.get_active());
-        self.range_field.set_sensitive(self.range_chk.get_active());
-        self.range_chk.set_sensitive(self.hd_radio.get_active());
+            .set_sensitive(self.custom_radio.get_active() && !self.edit_mode);
+        self.range_field
+            .set_sensitive(self.range_chk.get_active() && !self.edit_mode);
+        self.range_chk
+            .set_sensitive(self.hd_radio.get_active() && !self.edit_mode);
 
-        self.offset_index.set_sensitive(self.hd_radio.get_active());
-        self.offset_chk.set_sensitive(self.hd_radio.get_active());
+        self.offset_index
+            .set_sensitive(self.hd_radio.get_active() && !self.edit_mode);
+        self.offset_chk
+            .set_sensitive(self.hd_radio.get_active() && !self.edit_mode);
 
         for ctl in &[&self.bip44_radio, &self.custom_radio] {
-            ctl.set_sensitive(self.hd_radio.get_active());
+            ctl.set_sensitive(self.hd_radio.get_active() && !self.edit_mode);
         }
 
         for ctl in &[&self.purpose_combo, &self.asset_combo, &self.change_combo]
         {
             ctl.set_sensitive(
-                self.hd_radio.get_active() && self.bip44_radio.get_active(),
+                self.hd_radio.get_active()
+                    && self.bip44_radio.get_active()
+                    && !self.edit_mode,
             );
         }
 
@@ -615,7 +634,9 @@ impl PubkeyDlg {
             &self.change_index,
         ] {
             ctl.set_sensitive(
-                self.hd_radio.get_active() && self.bip44_radio.get_active(),
+                self.hd_radio.get_active()
+                    && self.bip44_radio.get_active()
+                    && !self.edit_mode,
             );
         }
 
@@ -626,7 +647,9 @@ impl PubkeyDlg {
             &self.change_chk,
         ] {
             ctl.set_sensitive(
-                self.hd_radio.get_active() && self.bip44_radio.get_active(),
+                self.hd_radio.get_active()
+                    && self.bip44_radio.get_active()
+                    && !self.edit_mode,
             );
         }
 

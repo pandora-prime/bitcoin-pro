@@ -162,6 +162,22 @@ impl Document {
 
     pub fn update_tracking_account(
         &mut self,
+        tracking_account: &TrackingAccount,
+        new_tracking_account: TrackingAccount,
+    ) -> Result<bool, Error> {
+        if let Some(account) = self
+            .profile
+            .tracking
+            .iter_mut()
+            .find(|a| *a == tracking_account)
+        {
+            *account = new_tracking_account
+        }
+        self.save()
+    }
+
+    pub fn update_tracking_account_at(
+        &mut self,
         pos: usize,
         tracking_account: TrackingAccount,
     ) -> Result<bool, Error> {
@@ -177,7 +193,11 @@ impl Document {
         &mut self,
         tracking_account: TrackingAccount,
     ) -> Result<bool, Error> {
-        self.profile.tracking.remove_item(&tracking_account);
+        self.profile
+            .tracking
+            .iter()
+            .position(|a| *a == tracking_account)
+            .map(|i| self.profile.tracking.remove(i));
         self.save()
     }
 

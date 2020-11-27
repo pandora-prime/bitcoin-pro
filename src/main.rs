@@ -11,7 +11,7 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-#![feature(iter_map_while, vec_remove_item)]
+#![feature(iter_map_while)]
 #![allow(dead_code)]
 
 #[macro_use]
