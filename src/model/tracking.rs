@@ -62,7 +62,31 @@ impl TrackingKey {
     }
 }
 
-// TODO: Consider moving to LNP/BP Core library
+// TODO: Consider moving the rest of the file to LNP/BP Core library
+pub trait HardenedNormalSplit {
+    fn hardened_normal_split(&self) -> (DerivationPath, Vec<u32>);
+}
+
+impl HardenedNormalSplit for DerivationPath {
+    fn hardened_normal_split(&self) -> (DerivationPath, Vec<u32>) {
+        let mut path_iter = self.into_iter().rev();
+        let terminal_path: Vec<u32> = path_iter
+            .by_ref()
+            .map_while(|child| {
+                if let ChildNumber::Normal { index } = child {
+                    Some(index)
+                } else {
+                    None
+                }
+            })
+            .cloned()
+            .collect();
+        let terminal_path = terminal_path.into_iter().rev().collect();
+        let branch_path = path_iter.rev().cloned().collect();
+        (branch_path, terminal_path)
+    }
+}
+
 #[derive(Clone, PartialEq, Eq, Debug, StrictEncode, StrictDecode)]
 // master_xpub/branch_path=branch_xpub/terminal_path/index_ranges
 pub struct DerivationComponents {

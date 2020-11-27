@@ -22,6 +22,7 @@ pub use asset::AssetGenesis;
 pub use descriptor_params::DescriptorParams;
 pub use document::{Document, Error, Profile};
 pub use tracking::{
-    DerivationComponents, DerivationRange, TrackingAccount, TrackingKey,
+    DerivationComponents, DerivationRange, HardenedNormalSplit,
+    TrackingAccount, TrackingKey,
 };
 pub use utxo::UtxoEntry;

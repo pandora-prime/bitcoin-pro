@@ -23,7 +23,8 @@ use lnpbp::bitcoin::util::{base58, key};
 use lnpbp::{bitcoin, secp256k1};
 
 use crate::model::{
-    DerivationComponents, DerivationRange, TrackingAccount, TrackingKey,
+    DerivationComponents, DerivationRange, HardenedNormalSplit,
+    TrackingAccount, TrackingKey,
 };
 
 static UI: &'static str = include_str!("../../ui/pubkey.glade");
@@ -72,6 +73,10 @@ pub enum Error {
 
     /// You must provide a non-empty name
     EmptyName,
+
+    /// For hardened derivation path you have to provide either account
+    /// extended pubkey or master private key (not recommended)
+    AccountXpubNeeded,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Display)]
@@ -100,6 +105,7 @@ pub struct PubkeyDlg {
     name_field: gtk::Entry,
     pubkey_field: gtk::Entry,
     xpub_field: gtk::Entry,
+    account_field: gtk::Entry,
 
     sk_radio: gtk::RadioButton,
     hd_radio: gtk::RadioButton,
@@ -161,6 +167,7 @@ impl PubkeyDlg {
         let name_field = builder.get_object("nameField")?;
         let pubkey_field = builder.get_object("pubkeyField")?;
         let xpub_field = builder.get_object("xpubField")?;
+        let account_field = builder.get_object("accountField")?;
         let sk_radio = builder.get_object("singleKey")?;
         let hd_radio = builder.get_object("hdKey")?;
         let bip44_radio = builder.get_object("deriveBip44")?;
@@ -216,6 +223,7 @@ impl PubkeyDlg {
             name_field,
             pubkey_field,
             xpub_field,
+            account_field,
             sk_radio,
             hd_radio,
             bip44_radio,
@@ -272,7 +280,7 @@ impl PubkeyDlg {
             me.set_key_type(PkType::Hd)
         }));
 
-        for ctl in &[&me.xpub_field, &me.range_field] {
+        for ctl in &[&me.xpub_field, &me.range_field, &me.account_field] {
             ctl.connect_changed(clone!(@weak me => move |_| {
                 me.set_key_type(PkType::Hd)
             }));
@@ -478,21 +486,10 @@ impl PubkeyDlg {
 
     pub fn derivation_components(&self) -> Result<DerivationComponents, Error> {
         let derivation = self.derivation_path(false)?;
-        let mut path_iter = derivation.as_ref().into_iter().rev();
-        let terminal_path: Vec<u32> = path_iter
-            .by_ref()
-            .map_while(|child| {
-                if let ChildNumber::Normal { index } = child {
-                    Some(index)
-                } else {
-                    None
-                }
-            })
-            .cloned()
-            .collect();
-        let terminal_path = terminal_path.into_iter().rev().collect();
-        let branch_path = path_iter.rev().cloned().collect();
-
+        let (branch_path, terminal_path) = derivation.hardened_normal_split();
+        let account_xpub =
+            ExtendedPubKey::from_str(&self.account_field.get_text());
+        let master_xpub = ExtendedPubKey::from_str(&self.xpub_field.get_text());
         let index_ranges = self.derivation_ranges()?;
 
         if let Ok(master_priv) =
@@ -512,17 +509,23 @@ impl PubkeyDlg {
                 index_ranges,
             })
         } else if branch_path.as_ref().is_empty() {
-            let branch_xpub =
-                ExtendedPubKey::from_str(&self.xpub_field.get_text())?;
             Ok(DerivationComponents {
-                master_xpub: branch_xpub.clone(),
-                branch_xpub,
+                master_xpub: master_xpub.clone()?,
+                branch_xpub: master_xpub?,
                 branch_path,
                 terminal_path,
                 index_ranges,
             })
+        } else if !self.account_field.get_text().is_empty() {
+            Ok(DerivationComponents {
+                master_xpub: master_xpub?,
+                branch_path,
+                branch_xpub: account_xpub?,
+                terminal_path,
+                index_ranges,
+            })
         } else {
-            Err(bip32::Error::CannotDeriveFromHardenedKey)?
+            Err(Error::AccountXpubNeeded)?
         }
     }
 
@@ -601,6 +604,8 @@ impl PubkeyDlg {
         self.pubkey_field
             .set_sensitive(self.sk_radio.get_active() && !self.edit_mode);
         self.xpub_field
+            .set_sensitive(self.hd_radio.get_active() && !self.edit_mode);
+        self.account_field
             .set_sensitive(self.hd_radio.get_active() && !self.edit_mode);
         self.derivation_field
             .set_sensitive(self.custom_radio.get_active() && !self.edit_mode);
@@ -706,6 +711,8 @@ impl PubkeyDlg {
     }
 
     pub fn update_ui_internal(&self) -> Result<Option<String>, Error> {
+        let mut info_msg = None;
+
         let network = match self.network_combo.get_active() {
             Some(0) => bitcoin::Network::Bitcoin,
             Some(1) => bitcoin::Network::Testnet,
@@ -718,7 +725,15 @@ impl PubkeyDlg {
             let pk_str = self.pubkey_field.get_text();
             bitcoin::PublicKey::from_str(&pk_str)?
         } else {
+            self.offset_chk.set_sensitive(true);
+
             let derivation = self.derivation_path(true)?;
+            let terminal = derivation
+                .hardened_normal_split()
+                .1
+                .into_iter()
+                .map(|index| ChildNumber::Normal { index })
+                .collect::<DerivationPath>();
 
             let (xpubkey, master) = if let Ok(master_priv) =
                 ExtendedPrivKey::from_str(&self.xpub_field.get_text())
@@ -727,6 +742,7 @@ impl PubkeyDlg {
                     &lnpbp::SECP256K1,
                     &master_priv,
                 );
+                self.account_field.set_sensitive(false);
                 let prv =
                     master_priv.derive_priv(&lnpbp::SECP256K1, &derivation)?;
                 (
@@ -736,14 +752,42 @@ impl PubkeyDlg {
             } else {
                 let master =
                     ExtendedPubKey::from_str(&self.xpub_field.get_text())?;
-                (master.derive_pub(&lnpbp::SECP256K1, &derivation)?, master)
+                let pk = master
+                    .derive_pub(&lnpbp::SECP256K1, &derivation)
+                    .map(|pk| {
+                        self.account_field.set_sensitive(false);
+                        pk
+                    })
+                    .or_else(|_| -> Result<ExtendedPubKey, Error> {
+                        self.account_field.set_sensitive(true);
+                        if !self.account_field.get_text().is_empty() {
+                            self.offset_chk.set_sensitive(false);
+                            self.offset_chk.set_active(false);
+                            let account = ExtendedPubKey::from_str(
+                                &self.account_field.get_text(),
+                            )?;
+                            let pk = account.derive_pub(
+                                &lnpbp::SECP256K1,
+                                &terminal,
+                            )?;
+                            info_msg = Some(s!(
+                                "NB: It is technically impossible to verify that the account key \
+                                matches extended master public key so use their association at your \
+                                own risk"
+                            ));
+                            Ok(pk)
+                        } else {
+                            Err(Error::AccountXpubNeeded)?
+                        }
+                    })?;
+                (pk, master)
             };
 
             self.xpubid_display
                 .set_text(&xpubkey.identifier().to_string());
             self.fingerprint_display
                 .set_text(&xpubkey.fingerprint().to_string());
-            self.derivation_display.set_text(&derivation.to_string());
+            self.derivation_display.set_text(&terminal.to_string());
             self.descriptor_display.set_text(&format!(
                 "[{}]{}",
                 master.fingerprint(),
@@ -829,6 +873,6 @@ impl PubkeyDlg {
                 .set_icon_tooltip_text(gtk::EntryIconPosition::Secondary, None);
         }
 
-        Ok(None)
+        Ok(info_msg)
     }
 }
