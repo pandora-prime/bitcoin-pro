@@ -20,7 +20,7 @@ mod utxo;
 
 pub use asset::AssetGenesis;
 pub use descriptors::{
-    DescriptorContent, DescriptorGenerator, DescriptorTypes, ScriptSource,
+    DescriptorContent, DescriptorGenerator, DescriptorTypes, SourceType,
 };
 pub use document::{Document, Error, Profile};
 pub use tracking::{

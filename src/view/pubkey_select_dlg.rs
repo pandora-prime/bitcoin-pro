@@ -17,7 +17,7 @@ use std::rc::Rc;
 
 use gtk::ResponseType;
 
-use crate::model::Document;
+use crate::model::{Document, TrackingAccount};
 
 static UI: &'static str = include_str!("../../ui/pubkey_select.glade");
 
@@ -63,7 +63,7 @@ impl PubkeySelectDlg {
     pub fn run(
         self: Rc<Self>,
         doc: Rc<RefCell<Document>>,
-        on_select: impl Fn(String) + 'static,
+        on_select: impl Fn(TrackingAccount) + 'static,
         on_cancel: impl Fn() + 'static,
     ) {
         doc.borrow().fill_tracking_store(&self.pubkey_store);
@@ -74,17 +74,20 @@ impl PubkeySelectDlg {
                 on_cancel();
             }));
 
-        self.select_btn.connect_clicked(
-            clone!(@weak self as me => move |_| match me.clone().selected_pubkey() {
-                Some(selected_pubkey) => {
-                    me.dialog.response(ResponseType::Ok);
-                    on_select(selected_pubkey);
+        self.select_btn
+            .connect_clicked(clone!(@weak self as me => move |_| {
+                match me.clone()
+                        .selected_pubkey()
+                        .and_then(|k| doc.borrow().tracking_account_by_key(&k)) {
+                    Some(tracking_account) => {
+                        me.dialog.response(ResponseType::Ok);
+                        on_select(tracking_account);
+                    }
+                    None => {
+                        me.select_btn.set_sensitive(false);
+                    }
                 }
-                None => {
-                    me.select_btn.set_sensitive(false);
-                }
-            }),
-        );
+            }));
 
         self.dialog.run();
         self.dialog.hide();

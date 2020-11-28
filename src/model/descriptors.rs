@@ -11,9 +11,7 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-use std::collections::BTreeSet;
-
-use lnpbp::bitcoin::{self, Script};
+use super::TrackingKey;
 
 #[derive(Clone, PartialEq, Eq, Debug, StrictEncode, StrictDecode)]
 pub struct DescriptorGenerator {
@@ -33,15 +31,15 @@ pub struct DescriptorTypes {
 
 #[derive(Clone, PartialEq, Eq, Debug, StrictEncode, StrictDecode)]
 pub enum DescriptorContent {
-    SingleSig(bitcoin::PublicKey),
-    MultiSig(u8, BTreeSet<bitcoin::PublicKey>),
-    LockScript(ScriptSource),
+    SingleSig(TrackingKey),
+    MultiSig(u8, Vec<TrackingKey>),
+    LockScript(SourceType, String),
 }
 
 #[derive(Clone, PartialEq, Eq, Debug, StrictEncode, StrictDecode)]
-pub enum ScriptSource {
-    Binary(Script),
-    Assembly(Script),
-    Miniscript(String),
-    Policy(String),
+pub enum SourceType {
+    Binary,
+    Assembly,
+    Miniscript,
+    Policy,
 }
