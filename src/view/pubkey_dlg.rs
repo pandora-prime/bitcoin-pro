@@ -94,7 +94,6 @@ pub enum DeriveType {
 }
 
 pub struct PubkeyDlg {
-    edit_mode: bool,
     dialog: gtk::Dialog,
     msg_box: gtk::Box,
     msg_label: gtk::Label,
@@ -109,7 +108,6 @@ pub struct PubkeyDlg {
 
     sk_radio: gtk::RadioButton,
     hd_radio: gtk::RadioButton,
-    hd_frame: gtk::Frame,
 
     bip44_radio: gtk::RadioButton,
     custom_radio: gtk::RadioButton,
@@ -155,7 +153,7 @@ pub struct PubkeyDlg {
 }
 
 impl PubkeyDlg {
-    pub fn load_glade(edit_mode: bool) -> Result<Rc<Self>, glade::Error> {
+    pub fn load_glade() -> Result<Rc<Self>, glade::Error> {
         let builder = gtk::Builder::from_string(UI);
 
         let save_btn = builder.get_object("save")?;
@@ -171,7 +169,6 @@ impl PubkeyDlg {
         let account_field = builder.get_object("accountField")?;
         let sk_radio = builder.get_object("singleKey")?;
         let hd_radio = builder.get_object("hdKey")?;
-        let hd_frame = builder.get_object("hdFrame")?;
         let bip44_radio = builder.get_object("deriveBip44")?;
         let custom_radio = builder.get_object("deriveCustom")?;
 
@@ -215,7 +212,6 @@ impl PubkeyDlg {
         let taproot_display = builder.get_object("taprootDisplay")?;
 
         let me = Rc::new(Self {
-            edit_mode,
             dialog: glade_load!(builder, "pubkeyDlg")?,
             save_btn,
             cancel_btn,
@@ -228,7 +224,6 @@ impl PubkeyDlg {
             account_field,
             sk_radio,
             hd_radio,
-            hd_frame,
             bip44_radio,
             custom_radio,
             purpose_combo,
@@ -618,38 +613,25 @@ impl PubkeyDlg {
     }
 
     pub fn update_ui(&self) {
-        self.sk_radio.set_sensitive(!self.edit_mode);
-        self.hd_radio.set_sensitive(!self.edit_mode);
-        self.hd_frame.set_sensitive(!self.edit_mode);
-
-        self.pubkey_field
-            .set_sensitive(self.sk_radio.get_active() && !self.edit_mode);
-        self.xpub_field
-            .set_sensitive(self.hd_radio.get_active() && !self.edit_mode);
-        self.account_field
-            .set_sensitive(self.hd_radio.get_active() && !self.edit_mode);
+        self.pubkey_field.set_sensitive(self.sk_radio.get_active());
+        self.xpub_field.set_sensitive(self.hd_radio.get_active());
+        self.account_field.set_sensitive(self.hd_radio.get_active());
         self.derivation_field
-            .set_sensitive(self.custom_radio.get_active() && !self.edit_mode);
-        self.range_field
-            .set_sensitive(self.range_chk.get_active() && !self.edit_mode);
-        self.range_chk
-            .set_sensitive(self.hd_radio.get_active() && !self.edit_mode);
+            .set_sensitive(self.custom_radio.get_active());
+        self.range_field.set_sensitive(self.range_chk.get_active());
+        self.range_chk.set_sensitive(self.hd_radio.get_active());
 
-        self.offset_index
-            .set_sensitive(self.hd_radio.get_active() && !self.edit_mode);
-        self.offset_chk
-            .set_sensitive(self.hd_radio.get_active() && !self.edit_mode);
+        self.offset_index.set_sensitive(self.hd_radio.get_active());
+        self.offset_chk.set_sensitive(self.hd_radio.get_active());
 
         for ctl in &[&self.bip44_radio, &self.custom_radio] {
-            ctl.set_sensitive(self.hd_radio.get_active() && !self.edit_mode);
+            ctl.set_sensitive(self.hd_radio.get_active());
         }
 
         for ctl in &[&self.purpose_combo, &self.asset_combo, &self.change_combo]
         {
             ctl.set_sensitive(
-                self.hd_radio.get_active()
-                    && self.bip44_radio.get_active()
-                    && !self.edit_mode,
+                self.hd_radio.get_active() && self.bip44_radio.get_active(),
             );
         }
 
@@ -660,9 +642,7 @@ impl PubkeyDlg {
             &self.change_index,
         ] {
             ctl.set_sensitive(
-                self.hd_radio.get_active()
-                    && self.bip44_radio.get_active()
-                    && !self.edit_mode,
+                self.hd_radio.get_active() && self.bip44_radio.get_active(),
             );
         }
 
@@ -673,9 +653,7 @@ impl PubkeyDlg {
             &self.change_chk,
         ] {
             ctl.set_sensitive(
-                self.hd_radio.get_active()
-                    && self.bip44_radio.get_active()
-                    && !self.edit_mode,
+                self.hd_radio.get_active() && self.bip44_radio.get_active(),
             );
         }
 
@@ -791,13 +769,11 @@ impl PubkeyDlg {
                                 &lnpbp::SECP256K1,
                                 &terminal,
                             )?;
-                            if !self.edit_mode {
-                                info_msg = Some(s!(
+                            info_msg = Some(s!(
                                 "NB: It is technically impossible to verify that the account key \
                                 matches extended master public key so use their association at your \
                                 own risk"
-                                ));
-                            }
+                            ));
                             Ok(pk)
                         } else {
                             Err(Error::AccountXpubNeeded)?
@@ -810,7 +786,12 @@ impl PubkeyDlg {
                 .set_text(&xpubkey.identifier().to_string());
             self.fingerprint_display
                 .set_text(&xpubkey.fingerprint().to_string());
-            self.derivation_display.set_text(&terminal.to_string());
+            self.derivation_display.set_text(
+                terminal
+                    .to_string()
+                    .strip_prefix("m/")
+                    .expect("Derivation path always has this prefix"),
+            );
             self.descriptor_display.set_text(&format!(
                 "[{}]{}",
                 master.fingerprint(),

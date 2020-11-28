@@ -80,7 +80,7 @@ impl AppWindow {
 
         let tb: gtk::ToolButton = builder.get_object("pubkeyAdd")?;
         tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
-            let pubkey_dlg = PubkeyDlg::load_glade(false).expect("Must load");
+            let pubkey_dlg = PubkeyDlg::load_glade().expect("Must load");
             pubkey_dlg.run(None, clone!(@weak me, @strong doc =>
                 move |tracking_account| {
                     let me = me.borrow();
@@ -102,7 +102,7 @@ impl AppWindow {
         let tb: gtk::ToolButton = builder.get_object("pubkeyEdit")?;
         tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
             let meb = me.borrow();
-            let pubkey_dlg = PubkeyDlg::load_glade(true).expect("Must load");
+            let pubkey_dlg = PubkeyDlg::load_glade().expect("Must load");
             if let Some((keyname, model, iter)) = meb.pubkey_selection() {
                 let tracking_account = doc
                     .borrow()
