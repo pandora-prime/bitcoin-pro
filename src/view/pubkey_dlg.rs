@@ -19,12 +19,12 @@ use std::str::FromStr;
 use lnpbp::bitcoin::util::bip32::{
     self, ChildNumber, DerivationPath, ExtendedPrivKey, ExtendedPubKey,
 };
-use lnpbp::bitcoin::util::{base58, key};
+use lnpbp::bitcoin::util::key;
 use lnpbp::{bitcoin, secp256k1};
 
 use crate::model::{
-    DerivationComponents, DerivationRange, HardenedNormalSplit,
-    TrackingAccount, TrackingKey,
+    DerivationComponents, DerivationRange, FromSlip32, HardenedNormalSplit,
+    Slip32Error, TrackingAccount, TrackingKey,
 };
 
 static UI: &'static str = include_str!("../../ui/pubkey.glade");
@@ -38,7 +38,7 @@ pub enum Error {
     #[from]
     Secp(secp256k1::Error),
 
-    /// BIP32-specific error
+    /// Wrong public key data
     #[display("{0}")]
     #[from]
     Key(key::Error),
@@ -48,10 +48,10 @@ pub enum Error {
     #[from]
     Bip32(bip32::Error),
 
-    /// Wrong extended public key data
+    /// SLIP-32 specific error
     #[display("{0}")]
     #[from]
-    Base58(base58::Error),
+    Slip32(Slip32Error),
 
     /// Index range must not be empty
     RangeNotSpecified,
@@ -500,12 +500,13 @@ impl PubkeyDlg {
         let derivation = self.derivation_path(false)?;
         let (branch_path, terminal_path) = derivation.hardened_normal_split();
         let account_xpub =
-            ExtendedPubKey::from_str(&self.account_field.get_text());
-        let master_xpub = ExtendedPubKey::from_str(&self.xpub_field.get_text());
+            ExtendedPubKey::from_slip32_str(&self.account_field.get_text());
+        let master_xpub =
+            ExtendedPubKey::from_slip32_str(&self.xpub_field.get_text());
         let index_ranges = self.derivation_ranges()?;
 
         if let Ok(master_priv) =
-            ExtendedPrivKey::from_str(&self.xpub_field.get_text())
+            ExtendedPrivKey::from_slip32_str(&self.xpub_field.get_text())
         {
             let master_xpub =
                 ExtendedPubKey::from_private(&lnpbp::SECP256K1, &master_priv);
@@ -735,7 +736,7 @@ impl PubkeyDlg {
                 .collect::<DerivationPath>();
 
             let (xpubkey, master) = if let Ok(master_priv) =
-                ExtendedPrivKey::from_str(&self.xpub_field.get_text())
+                ExtendedPrivKey::from_slip32_str(&self.xpub_field.get_text())
             {
                 let master = ExtendedPubKey::from_private(
                     &lnpbp::SECP256K1,
@@ -749,8 +750,9 @@ impl PubkeyDlg {
                     master,
                 )
             } else {
-                let master =
-                    ExtendedPubKey::from_str(&self.xpub_field.get_text())?;
+                let master = ExtendedPubKey::from_slip32_str(
+                    &self.xpub_field.get_text(),
+                )?;
                 let pk = master
                     .derive_pub(&lnpbp::SECP256K1, &derivation)
                     .map(|pk| {
@@ -762,7 +764,7 @@ impl PubkeyDlg {
                         if !self.account_field.get_text().is_empty() {
                             self.offset_chk.set_sensitive(false);
                             self.offset_chk.set_active(false);
-                            let account = ExtendedPubKey::from_str(
+                            let account = ExtendedPubKey::from_slip32_str(
                                 &self.account_field.get_text(),
                             )?;
                             let pk = account.derive_pub(

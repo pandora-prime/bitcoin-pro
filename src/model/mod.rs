@@ -22,7 +22,7 @@ pub use asset::AssetGenesis;
 pub use descriptor_params::DescriptorParams;
 pub use document::{Document, Error, Profile};
 pub use tracking::{
-    DerivationComponents, DerivationRange, HardenedNormalSplit,
-    TrackingAccount, TrackingKey,
+    DerivationComponents, DerivationRange, Error as Slip32Error, FromSlip32,
+    HardenedNormalSplit, TrackingAccount, TrackingKey,
 };
 pub use utxo::UtxoEntry;
