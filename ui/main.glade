@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.36.0 -->
+<!-- Generated with glade 3.39.0 -->
 <interface>
   <requires lib="gtk+" version="3.22"/>
   <object class="GtkListStore" id="assetStore">
@@ -31,33 +31,16 @@
       <!-- column-name amountOwned -->
       <column type="gfloat"/>
     </columns>
-    <data>
-      <row>
-        <col id="0" translatable="yes">06d0e4c89df434429f3ba5cccbd249fa5e6ba9da9be2320250dc2b05d474adb4</col>
-        <col id="1" translatable="yes">US Dollar Tether</col>
-        <col id="2" translatable="yes">USDT</col>
-        <col id="3">8</col>
-        <col id="4">1000000</col>
-        <col id="5">3205430437711183872</col>
-        <col id="6">True</col>
-        <col id="7">True</col>
-        <col id="8">False</col>
-        <col id="9">1</col>
-        <col id="10">0</col>
-        <col id="11">0</col>
-        <col id="12">0</col>
-      </row>
-    </data>
   </object>
   <object class="GtkImage" id="image1">
     <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="icon_name">document-open</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">document-open</property>
   </object>
   <object class="GtkImage" id="image2">
     <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="icon_name">list-add</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">list-add</property>
   </object>
   <object class="GtkListStore" id="locatorStore">
     <columns>
@@ -92,46 +75,37 @@
       <!-- column-name mined -->
       <column type="gchararray"/>
     </columns>
-    <data>
-      <row>
-        <col id="0" translatable="yes">92c72675acdecf970d83bd4d1f8ff2d0575f157199756a20b902e37e68eb19ff</col>
-        <col id="1">0</col>
-        <col id="2">22012200</col>
-        <col id="3">658743</col>
-        <col id="4" translatable="yes">2020-11-26 13:05:59</col>
-      </row>
-    </data>
   </object>
   <object class="GtkApplicationWindow" id="appWindow">
-    <property name="width_request">666</property>
-    <property name="height_request">600</property>
-    <property name="can_focus">False</property>
-    <property name="default_width">666</property>
-    <property name="default_height">600</property>
+    <property name="width-request">666</property>
+    <property name="height-request">600</property>
+    <property name="can-focus">False</property>
+    <property name="default-width">666</property>
+    <property name="default-height">600</property>
     <child>
       <object class="GtkNotebook">
         <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="tab_pos">left</property>
+        <property name="can-focus">True</property>
+        <property name="tab-pos">left</property>
         <child>
           <object class="GtkBox">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
             <child>
               <object class="GtkToolbar">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="toolbar_style">both-horiz</property>
+                <property name="can-focus">False</property>
+                <property name="toolbar-style">both-horiz</property>
                 <child>
                   <object class="GtkToolButton" id="pubkeyAdd">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="tooltip_text" translatable="yes">Add asset allocation - an unspent bitcoin transaction output which will contain the issued asset</property>
-                    <property name="is_important">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="tooltip-text" translatable="yes">Add asset allocation - an unspent bitcoin transaction output which will contain the issued asset</property>
+                    <property name="is-important">True</property>
                     <property name="label" translatable="yes">Add</property>
-                    <property name="use_underline">True</property>
-                    <property name="icon_name">list-add</property>
+                    <property name="use-underline">True</property>
+                    <property name="icon-name">list-add</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -141,10 +115,10 @@
                 <child>
                   <object class="GtkToolButton" id="pubkeyEdit">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="is_important">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="is-important">True</property>
                     <property name="label" translatable="yes">Edit</property>
-                    <property name="use_underline">True</property>
+                    <property name="use-underline">True</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -154,7 +128,7 @@
                 <child>
                   <object class="GtkSeparatorToolItem">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -164,12 +138,12 @@
                 <child>
                   <object class="GtkToolButton" id="pubkeyRemove">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="tooltip_text" translatable="yes">Remove selected asset allocation</property>
-                    <property name="is_important">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="tooltip-text" translatable="yes">Remove selected asset allocation</property>
+                    <property name="is-important">True</property>
                     <property name="label" translatable="yes">Remove</property>
-                    <property name="use_underline">True</property>
-                    <property name="icon_name">edit-delete</property>
+                    <property name="use-underline">True</property>
+                    <property name="icon-name">edit-delete</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -185,14 +159,14 @@
             </child>
             <child>
               <object class="GtkTreeView" id="pubkeyTree">
-                <property name="width_request">600</property>
+                <property name="width-request">600</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
+                <property name="can-focus">True</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
                 <property name="model">pubkeyStore</property>
-                <property name="enable_search">False</property>
-                <property name="fixed_height_mode">True</property>
+                <property name="enable-search">False</property>
+                <property name="fixed-height-mode">True</property>
                 <child internal-child="selection">
                   <object class="GtkTreeSelection"/>
                 </child>
@@ -200,12 +174,12 @@
                   <object class="GtkTreeViewColumn">
                     <property name="resizable">True</property>
                     <property name="sizing">fixed</property>
-                    <property name="min_width">200</property>
+                    <property name="min-width">200</property>
                     <property name="title" translatable="yes">Name</property>
                     <property name="clickable">True</property>
                     <property name="reorderable">True</property>
-                    <property name="sort_indicator">True</property>
-                    <property name="sort_column_id">0</property>
+                    <property name="sort-indicator">True</property>
+                    <property name="sort-column-id">0</property>
                     <child>
                       <object class="GtkCellRendererText"/>
                       <attributes>
@@ -218,12 +192,12 @@
                   <object class="GtkTreeViewColumn">
                     <property name="resizable">True</property>
                     <property name="sizing">fixed</property>
-                    <property name="min_width">500</property>
+                    <property name="min-width">500</property>
                     <property name="title" translatable="yes">Derivation</property>
                     <property name="clickable">True</property>
                     <property name="reorderable">True</property>
-                    <property name="sort_indicator">True</property>
-                    <property name="sort_column_id">1</property>
+                    <property name="sort-indicator">True</property>
+                    <property name="sort-column-id">1</property>
                     <child>
                       <object class="GtkCellRendererText"/>
                       <attributes>
@@ -239,7 +213,7 @@
                     <property name="title" translatable="yes">Key count</property>
                     <property name="clickable">True</property>
                     <property name="reorderable">True</property>
-                    <property name="sort_column_id">2</property>
+                    <property name="sort-column-id">2</property>
                     <child>
                       <object class="GtkCellRendererText"/>
                       <attributes>
@@ -263,90 +237,42 @@
         <child type="tab">
           <object class="GtkLabel">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="label" translatable="yes">Public keys</property>
           </object>
           <packing>
-            <property name="tab_fill">False</property>
+            <property name="tab-fill">False</property>
             <property name="reorderable">True</property>
           </packing>
         </child>
         <child>
           <object class="GtkPaned">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
+            <property name="can-focus">True</property>
             <property name="orientation">vertical</property>
-            <property name="wide_handle">True</property>
+            <property name="wide-handle">True</property>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkToolbar">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="toolbar_style">both-horiz</property>
-                    <child>
-                      <object class="GtkToolItem">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <child>
-                          <object class="GtkLabel">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">Descriptors:</property>
-                            <attributes>
-                              <attribute name="weight" value="bold"/>
-                            </attributes>
-                          </object>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="homogeneous">False</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkToolItem">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <child>
-                          <placeholder/>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">True</property>
-                        <property name="homogeneous">True</property>
-                      </packing>
-                    </child>
+                    <property name="can-focus">False</property>
+                    <property name="toolbar-style">both-horiz</property>
                     <child>
                       <object class="GtkToolButton" id="descriptorAdd">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="tooltip_text" translatable="yes">Add asset allocation - an unspent bitcoin transaction output which will contain the issued asset</property>
-                        <property name="is_important">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="tooltip-text" translatable="yes">Add asset allocation - an unspent bitcoin transaction output which will contain the issued asset</property>
+                        <property name="is-important">True</property>
                         <property name="label" translatable="yes">Add</property>
-                        <property name="use_underline">True</property>
-                        <property name="icon_name">list-add</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="homogeneous">False</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkToolButton" id="descriptorRemove">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="tooltip_text" translatable="yes">Remove selected asset allocation</property>
-                        <property name="is_important">True</property>
-                        <property name="label" translatable="yes">Remove</property>
-                        <property name="use_underline">True</property>
-                        <property name="icon_name">edit-delete</property>
+                        <property name="use-underline">True</property>
+                        <property name="icon-name">list-add</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -356,10 +282,35 @@
                     <child>
                       <object class="GtkToolButton" id="descriptorEdit">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="is_important">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="is-important">True</property>
                         <property name="label" translatable="yes">Edit</property>
-                        <property name="use_underline">True</property>
+                        <property name="use-underline">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="homogeneous">False</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorToolItem">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton" id="descriptorRemove">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="tooltip-text" translatable="yes">Remove selected asset allocation</property>
+                        <property name="is-important">True</property>
+                        <property name="label" translatable="yes">Remove</property>
+                        <property name="use-underline">True</property>
+                        <property name="icon-name">edit-delete</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -376,25 +327,25 @@
                 <child>
                   <object class="GtkTreeView" id="locatorTree">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
+                    <property name="can-focus">True</property>
                     <property name="hexpand">True</property>
                     <property name="vexpand">True</property>
                     <property name="model">locatorStore</property>
-                    <property name="enable_search">False</property>
-                    <property name="search_column">0</property>
-                    <property name="fixed_height_mode">True</property>
+                    <property name="enable-search">False</property>
+                    <property name="search-column">0</property>
+                    <property name="fixed-height-mode">True</property>
                     <child internal-child="selection">
                       <object class="GtkTreeSelection"/>
                     </child>
                     <child>
                       <object class="GtkTreeViewColumn">
                         <property name="sizing">fixed</property>
-                        <property name="min_width">200</property>
+                        <property name="min-width">200</property>
                         <property name="title" translatable="yes">Name</property>
                         <property name="clickable">True</property>
                         <property name="reorderable">True</property>
-                        <property name="sort_indicator">True</property>
-                        <property name="sort_column_id">0</property>
+                        <property name="sort-indicator">True</property>
+                        <property name="sort-column-id">0</property>
                         <child>
                           <object class="GtkCellRendererText"/>
                           <attributes>
@@ -410,7 +361,7 @@
                         <property name="title" translatable="yes">Type</property>
                         <property name="clickable">True</property>
                         <property name="reorderable">True</property>
-                        <property name="sort_column_id">1</property>
+                        <property name="sort-column-id">1</property>
                         <child>
                           <object class="GtkCellRendererText"/>
                           <attributes>
@@ -422,12 +373,12 @@
                     <child>
                       <object class="GtkTreeViewColumn">
                         <property name="sizing">fixed</property>
-                        <property name="min_width">500</property>
+                        <property name="min-width">500</property>
                         <property name="title" translatable="yes">Descriptor</property>
                         <property name="expand">True</property>
                         <property name="clickable">True</property>
                         <property name="reorderable">True</property>
-                        <property name="sort_column_id">2</property>
+                        <property name="sort-column-id">2</property>
                         <child>
                           <object class="GtkCellRendererText"/>
                           <attributes>
@@ -452,21 +403,21 @@
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkToolbar">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="toolbar_style">both-horiz</property>
+                    <property name="can-focus">False</property>
+                    <property name="toolbar-style">both-horiz</property>
                     <child>
                       <object class="GtkToolItem">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <child>
                           <object class="GtkLabel">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
+                            <property name="can-focus">False</property>
                             <property name="label" translatable="yes">Known UTXOs:</property>
                             <attributes>
                               <attribute name="weight" value="bold"/>
@@ -482,7 +433,7 @@
                     <child>
                       <object class="GtkToolItem">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <child>
                           <placeholder/>
                         </child>
@@ -495,11 +446,11 @@
                     <child>
                       <object class="GtkToolItem">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <child>
                           <object class="GtkComboBoxText" id="lookupCombo">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
+                            <property name="can-focus">False</property>
                             <property name="active">0</property>
                             <items>
                               <item translatable="yes">While found</item>
@@ -519,11 +470,11 @@
                     <child>
                       <object class="GtkToolButton" id="lookup">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="is_important">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="is-important">True</property>
                         <property name="label" translatable="yes">Lookup</property>
-                        <property name="use_underline">True</property>
-                        <property name="icon_name">edit-find</property>
+                        <property name="use-underline">True</property>
+                        <property name="icon-name">edit-find</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -540,16 +491,16 @@
                 <child>
                   <object class="GtkTreeView">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
+                    <property name="can-focus">True</property>
                     <property name="hexpand">True</property>
                     <property name="vexpand">True</property>
                     <property name="model">utxoStore</property>
-                    <property name="search_column">0</property>
-                    <property name="fixed_height_mode">True</property>
-                    <property name="show_expanders">False</property>
-                    <property name="enable_grid_lines">both</property>
-                    <property name="enable_tree_lines">True</property>
-                    <property name="activate_on_single_click">True</property>
+                    <property name="search-column">0</property>
+                    <property name="fixed-height-mode">True</property>
+                    <property name="show-expanders">False</property>
+                    <property name="enable-grid-lines">both</property>
+                    <property name="enable-tree-lines">True</property>
+                    <property name="activate-on-single-click">True</property>
                     <child internal-child="selection">
                       <object class="GtkTreeSelection">
                         <property name="mode">none</property>
@@ -563,8 +514,8 @@
                         <property name="expand">True</property>
                         <property name="clickable">True</property>
                         <property name="reorderable">True</property>
-                        <property name="sort_indicator">True</property>
-                        <property name="sort_column_id">0</property>
+                        <property name="sort-indicator">True</property>
+                        <property name="sort-column-id">0</property>
                         <child>
                           <object class="GtkCellRendererText"/>
                           <attributes>
@@ -580,8 +531,8 @@
                         <property name="title" translatable="yes">#</property>
                         <property name="clickable">True</property>
                         <property name="reorderable">True</property>
-                        <property name="sort_indicator">True</property>
-                        <property name="sort_column_id">1</property>
+                        <property name="sort-indicator">True</property>
+                        <property name="sort-column-id">1</property>
                         <child>
                           <object class="GtkCellRendererText"/>
                           <attributes>
@@ -597,8 +548,8 @@
                         <property name="title" translatable="yes">Amount (sat)</property>
                         <property name="clickable">True</property>
                         <property name="reorderable">True</property>
-                        <property name="sort_indicator">True</property>
-                        <property name="sort_column_id">2</property>
+                        <property name="sort-indicator">True</property>
+                        <property name="sort-column-id">2</property>
                         <child>
                           <object class="GtkCellRendererText"/>
                           <attributes>
@@ -614,8 +565,8 @@
                         <property name="title" translatable="yes">Height</property>
                         <property name="clickable">True</property>
                         <property name="reorderable">True</property>
-                        <property name="sort_indicator">True</property>
-                        <property name="sort_column_id">3</property>
+                        <property name="sort-indicator">True</property>
+                        <property name="sort-column-id">3</property>
                         <child>
                           <object class="GtkCellRendererText"/>
                           <attributes>
@@ -631,8 +582,8 @@
                         <property name="title" translatable="yes">Timestamp</property>
                         <property name="clickable">True</property>
                         <property name="reorderable">True</property>
-                        <property name="sort_indicator">True</property>
-                        <property name="sort_column_id">5</property>
+                        <property name="sort-indicator">True</property>
+                        <property name="sort-column-id">5</property>
                         <child>
                           <object class="GtkCellRendererText"/>
                           <attributes>
@@ -651,13 +602,13 @@
                 <child>
                   <object class="GtkStatusbar" id="utxoStatus">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="margin_left">10</property>
-                    <property name="margin_right">10</property>
-                    <property name="margin_start">10</property>
-                    <property name="margin_end">10</property>
-                    <property name="margin_top">6</property>
-                    <property name="margin_bottom">6</property>
+                    <property name="can-focus">False</property>
+                    <property name="margin-left">10</property>
+                    <property name="margin-right">10</property>
+                    <property name="margin-start">10</property>
+                    <property name="margin-end">10</property>
+                    <property name="margin-top">6</property>
+                    <property name="margin-bottom">6</property>
                     <property name="spacing">2</property>
                   </object>
                   <packing>
@@ -681,20 +632,20 @@
         <child type="tab">
           <object class="GtkLabel">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="label" translatable="yes">Descriptors</property>
           </object>
           <packing>
             <property name="position">1</property>
-            <property name="tab_fill">False</property>
+            <property name="tab-fill">False</property>
             <property name="reorderable">True</property>
           </packing>
         </child>
         <child>
           <object class="GtkLabel">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="label" translatable="yes">Work in progress</property>
             <attributes>
               <attribute name="style" value="italic"/>
@@ -707,34 +658,34 @@
         <child type="tab">
           <object class="GtkLabel">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="label" translatable="yes">Bitcoin</property>
           </object>
           <packing>
             <property name="position">2</property>
-            <property name="tab_fill">False</property>
+            <property name="tab-fill">False</property>
           </packing>
         </child>
         <child>
           <object class="GtkBox">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
             <child>
               <object class="GtkToolbar">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="toolbar_style">both-horiz</property>
+                <property name="can-focus">False</property>
+                <property name="toolbar-style">both-horiz</property>
                 <child>
                   <object class="GtkToolButton" id="assetCreate">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="tooltip_text" translatable="yes">Add asset allocation - an unspent bitcoin transaction output which will contain the issued asset</property>
-                    <property name="is_important">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="tooltip-text" translatable="yes">Add asset allocation - an unspent bitcoin transaction output which will contain the issued asset</property>
+                    <property name="is-important">True</property>
                     <property name="label" translatable="yes">Create</property>
-                    <property name="use_underline">True</property>
-                    <property name="icon_name">list-add</property>
+                    <property name="use-underline">True</property>
+                    <property name="icon-name">list-add</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -744,7 +695,7 @@
                 <child>
                   <object class="GtkSeparatorToolItem">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -754,11 +705,11 @@
                 <child>
                   <object class="GtkToolButton">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="is_important">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="is-important">True</property>
                     <property name="label" translatable="yes">Inflate</property>
-                    <property name="use_underline">True</property>
-                    <property name="icon_name">go-up</property>
+                    <property name="use-underline">True</property>
+                    <property name="icon-name">go-up</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -768,10 +719,10 @@
                 <child>
                   <object class="GtkToolButton">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <property name="label" translatable="yes">Renominate</property>
-                    <property name="use_underline">True</property>
-                    <property name="icon_name">edit-find-replace</property>
+                    <property name="use-underline">True</property>
+                    <property name="icon-name">edit-find-replace</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -781,7 +732,7 @@
                 <child>
                   <object class="GtkSeparatorToolItem">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -791,9 +742,9 @@
                 <child>
                   <object class="GtkToolButton">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <property name="label" translatable="yes">New epoch</property>
-                    <property name="use_underline">True</property>
+                    <property name="use-underline">True</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -803,11 +754,11 @@
                 <child>
                   <object class="GtkToolButton">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="is_important">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="is-important">True</property>
                     <property name="label" translatable="yes">Burn</property>
-                    <property name="use_underline">True</property>
-                    <property name="icon_name">application-exit</property>
+                    <property name="use-underline">True</property>
+                    <property name="icon-name">application-exit</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -817,11 +768,11 @@
                 <child>
                   <object class="GtkToolButton">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="is_important">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="is-important">True</property>
                     <property name="label" translatable="yes">Replace</property>
-                    <property name="use_underline">True</property>
-                    <property name="icon_name">mail-send-receive</property>
+                    <property name="use-underline">True</property>
+                    <property name="icon-name">mail-send-receive</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -831,7 +782,7 @@
                 <child>
                   <object class="GtkToolItem">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <child>
                       <placeholder/>
                     </child>
@@ -844,12 +795,12 @@
                 <child>
                   <object class="GtkToolButton" id="assetSync">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="tooltip_text" translatable="yes">Remove selected asset allocation</property>
-                    <property name="is_important">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="tooltip-text" translatable="yes">Remove selected asset allocation</property>
+                    <property name="is-important">True</property>
                     <property name="label" translatable="yes">Synchronize</property>
-                    <property name="use_underline">True</property>
-                    <property name="icon_name">view-refresh</property>
+                    <property name="use-underline">True</property>
+                    <property name="icon-name">view-refresh</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -866,20 +817,20 @@
             <child>
               <object class="GtkPaned">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
+                <property name="can-focus">True</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
                 <property name="orientation">vertical</property>
-                <property name="wide_handle">True</property>
+                <property name="wide-handle">True</property>
                 <child>
                   <object class="GtkTreeView">
-                    <property name="height_request">60</property>
+                    <property name="height-request">60</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
+                    <property name="can-focus">True</property>
                     <property name="hexpand">True</property>
                     <property name="vexpand">True</property>
                     <property name="model">assetStore</property>
-                    <property name="fixed_height_mode">True</property>
+                    <property name="fixed-height-mode">True</property>
                     <child internal-child="selection">
                       <object class="GtkTreeSelection"/>
                     </child>
@@ -890,8 +841,8 @@
                         <property name="title" translatable="yes">Ticker</property>
                         <property name="clickable">True</property>
                         <property name="reorderable">True</property>
-                        <property name="sort_indicator">True</property>
-                        <property name="sort_column_id">2</property>
+                        <property name="sort-indicator">True</property>
+                        <property name="sort-column-id">2</property>
                         <child>
                           <object class="GtkCellRendererText"/>
                           <attributes>
@@ -908,7 +859,7 @@
                         <property name="expand">True</property>
                         <property name="clickable">True</property>
                         <property name="reorderable">True</property>
-                        <property name="sort_column_id">1</property>
+                        <property name="sort-column-id">1</property>
                         <child>
                           <object class="GtkCellRendererText"/>
                           <attributes>
@@ -924,7 +875,7 @@
                         <property name="title" translatable="yes">Amount owned</property>
                         <property name="clickable">True</property>
                         <property name="reorderable">True</property>
-                        <property name="sort_column_id">12</property>
+                        <property name="sort-column-id">12</property>
                         <child>
                           <object class="GtkCellRendererText"/>
                           <attributes>
@@ -940,7 +891,7 @@
                         <property name="title" translatable="yes">Issued</property>
                         <property name="clickable">True</property>
                         <property name="reorderable">True</property>
-                        <property name="sort_column_id">4</property>
+                        <property name="sort-column-id">4</property>
                         <child>
                           <object class="GtkCellRendererText"/>
                           <attributes>
@@ -956,8 +907,8 @@
                         <property name="title" translatable="yes">Issues</property>
                         <property name="clickable">True</property>
                         <property name="reorderable">True</property>
-                        <property name="sort_indicator">True</property>
-                        <property name="sort_column_id">9</property>
+                        <property name="sort-indicator">True</property>
+                        <property name="sort-column-id">9</property>
                         <child>
                           <object class="GtkCellRendererText"/>
                           <attributes>
@@ -973,8 +924,8 @@
                         <property name="title" translatable="yes">Inflatable</property>
                         <property name="clickable">True</property>
                         <property name="reorderable">True</property>
-                        <property name="sort_indicator">True</property>
-                        <property name="sort_column_id">6</property>
+                        <property name="sort-indicator">True</property>
+                        <property name="sort-column-id">6</property>
                         <child>
                           <object class="GtkCellRendererToggle"/>
                           <attributes>
@@ -990,7 +941,7 @@
                         <property name="title" translatable="yes">Epochs</property>
                         <property name="clickable">True</property>
                         <property name="reorderable">True</property>
-                        <property name="sort_column_id">10</property>
+                        <property name="sort-column-id">10</property>
                         <child>
                           <object class="GtkCellRendererText"/>
                           <attributes>
@@ -1007,17 +958,18 @@
                 </child>
                 <child>
                   <object class="GtkNotebook">
-                    <property name="height_request">60</property>
+                    <property name="height-request">60</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
+                    <property name="can-focus">True</property>
                     <property name="hexpand">True</property>
                     <property name="vexpand">True</property>
-                    <property name="tab_pos">bottom</property>
-                    <property name="show_border">False</property>
+                    <property name="tab-pos">bottom</property>
+                    <property name="show-border">False</property>
                     <child>
+                      <!-- n-columns=3 n-rows=3 -->
                       <object class="GtkGrid">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <child>
                           <placeholder/>
                         </child>
@@ -1050,17 +1002,18 @@
                     <child type="tab">
                       <object class="GtkLabel">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Info</property>
                       </object>
                       <packing>
-                        <property name="tab_fill">False</property>
+                        <property name="tab-fill">False</property>
                       </packing>
                     </child>
                     <child>
+                      <!-- n-columns=3 n-rows=3 -->
                       <object class="GtkGrid">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <child>
                           <placeholder/>
                         </child>
@@ -1096,18 +1049,19 @@
                     <child type="tab">
                       <object class="GtkLabel">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Genesis</property>
                       </object>
                       <packing>
                         <property name="position">1</property>
-                        <property name="tab_fill">False</property>
+                        <property name="tab-fill">False</property>
                       </packing>
                     </child>
                     <child>
+                      <!-- n-columns=3 n-rows=3 -->
                       <object class="GtkGrid">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <child>
                           <placeholder/>
                         </child>
@@ -1143,18 +1097,19 @@
                     <child type="tab">
                       <object class="GtkLabel">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Issues</property>
                       </object>
                       <packing>
                         <property name="position">2</property>
-                        <property name="tab_fill">False</property>
+                        <property name="tab-fill">False</property>
                       </packing>
                     </child>
                     <child>
+                      <!-- n-columns=3 n-rows=3 -->
                       <object class="GtkGrid">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <child>
                           <placeholder/>
                         </child>
@@ -1190,18 +1145,19 @@
                     <child type="tab">
                       <object class="GtkLabel">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Renominations</property>
                       </object>
                       <packing>
                         <property name="position">3</property>
-                        <property name="tab_fill">False</property>
+                        <property name="tab-fill">False</property>
                       </packing>
                     </child>
                     <child>
+                      <!-- n-columns=3 n-rows=3 -->
                       <object class="GtkGrid">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <child>
                           <placeholder/>
                         </child>
@@ -1237,12 +1193,12 @@
                     <child type="tab">
                       <object class="GtkLabel">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Epochs</property>
                       </object>
                       <packing>
                         <property name="position">4</property>
-                        <property name="tab_fill">False</property>
+                        <property name="tab-fill">False</property>
                       </packing>
                     </child>
                   </object>
@@ -1267,20 +1223,20 @@
         <child type="tab">
           <object class="GtkLabel">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="label" translatable="yes">Assets</property>
           </object>
           <packing>
             <property name="position">3</property>
-            <property name="tab_fill">False</property>
+            <property name="tab-fill">False</property>
             <property name="reorderable">True</property>
           </packing>
         </child>
         <child>
           <object class="GtkLabel">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="label" translatable="yes">Work in progress</property>
             <attributes>
               <attribute name="style" value="italic"/>
@@ -1293,20 +1249,20 @@
         <child type="tab">
           <object class="GtkLabel">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="label" translatable="yes">Collectibles</property>
           </object>
           <packing>
             <property name="position">4</property>
-            <property name="tab_fill">False</property>
+            <property name="tab-fill">False</property>
             <property name="reorderable">True</property>
           </packing>
         </child>
         <child>
           <object class="GtkLabel">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="label" translatable="yes">Work in progress</property>
             <attributes>
               <attribute name="style" value="italic"/>
@@ -1319,20 +1275,20 @@
         <child type="tab">
           <object class="GtkLabel">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="label" translatable="yes">Identities</property>
           </object>
           <packing>
             <property name="position">5</property>
-            <property name="tab_fill">False</property>
+            <property name="tab-fill">False</property>
             <property name="reorderable">True</property>
           </packing>
         </child>
         <child>
           <object class="GtkLabel">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="label" translatable="yes">Work in progress</property>
             <attributes>
               <attribute name="style" value="italic"/>
@@ -1345,33 +1301,33 @@
         <child type="tab">
           <object class="GtkLabel">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="label" translatable="yes">Audit logs</property>
           </object>
           <packing>
             <property name="position">6</property>
-            <property name="tab_fill">False</property>
+            <property name="tab-fill">False</property>
             <property name="reorderable">True</property>
           </packing>
         </child>
         <child>
           <object class="GtkBox">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
             <child>
               <object class="GtkToolbar">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkToolButton">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="is_important">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="is-important">True</property>
                     <property name="label" translatable="yes">Export PSBT</property>
-                    <property name="use_underline">True</property>
-                    <property name="icon_name">system-log-out</property>
+                    <property name="use-underline">True</property>
+                    <property name="icon-name">system-log-out</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -1388,11 +1344,11 @@
             <child>
               <object class="GtkPaned">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
+                <property name="can-focus">True</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
                 <property name="orientation">vertical</property>
-                <property name="wide_handle">True</property>
+                <property name="wide-handle">True</property>
                 <child>
                   <placeholder/>
                 </child>
@@ -1415,30 +1371,31 @@
         <child type="tab">
           <object class="GtkLabel">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="label" translatable="yes">Operations</property>
           </object>
           <packing>
             <property name="position">7</property>
-            <property name="tab_fill">False</property>
+            <property name="tab-fill">False</property>
             <property name="reorderable">True</property>
           </packing>
         </child>
         <child>
+          <!-- n-columns=3 n-rows=3 -->
           <object class="GtkGrid">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="margin_start">26</property>
-            <property name="margin_end">13</property>
-            <property name="margin_top">13</property>
-            <property name="margin_bottom">13</property>
-            <property name="row_spacing">26</property>
-            <property name="column_spacing">6</property>
+            <property name="can-focus">False</property>
+            <property name="margin-start">26</property>
+            <property name="margin-end">13</property>
+            <property name="margin-top">13</property>
+            <property name="margin-bottom">13</property>
+            <property name="row-spacing">26</property>
+            <property name="column-spacing">6</property>
             <child>
               <object class="GtkComboBoxText">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="active">2</property>
                 <items>
                   <item translatable="yes">Mainnet</item>
@@ -1448,14 +1405,14 @@
                 </items>
               </object>
               <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">1</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="halign">start</property>
                 <property name="label" translatable="yes">Blockchain:</property>
                 <attributes>
@@ -1463,104 +1420,114 @@
                 </attributes>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkFrame">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label_xalign">0</property>
-                <property name="shadow_type">none</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">none</property>
                 <child>
                   <object class="GtkAlignment">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="top_padding">6</property>
-                    <property name="left_padding">24</property>
+                    <property name="can-focus">False</property>
+                    <property name="top-padding">6</property>
+                    <property name="left-padding">24</property>
                     <child>
+                      <!-- n-columns=3 n-rows=3 -->
                       <object class="GtkGrid">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="row_spacing">6</property>
-                        <property name="column_spacing">6</property>
+                        <property name="can-focus">False</property>
+                        <property name="row-spacing">6</property>
+                        <property name="column-spacing">6</property>
                         <child>
                           <object class="GtkRadioButton" id="bitcoinCore">
                             <property name="label" translatable="yes">Bitcoin Core</property>
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">False</property>
-                            <property name="draw_indicator">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">False</property>
+                            <property name="draw-indicator">True</property>
                             <property name="group">bpNode</property>
                           </object>
                           <packing>
-                            <property name="left_attach">0</property>
-                            <property name="top_attach">0</property>
+                            <property name="left-attach">0</property>
+                            <property name="top-attach">0</property>
                           </packing>
                         </child>
                         <child>
                           <object class="GtkRadioButton" id="electrum">
                             <property name="label" translatable="yes">Electrum Server</property>
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">False</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">False</property>
                             <property name="active">True</property>
-                            <property name="draw_indicator">True</property>
+                            <property name="draw-indicator">True</property>
                             <property name="group">bitcoinCore</property>
                           </object>
                           <packing>
-                            <property name="left_attach">0</property>
-                            <property name="top_attach">1</property>
+                            <property name="left-attach">0</property>
+                            <property name="top-attach">1</property>
                           </packing>
                         </child>
                         <child>
                           <object class="GtkRadioButton" id="bpNode">
                             <property name="label" translatable="yes">BP Node</property>
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">False</property>
-                            <property name="draw_indicator">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">False</property>
+                            <property name="draw-indicator">True</property>
                             <property name="group">electrum</property>
                           </object>
                           <packing>
-                            <property name="left_attach">0</property>
-                            <property name="top_attach">2</property>
+                            <property name="left-attach">0</property>
+                            <property name="top-attach">2</property>
                           </packing>
                         </child>
                         <child>
                           <object class="GtkEntry">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
+                            <property name="can-focus">True</property>
                             <property name="hexpand">True</property>
-                            <property name="input_purpose">url</property>
+                            <property name="input-purpose">url</property>
                           </object>
                           <packing>
-                            <property name="left_attach">1</property>
-                            <property name="top_attach">0</property>
+                            <property name="left-attach">1</property>
+                            <property name="top-attach">0</property>
                           </packing>
                         </child>
                         <child>
                           <object class="GtkEntry">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="input_purpose">url</property>
+                            <property name="can-focus">True</property>
+                            <property name="input-purpose">url</property>
                           </object>
                           <packing>
-                            <property name="left_attach">1</property>
-                            <property name="top_attach">1</property>
+                            <property name="left-attach">1</property>
+                            <property name="top-attach">1</property>
                           </packing>
                         </child>
                         <child>
                           <object class="GtkEntry">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="input_purpose">url</property>
+                            <property name="can-focus">True</property>
+                            <property name="input-purpose">url</property>
                           </object>
                           <packing>
-                            <property name="left_attach">1</property>
-                            <property name="top_attach">2</property>
+                            <property name="left-attach">1</property>
+                            <property name="top-attach">2</property>
                           </packing>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
                         </child>
                       </object>
                     </child>
@@ -1569,7 +1536,7 @@
                 <child type="label">
                   <object class="GtkLabel">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <property name="label" translatable="yes">Bitcoin blockchain information provider:</property>
                     <attributes>
                       <attribute name="weight" value="bold"/>
@@ -1578,38 +1545,38 @@
                 </child>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">1</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">1</property>
                 <property name="width">3</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="hexpand">True</property>
               </object>
               <packing>
-                <property name="left_attach">2</property>
-                <property name="top_attach">0</property>
+                <property name="left-attach">2</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkEntry">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="input_purpose">url</property>
+                <property name="can-focus">True</property>
+                <property name="input-purpose">url</property>
               </object>
               <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">2</property>
+                <property name="left-attach">1</property>
+                <property name="top-attach">2</property>
                 <property name="width">2</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="halign">start</property>
                 <property name="label" translatable="yes">Bifrost server:</property>
                 <attributes>
@@ -1617,8 +1584,8 @@
                 </attributes>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">2</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">2</property>
               </packing>
             </child>
           </object>
@@ -1630,13 +1597,13 @@
         <child type="tab">
           <object class="GtkLabel">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="label" translatable="yes">Settings</property>
           </object>
           <packing>
             <property name="position">8</property>
-            <property name="tab_fill">False</property>
+            <property name="tab-fill">False</property>
             <property name="reorderable">True</property>
           </packing>
         </child>
@@ -1644,19 +1611,19 @@
     </child>
     <child type="titlebar">
       <object class="GtkHeaderBar" id="headerBar">
-        <property name="width_request">666</property>
+        <property name="width-request">666</property>
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <property name="title" translatable="yes">Bitcoin Pro</property>
         <property name="subtitle" translatable="yes">profile name</property>
-        <property name="show_close_button">True</property>
+        <property name="show-close-button">True</property>
         <child>
           <object class="GtkButton" id="open">
             <property name="label" translatable="yes">Open</property>
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <property name="tooltip_text" translatable="yes">Open existing file
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="tooltip-text" translatable="yes">Open existing file
 </property>
             <property name="image">image1</property>
           </object>
@@ -1664,11 +1631,11 @@
         <child>
           <object class="GtkButton" id="new">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <property name="tooltip_text" translatable="yes">New document</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="tooltip-text" translatable="yes">New document</property>
             <property name="image">image2</property>
-            <property name="always_show_image">True</property>
+            <property name="always-show-image">True</property>
           </object>
           <packing>
             <property name="position">1</property>
@@ -1678,12 +1645,12 @@
           <object class="GtkButton" id="save">
             <property name="label" translatable="yes">Save</property>
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <property name="tooltip_text" translatable="yes">Save file (once saved, will be autosaving)</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="tooltip-text" translatable="yes">Save file (once saved, will be autosaving)</property>
           </object>
           <packing>
-            <property name="pack_type">end</property>
+            <property name="pack-type">end</property>
             <property name="position">2</property>
           </packing>
         </child>

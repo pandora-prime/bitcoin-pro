@@ -39,8 +39,11 @@ pub enum Error {
     /// You must provide a non-empty script source
     EmptyScript,
 
-    /// you need to specify type of the provided script
+    /// You need to specify type of the provided script
     SourceTypeRequired,
+
+    /// {0} is not supported in the current version
+    NotYetSupported(&'static str),
 }
 
 pub struct DescriptorDlg {
@@ -186,6 +189,47 @@ impl DescriptorDlg {
             cancel_btn,
         });
 
+        for ctl in &[&me.singlesig_radio, &me.multisig_radio, &me.script_radio]
+        {
+            ctl.connect_toggled(clone!(@weak me => move |_| {
+                me.update_ui()
+            }));
+        }
+
+        for ctl in &[
+            &me.bare_check,
+            &me.hash_check,
+            &me.compat_check,
+            &me.segwit_check,
+            &me.taproot_check,
+        ] {
+            ctl.connect_toggled(clone!(@weak me => move |_| {
+                me.update_ui()
+            }));
+        }
+
+        for ctl in &[&me.name_entry, &me.pubkey_entry] {
+            ctl.connect_changed(clone!(@weak me => move |_| {
+                me.update_ui()
+            }));
+        }
+
+        for ctl in &[&me.script_combo, &me.lookup_combo] {
+            ctl.connect_changed(clone!(@weak me => move |_| {
+                me.update_ui()
+            }));
+        }
+
+        me.threshold_spin
+            .connect_changed(clone!(@weak me => move |_| {
+                me.update_ui()
+            }));
+
+        me.script_buffer
+            .connect_changed(clone!(@weak me => move |_| {
+                me.update_ui()
+            }));
+
         Ok(me)
     }
 }
@@ -213,6 +257,8 @@ impl DescriptorDlg {
                     }),
                     || {},
                 );
+
+                me.update_ui()
             }),
         );
 
@@ -231,6 +277,7 @@ impl DescriptorDlg {
                     }),
                     || {},
                 );
+                me.update_ui()
             }),
         );
 
@@ -244,6 +291,7 @@ impl DescriptorDlg {
                     }),
                     || {},
                 );
+                me.update_ui()
             }),
         );
 
@@ -267,17 +315,34 @@ impl DescriptorDlg {
                     }
                     me.pubkey_store.remove(&iter);
                 }
+                me.update_ui()
             }),
         );
 
-        me.cancel_btn
-            .connect_clicked(clone!(@weak self as me => move |_| {
-                me.dialog.close();
-                on_cancel()
-            }));
+        me.lookup_btn.connect_clicked(clone!(@weak me => move |_| {
+            match me.descriptor_generator() {
+                Ok(generator) => {
+                    if let DescriptorContent::LockScript(..) = generator.content {
+                        me.display_error(Error::NotYetSupported("Custom script lookup"))
+                    } else if let Err(err) = me.lookup(generator) {
+                        me.display_error(err);
+                    }
+                },
+                Err(err) => {
+                    me.display_error(err);
+                    me.lookup_combo.set_sensitive(false);
+                    me.lookup_btn.set_sensitive(false);
+                }
+            }
+        }));
+
+        me.cancel_btn.connect_clicked(clone!(@weak me => move |_| {
+            me.dialog.close();
+            on_cancel()
+        }));
 
         me.save_btn.connect_clicked(
-            clone!(@weak self as me => move |_| match self.descriptor_generator() {
+            clone!(@weak me => move |_| match self.descriptor_generator() {
                 Ok(descriptor_generator) => {
                     me.dialog.close();
                     on_save(descriptor_generator);
@@ -335,7 +400,15 @@ impl DescriptorDlg {
                 _ => Err(Error::SourceTypeRequired)?,
             };
             // TODO: Validate script source
-            let script = self.script_buffer.to_string();
+            let script = self
+                .script_buffer
+                .get_text(
+                    &self.script_buffer.get_start_iter(),
+                    &self.script_buffer.get_end_iter(),
+                    false,
+                )
+                .ok_or(Error::EmptyScript)?
+                .to_string();
             if script.is_empty() {
                 Err(Error::EmptyScript)?
             }
@@ -353,6 +426,10 @@ impl DescriptorDlg {
             segwit: self.segwit_check.get_active(),
             taproot: self.taproot_check.get_active(),
         }
+    }
+
+    pub fn lookup(&self, generator: DescriptorGenerator) -> Result<(), Error> {
+        Ok(())
     }
 
     pub fn display_info(&self, msg: impl ToString) {
@@ -380,7 +457,12 @@ impl DescriptorDlg {
 
         self.singlesig_box.set_sensitive(is_singlesig);
         self.multisig_frame.set_sensitive(is_multisig);
+        self.threshold_spin.set_sensitive(is_multisig);
         self.script_frame.set_sensitive(is_lockscript);
+        self.script_combo.set_sensitive(is_lockscript);
+
+        self.threshold_adj
+            .set_upper(self.keyset.borrow().len() as f64);
 
         match self.update_ui_internal() {
             Ok(None) => {
@@ -399,6 +481,14 @@ impl DescriptorDlg {
     }
 
     pub fn update_ui_internal(&self) -> Result<Option<String>, Error> {
+        self.lookup_btn.set_sensitive(false);
+        self.lookup_combo.set_sensitive(false);
+
+        let generator = self.descriptor_generator()?;
+
+        self.lookup_btn.set_sensitive(true);
+        self.lookup_combo.set_sensitive(true);
+
         Ok(None)
     }
 }

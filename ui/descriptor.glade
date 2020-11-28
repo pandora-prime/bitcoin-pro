@@ -42,15 +42,6 @@
       <!-- column-name mined -->
       <column type="gchararray"/>
     </columns>
-    <data>
-      <row>
-        <col id="0" translatable="yes">92c72675acdecf970d83bd4d1f8ff2d0575f157199756a20b902e37e68eb19ff</col>
-        <col id="1">0</col>
-        <col id="2">22012200</col>
-        <col id="3">658743</col>
-        <col id="4" translatable="yes">2020-11-26 13:05:59</col>
-      </row>
-    </data>
   </object>
   <object class="GtkDialog" id="descriptorDlg">
     <property name="can-focus">False</property>
