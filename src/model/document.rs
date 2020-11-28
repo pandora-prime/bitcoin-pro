@@ -14,7 +14,7 @@
 use amplify::internet::InetSocketAddr;
 use gtk::prelude::*;
 use std::ffi::OsStr;
-use std::fs::File;
+use std::fs::{File, OpenOptions};
 use std::io::{self, Seek, SeekFrom};
 use std::path::PathBuf;
 use std::sync::Mutex;
@@ -73,7 +73,7 @@ impl Document {
     pub fn load(path: PathBuf) -> Result<Document, Error> {
         let file = File::open(path.clone())?;
         let profile = Profile::strict_decode(&file)?;
-        let file = File::with_options().write(true).open(path.clone())?;
+        let file = OpenOptions::new().write(true).open(path.clone())?;
         Ok(Document {
             file: Some(file),
             name: path

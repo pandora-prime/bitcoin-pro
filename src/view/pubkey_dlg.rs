@@ -109,6 +109,7 @@ pub struct PubkeyDlg {
 
     sk_radio: gtk::RadioButton,
     hd_radio: gtk::RadioButton,
+    hd_frame: gtk::Frame,
 
     bip44_radio: gtk::RadioButton,
     custom_radio: gtk::RadioButton,
@@ -170,6 +171,7 @@ impl PubkeyDlg {
         let account_field = builder.get_object("accountField")?;
         let sk_radio = builder.get_object("singleKey")?;
         let hd_radio = builder.get_object("hdKey")?;
+        let hd_frame = builder.get_object("hdFrame")?;
         let bip44_radio = builder.get_object("deriveBip44")?;
         let custom_radio = builder.get_object("deriveCustom")?;
 
@@ -226,6 +228,7 @@ impl PubkeyDlg {
             account_field,
             sk_radio,
             hd_radio,
+            hd_frame,
             bip44_radio,
             custom_radio,
             purpose_combo,
@@ -417,6 +420,20 @@ impl PubkeyDlg {
             }
             TrackingKey::HdKeySet(keyset) => {
                 self.set_key_type(PkType::Hd);
+                self.xpub_field.set_text(&keyset.master_xpub.to_string());
+                self.account_field.set_text(&keyset.branch_xpub.to_string());
+                self.range_field.set_text(&keyset.index_ranges_string());
+                self.range_chk.set_active(keyset.index_ranges.is_some());
+
+                // TODO: Parse BIP44 derivation info
+                // let derivation: Vec<_> = keyset.derivation_path().into();
+                // if derivation.len() == 6 {
+                //     self.set_derive_type(DeriveType::Bip44);
+                // } else {
+                self.set_derive_type(DeriveType::Custom);
+                self.derivation_field
+                    .set_text(&keyset.derivation_path().to_string());
+                // }
             }
         }
     }
@@ -601,6 +618,10 @@ impl PubkeyDlg {
     }
 
     pub fn update_ui(&self) {
+        self.sk_radio.set_sensitive(!self.edit_mode);
+        self.hd_radio.set_sensitive(!self.edit_mode);
+        self.hd_frame.set_sensitive(!self.edit_mode);
+
         self.pubkey_field
             .set_sensitive(self.sk_radio.get_active() && !self.edit_mode);
         self.xpub_field
@@ -770,11 +791,13 @@ impl PubkeyDlg {
                                 &lnpbp::SECP256K1,
                                 &terminal,
                             )?;
-                            info_msg = Some(s!(
+                            if !self.edit_mode {
+                                info_msg = Some(s!(
                                 "NB: It is technically impossible to verify that the account key \
                                 matches extended master public key so use their association at your \
                                 own risk"
-                            ));
+                                ));
+                            }
                             Ok(pk)
                         } else {
                             Err(Error::AccountXpubNeeded)?

@@ -69,20 +69,23 @@ pub trait HardenedNormalSplit {
 
 impl HardenedNormalSplit for DerivationPath {
     fn hardened_normal_split(&self) -> (DerivationPath, Vec<u32>) {
-        let mut path_iter = self.into_iter().rev();
-        let terminal_path: Vec<u32> = path_iter
+        let mut terminal_path = vec![];
+        let branch_path = self
+            .into_iter()
+            .rev()
             .by_ref()
-            .map_while(|child| {
+            .skip_while(|child| {
                 if let ChildNumber::Normal { index } = child {
-                    Some(index)
+                    terminal_path.push(index);
+                    true
                 } else {
-                    None
+                    false
                 }
             })
             .cloned()
-            .collect();
-        let terminal_path = terminal_path.into_iter().rev().collect();
-        let branch_path = path_iter.rev().cloned().collect();
+            .collect::<DerivationPath>();
+        let branch_path = branch_path.into_iter().rev().cloned().collect();
+        let terminal_path = terminal_path.into_iter().rev().cloned().collect();
         (branch_path, terminal_path)
     }
 }
@@ -107,12 +110,29 @@ impl DerivationComponents {
         }
     }
 
+    pub fn derivation_path(&self) -> DerivationPath {
+        self.branch_path.extend(self.terminal_path())
+    }
+
     pub fn terminal_path(&self) -> DerivationPath {
         DerivationPath::from_iter(
             self.terminal_path
                 .iter()
                 .map(|i| ChildNumber::Normal { index: *i }),
         )
+    }
+
+    pub fn index_ranges_string(&self) -> String {
+        self.index_ranges
+            .as_ref()
+            .map(|ranges| {
+                ranges
+                    .iter()
+                    .map(DerivationRange::to_string)
+                    .collect::<Vec<_>>()
+                    .join(",")
+            })
+            .unwrap_or_default()
     }
 
     pub fn child(&self, child: u32) -> ExtendedPubKey {
@@ -129,29 +149,15 @@ impl Display for DerivationComponents {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "[{}]{}{}/",
+            "[{}]{}/",
             self.master_xpub.fingerprint(),
-            self.branch_path
+            self.derivation_path()
                 .to_string()
                 .strip_prefix("m")
-                .unwrap_or(&self.branch_path.to_string()),
-            DerivationPath::from_iter(
-                self.terminal_path
-                    .iter()
-                    .map(|i| ChildNumber::Normal { index: *i })
-            )
-            .to_string()
-            .strip_prefix("m")
-            .ok_or(fmt::Error)?
+                .unwrap_or(&self.derivation_path().to_string())
         )?;
         if let Some(ref ranges) = self.index_ranges {
-            f.write_str(
-                &ranges
-                    .iter()
-                    .map(DerivationRange::to_string)
-                    .collect::<Vec<_>>()
-                    .join(","),
-            )
+            f.write_str(&self.index_ranges_string())
         } else {
             f.write_str("*")
         }
