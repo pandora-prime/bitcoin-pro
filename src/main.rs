@@ -43,7 +43,7 @@ fn main() {
         gtk::Application::new(Some("com.pandoracore.BitcoinPro"), default!())
             .expect("BitcoinPro failed to initialize GTK environment");
 
-    application.connect_activate(|app| {
+    application.connect_activate(|_| {
         fn new_app(path: Option<PathBuf>) {
             if let Ok(app_window) = view::AppWindow::new(path) {
                 let app_window = app_window.borrow();

@@ -297,7 +297,7 @@ impl Display for DerivationComponents {
                 .strip_prefix("m")
                 .unwrap_or(&self.derivation_path().to_string())
         )?;
-        if let Some(ref ranges) = self.index_ranges {
+        if let Some(_) = self.index_ranges {
             f.write_str(&self.index_ranges_string())
         } else {
             f.write_str("*")

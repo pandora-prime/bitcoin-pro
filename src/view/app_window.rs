@@ -103,7 +103,7 @@ impl AppWindow {
         tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
             let meb = me.borrow();
             let pubkey_dlg = PubkeyDlg::load_glade().expect("Must load");
-            if let Some((keyname, model, iter)) = meb.pubkey_selection() {
+            if let Some((keyname, _, iter)) = meb.pubkey_selection() {
                 let tracking_account = doc
                     .borrow()
                     .tracking_account_by_key(&keyname)
@@ -124,7 +124,7 @@ impl AppWindow {
         let tb: gtk::ToolButton = builder.get_object("pubkeyRemove")?;
         tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
             let me = me.borrow();
-            if let Some((keyname, model, iter)) = me.pubkey_selection() {
+            if let Some((keyname, _, iter)) = me.pubkey_selection() {
                 let tracking_account = doc
                     .borrow()
                     .tracking_account_by_key(&keyname)
@@ -151,9 +151,9 @@ impl AppWindow {
         tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
             let descriptor_dlg = DescriptorDlg::load_glade().expect("Must load");
             descriptor_dlg.run(doc.clone(), clone!(@weak me, @strong doc =>
-                move |descriptor_params| {
-                    let me = me.borrow();
+                move |_descriptor_params| {
                     /* TODO: Perform assst creation
+                    let me = me.borrow();
                     me.pubkey_store.insert_with_values(
                         None,
                         None,
@@ -175,9 +175,9 @@ impl AppWindow {
         tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
             let issue_dlg = IssueDlg::load_glade().expect("Must load");
             issue_dlg.run(clone!(@weak me, @strong doc =>
-                move |asset_genesis| {
-                    let me = me.borrow();
+                move |_asset_genesis| {
                     /* TODO: Perform assst creation
+                    let me = me.borrow();
                     me.pubkey_store.insert_with_values(
                         None,
                         None,
