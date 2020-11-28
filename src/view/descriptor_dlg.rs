@@ -15,7 +15,7 @@ use gtk::prelude::*;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::model::{DescriptorParams, Document};
+use crate::model::{DescriptorGenerator, Document};
 use crate::view::PubkeySelectDlg;
 
 static UI: &'static str = include_str!("../../ui/descriptor.glade");
@@ -98,7 +98,7 @@ impl DescriptorDlg {
     pub fn run(
         self: Rc<Self>,
         doc: Rc<RefCell<Document>>,
-        on_save: impl Fn(DescriptorParams) + 'static,
+        on_save: impl Fn(DescriptorGenerator) + 'static,
         on_cancel: impl Fn() + 'static,
     ) {
         let me = self.clone();
@@ -181,7 +181,7 @@ impl DescriptorDlg {
         me.dialog.close();
     }
 
-    pub fn descriptor_params(&self) -> Result<DescriptorParams, Error> {
+    pub fn descriptor_params(&self) -> Result<DescriptorGenerator, Error> {
         Err(Error::None)
     }
 

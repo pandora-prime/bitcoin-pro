@@ -12,14 +12,16 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 mod asset;
-mod descriptor_params;
+mod descriptors;
 mod document;
 pub mod operation;
 mod tracking;
 mod utxo;
 
 pub use asset::AssetGenesis;
-pub use descriptor_params::DescriptorParams;
+pub use descriptors::{
+    DescriptorContent, DescriptorGenerator, DescriptorTypes, ScriptSource,
+};
 pub use document::{Document, Error, Profile};
 pub use tracking::{
     DerivationComponents, DerivationRange, Error as Slip32Error, FromSlip32,
