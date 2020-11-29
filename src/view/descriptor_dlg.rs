@@ -22,7 +22,8 @@ use lnpbp::secp256k1::rand::{self, RngCore};
 
 use crate::model::{
     DescriptorContent, DescriptorError, DescriptorGenerator, DescriptorTypes,
-    Document, ResolverError, SourceType, TrackingKey, UtxoEntry,
+    Document, ResolverError, SourceType, TrackingAccount, TrackingKey,
+    UtxoEntry,
 };
 use crate::view::PubkeySelectDlg;
 
@@ -265,10 +266,15 @@ impl DescriptorDlg {
     pub fn run(
         self: Rc<Self>,
         doc: Rc<RefCell<Document>>,
+        descriptor_generator: Option<DescriptorGenerator>,
         on_save: impl Fn(DescriptorGenerator) + 'static,
         on_cancel: impl Fn() + 'static,
     ) {
         let me = self.clone();
+
+        if let Some(descriptor_generator) = descriptor_generator {
+            self.apply_descriptor_generator(doc.clone(), descriptor_generator);
+        }
 
         me.update_ui();
 
@@ -385,6 +391,62 @@ impl DescriptorDlg {
         me.dialog.close();
     }
 
+    pub fn apply_descriptor_generator(
+        &self,
+        doc: Rc<RefCell<Document>>,
+        descriptor_generator: DescriptorGenerator,
+    ) {
+        self.name_entry.set_text(&descriptor_generator.name);
+        match descriptor_generator.content {
+            DescriptorContent::SingleSig(key) => {
+                self.singlesig_radio.set_active(true);
+                self.pubkey_entry.set_text(&key.details());
+                *self.key.borrow_mut() = Some(key);
+            }
+            DescriptorContent::MultiSig(threshold, keyset) => {
+                self.threshold_spin.set_value(threshold as f64);
+                let doc = doc.borrow();
+                for key in keyset {
+                    let tracking_account = doc
+                        .tracking_account_by_key(&key.details())
+                        .unwrap_or(TrackingAccount {
+                            name: s!("<Unrecognized key>"),
+                            key: key.clone(),
+                        });
+                    self.pubkey_store.insert_with_values(
+                        None,
+                        &[0, 1, 2],
+                        &[
+                            &tracking_account.name(),
+                            &tracking_account.details(),
+                            &tracking_account.count(),
+                        ],
+                    );
+                    self.keyset.borrow_mut().push(key);
+                }
+            }
+            DescriptorContent::LockScript(script_source, script) => {
+                self.script_radio.set_active(true);
+                self.script_combo.set_active_id(Some(match script_source {
+                    SourceType::Binary => "hex",
+                    SourceType::Assembly => "asm",
+                    SourceType::Miniscript => "miniscript",
+                    SourceType::Policy => "policy",
+                }));
+                self.script_buffer.set_text(&script);
+            }
+        }
+        self.bare_check.set_active(descriptor_generator.types.bare);
+        self.hash_check
+            .set_active(descriptor_generator.types.hashed);
+        self.compat_check
+            .set_active(descriptor_generator.types.compat);
+        self.segwit_check
+            .set_active(descriptor_generator.types.segwit);
+        self.taproot_check
+            .set_active(descriptor_generator.types.taproot);
+    }
+
     pub fn descriptor_generator(&self) -> Result<DescriptorGenerator, Error> {
         let content = self.descriptor_content()?;
         let types = self.descriptor_types();
@@ -489,13 +551,11 @@ impl DescriptorDlg {
                 pubkeys.extend(generator.script_pubkey(offset)?);
                 offset += 1;
             }
+            println!("Looking up pubkeys: {:#?}", pubkeys);
             let mut found = 0usize;
-            for utxo in resolver
-                .batch_script_list_unspent(pubkeys.iter())?
-                .into_iter()
-                .flatten()
-                .map(UtxoEntry::from)
-            {
+            let res = resolver.batch_script_list_unspent(pubkeys.iter())?;
+            println!("Got UTXO set from electrum: {:#?}", res);
+            for utxo in res.into_iter().flatten().map(UtxoEntry::from) {
                 found += 1;
                 if self.utxo_set.borrow_mut().deref_mut().insert(utxo.clone()) {
                     self.utxo_store.insert_with_values(

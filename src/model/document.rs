@@ -235,11 +235,68 @@ impl Document {
         }
     }
 
+    pub fn fill_descriptor_store(&self, store: &gtk::ListStore) {
+        store.clear();
+        self.profile
+            .descriptors
+            .iter()
+            .for_each(|descriptor_generator| {
+                store.insert_with_values(
+                    None,
+                    &[0, 1, 2],
+                    &[
+                        &descriptor_generator.name(),
+                        &descriptor_generator.type_name(),
+                        &descriptor_generator.descriptor(),
+                    ],
+                );
+            });
+    }
+
+    pub fn descriptor_by_generator(
+        &self,
+        generator_str: &str,
+    ) -> Option<DescriptorGenerator> {
+        self.profile
+            .descriptors
+            .iter()
+            .find(|g| g.descriptor() == generator_str)
+            .cloned()
+    }
+
     pub fn add_descriptor(
         &mut self,
         descriptor_generator: DescriptorGenerator,
     ) -> Result<bool, Error> {
         self.profile.descriptors.push(descriptor_generator);
+        self.save()
+    }
+
+    pub fn update_descriptor(
+        &mut self,
+        descriptor_generator: &DescriptorGenerator,
+        new_descriptor_generator: DescriptorGenerator,
+    ) -> Result<bool, Error> {
+        if let Some(descriptor) = self
+            .profile
+            .descriptors
+            .iter_mut()
+            .find(|d| *d == descriptor_generator)
+        {
+            *descriptor = new_descriptor_generator
+        }
+        self.save()
+    }
+
+    pub fn remove_descriptor(
+        &mut self,
+        descriptor_generator: DescriptorGenerator,
+    ) -> Result<bool, Error> {
+        self.profile
+            .descriptors
+            .iter()
+            .position(|d| *d == descriptor_generator)
+            .map(|i| self.profile.descriptors.remove(i));
         self.save()
     }
 

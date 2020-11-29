@@ -101,7 +101,11 @@ impl DescriptorGenerator {
 
     pub fn script_pubkey(&self, index: u32) -> Result<Vec<Script>, Error> {
         let mut scripts = Vec::with_capacity(5);
-        let single = self.content.is_singlesig();
+        let single = if let DescriptorContent::SingleSig(_) = self.content {
+            Some(self.content.public_key(index).expect("Can't fail"))
+        } else {
+            None
+        };
         if self.types.bare {
             let d = if let Some(pk) = single {
                 Descriptor::Pk(pk)

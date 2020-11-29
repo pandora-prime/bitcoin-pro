@@ -38,6 +38,8 @@ pub struct AppWindow {
     window: gtk::ApplicationWindow,
     pubkey_tree: gtk::TreeView,
     pubkey_store: gtk::ListStore,
+    descriptor_tree: gtk::TreeView,
+    descriptor_store: gtk::ListStore,
     header_bar: gtk::HeaderBar,
     new_btn: gtk::Button,
     open_btn: gtk::Button,
@@ -59,9 +61,13 @@ impl AppWindow {
 
         let new_btn: gtk::Button = builder.get_object("new")?;
         let open_btn: gtk::Button = builder.get_object("open")?;
+        let header_bar: gtk::HeaderBar = builder.get_object("headerBar")?;
+
         let pubkey_tree: gtk::TreeView = builder.get_object("pubkeyTree")?;
         let pubkey_store = builder.get_object("pubkeyStore")?;
-        let header_bar: gtk::HeaderBar = builder.get_object("headerBar")?;
+        let descriptor_tree: gtk::TreeView =
+            builder.get_object("locatorTree")?;
+        let descriptor_store = builder.get_object("locatorStore")?;
 
         let electrum_radio: gtk::RadioButton =
             builder.get_object("electrum")?;
@@ -69,6 +75,7 @@ impl AppWindow {
         let electrum_btn: gtk::Button = builder.get_object("electrumBtn")?;
 
         doc.borrow().fill_tracking_store(&pubkey_store);
+        doc.borrow().fill_descriptor_store(&descriptor_store);
         pubkey_tree.set_model(Some(&pubkey_store));
         pubkey_tree.expand_all();
 
@@ -81,6 +88,8 @@ impl AppWindow {
             window: glade_load!(builder, "appWindow")?,
             pubkey_tree,
             pubkey_store,
+            descriptor_tree,
+            descriptor_store,
             header_bar,
             new_btn,
             open_btn,
@@ -200,10 +209,10 @@ impl AppWindow {
         let tb: gtk::ToolButton = builder.get_object("descriptorAdd")?;
         tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
             let descriptor_dlg = DescriptorDlg::load_glade().expect("Must load");
-            descriptor_dlg.run(doc.clone(), clone!(@weak me, @strong doc =>
+            descriptor_dlg.run(doc.clone(), None, clone!(@weak me, @strong doc =>
                 move |descriptor_generator| {
                     let me = me.borrow();
-                    me.pubkey_store.insert_with_values(
+                    me.descriptor_store.insert_with_values(
                         None,
                         &[0, 1, 2],
                         &[
@@ -218,6 +227,55 @@ impl AppWindow {
             );
         }));
 
+        let tb: gtk::ToolButton = builder.get_object("descriptorEdit")?;
+        tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
+            let meb = me.borrow();
+            let descriptor_dlg = DescriptorDlg::load_glade().expect("Must load");
+            if let Some((generator, _, iter)) = meb.descriptor_selection() {
+                let descriptor_generator = doc
+                    .borrow()
+                    .descriptor_by_generator(&generator)
+                    .expect("Descriptor account must be known since it is selected");
+                descriptor_dlg.run(doc.clone(), Some(descriptor_generator.clone()), clone!(@weak me, @strong doc =>
+                    move |new_descriptor_generator| {
+                        let me = me.borrow();
+                        me.descriptor_store.set_value(&iter, 0, &new_descriptor_generator.name().to_value());
+                        me.descriptor_store.set_value(&iter, 1, &new_descriptor_generator.type_name().to_value());
+                        me.descriptor_store.set_value(&iter, 2, &new_descriptor_generator.descriptor().to_value());
+                        let _ = doc.borrow_mut().update_descriptor(&descriptor_generator, new_descriptor_generator);
+                    }),
+                    || {},
+                );
+            }
+        }));
+
+        let tb: gtk::ToolButton = builder.get_object("descriptorRemove")?;
+        tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
+            let me = me.borrow();
+            if let Some((generator, _, iter)) = me.descriptor_selection() {
+                let descriptor_generator = doc
+                    .borrow()
+                    .descriptor_by_generator(&generator)
+                    .expect("Descriptor must be known since it is selected");
+                let dlg = gtk::MessageDialog::new(
+                    Some(&me.window),
+                    gtk::DialogFlags::MODAL,
+                    gtk::MessageType::Question,
+                    gtk::ButtonsType::YesNo,
+                    &format!(
+                        "Please confirm deletion of the descriptor '{}' defined by {}",
+                        descriptor_generator.name(),
+                        descriptor_generator.descriptor()
+                    )
+                );
+                if dlg.run() == gtk::ResponseType::Yes {
+                    me.descriptor_store.remove(&iter);
+                    let _ = doc.borrow_mut().remove_descriptor(descriptor_generator);
+                }
+                dlg.hide();
+            }
+        }));
+
         let tb: gtk::ToolButton = builder.get_object("assetCreate")?;
         tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
             let issue_dlg = IssueDlg::load_glade().expect("Must load");
@@ -226,7 +284,6 @@ impl AppWindow {
                     /* TODO: Perform assst creation
                     let me = me.borrow();
                     me.pubkey_store.insert_with_values(
-                        None,
                         None,
                         &[0, 1, 2],
                         &[
@@ -299,6 +356,22 @@ impl AppWindow {
                     .map(|keyname| (keyname, model, iter))
             },
         )
+    }
+
+    pub fn descriptor_selection(
+        &self,
+    ) -> Option<(String, gtk::TreeModel, gtk::TreeIter)> {
+        self.descriptor_tree
+            .get_selection()
+            .get_selected()
+            .and_then(|(model, iter)| {
+                model
+                    .get_value(&iter, 2)
+                    .get::<String>()
+                    .ok()
+                    .flatten()
+                    .map(|name| (name, model, iter))
+            })
     }
 
     pub fn update_ui(&self) {}
