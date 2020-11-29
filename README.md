@@ -43,19 +43,19 @@ $ bitcoin-pro
 
 ### Main interface
 
-![Main window](doc/ui/main_app.png)
+![Main window](https://github.com/pandoracore/bitcoin-pro/raw/v0.1.0-alpha.2/doc/ui/main_app.png)
 
 ### Extended public key management
 
-![Extended public key management](doc/ui/xpub_dlg.png)
+![Extended public key management](https://github.com/pandoracore/bitcoin-pro/raw/v0.1.0-alpha.2/doc/ui/xpub_dlg.png)
 
 ### Output descriptors
 
-![Output descriptors](doc/ui/descriptors.png)
+![Output descriptors](https://github.com/pandoracore/bitcoin-pro/raw/v0.1.0-alpha.2/doc/ui/descriptors.png)
 
 ### RGB-20 assets
 
-![Asset creation](doc/ui/asset_creation.png)
+![Asset creation](https://github.com/pandoracore/bitcoin-pro/raw/v0.1.0-alpha.2/doc/ui/asset_creation.png)
 
 ## License
 
