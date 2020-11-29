@@ -99,6 +99,14 @@ impl DescriptorGenerator {
         format!("{}({})", d.join("|"), data)
     }
 
+    pub fn script_pubket_count(&self) -> u32 {
+        self.types.bare as u32
+            + self.types.hashed as u32
+            + self.types.compat as u32
+            + self.types.segwit as u32
+            + self.types.taproot as u32
+    }
+
     pub fn script_pubkey(&self, index: u32) -> Result<Vec<Script>, Error> {
         let mut scripts = Vec::with_capacity(5);
         let single = if let DescriptorContent::SingleSig(_) = self.content {

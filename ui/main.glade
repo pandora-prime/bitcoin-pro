@@ -62,20 +62,6 @@
       <column type="gulong"/>
     </columns>
   </object>
-  <object class="GtkListStore" id="utxoStore">
-    <columns>
-      <!-- column-name txid -->
-      <column type="gchararray"/>
-      <!-- column-name vout -->
-      <column type="guint"/>
-      <!-- column-name amount -->
-      <column type="guint64"/>
-      <!-- column-name height -->
-      <column type="gulong"/>
-      <!-- column-name mined -->
-      <column type="gchararray"/>
-    </columns>
-  </object>
   <object class="GtkApplicationWindow" id="appWindow">
     <property name="width-request">666</property>
     <property name="height-request">600</property>
@@ -178,7 +164,6 @@
                     <property name="title" translatable="yes">Name</property>
                     <property name="clickable">True</property>
                     <property name="reorderable">True</property>
-                    <property name="sort-indicator">True</property>
                     <property name="sort-column-id">0</property>
                     <child>
                       <object class="GtkCellRendererText"/>
@@ -339,12 +324,13 @@
                     </child>
                     <child>
                       <object class="GtkTreeViewColumn">
+                        <property name="resizable">True</property>
                         <property name="sizing">fixed</property>
                         <property name="min-width">200</property>
                         <property name="title" translatable="yes">Name</property>
+                        <property name="expand">True</property>
                         <property name="clickable">True</property>
                         <property name="reorderable">True</property>
-                        <property name="sort-indicator">True</property>
                         <property name="sort-column-id">0</property>
                         <child>
                           <object class="GtkCellRendererText"/>
@@ -361,6 +347,7 @@
                         <property name="title" translatable="yes">Type</property>
                         <property name="clickable">True</property>
                         <property name="reorderable">True</property>
+                        <property name="sort-indicator">True</property>
                         <property name="sort-column-id">1</property>
                         <child>
                           <object class="GtkCellRendererText"/>
@@ -453,11 +440,13 @@
                             <property name="can-focus">False</property>
                             <property name="active">0</property>
                             <items>
-                              <item translatable="yes">While found</item>
-                              <item translatable="yes">First 10 keys</item>
-                              <item translatable="yes">First 100 keys</item>
-                              <item translatable="yes">First 1000 keys</item>
-                              <item translatable="yes">Random 100 keys</item>
+                              <item id="while" translatable="yes">While found</item>
+                              <item id="first" translatable="yes">First key</item>
+                              <item id="first5" translatable="yes">First 5 keys</item>
+                              <item id="first10" translatable="yes">First 10 keys</item>
+                              <item id="first20" translatable="yes">First 20 keys</item>
+                              <item id="first50" translatable="yes">First 50 keys</item>
+                              <item id="random10" translatable="yes">Random 10 keys</item>
                             </items>
                           </object>
                         </child>
@@ -481,6 +470,45 @@
                         <property name="homogeneous">False</property>
                       </packing>
                     </child>
+                    <child>
+                      <object class="GtkSeparatorToolItem">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton" id="utxoRemove">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="tooltip-text" translatable="yes">Remove selected asset allocation</property>
+                        <property name="is-important">True</property>
+                        <property name="label" translatable="yes">Remove</property>
+                        <property name="use-underline">True</property>
+                        <property name="icon-name">edit-delete</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="homogeneous">False</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton" id="utxoClear">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="is-important">True</property>
+                        <property name="label" translatable="yes">Clear</property>
+                        <property name="use-underline">True</property>
+                        <property name="icon-name">application-exit</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
+                    </child>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -489,7 +517,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkTreeView">
+                  <object class="GtkTreeView" id="utxoTree">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="hexpand">True</property>
@@ -575,23 +603,6 @@
                         </child>
                       </object>
                     </child>
-                    <child>
-                      <object class="GtkTreeViewColumn">
-                        <property name="resizable">True</property>
-                        <property name="sizing">fixed</property>
-                        <property name="title" translatable="yes">Timestamp</property>
-                        <property name="clickable">True</property>
-                        <property name="reorderable">True</property>
-                        <property name="sort-indicator">True</property>
-                        <property name="sort-column-id">5</property>
-                        <child>
-                          <object class="GtkCellRendererText"/>
-                          <attributes>
-                            <attribute name="text">4</attribute>
-                          </attributes>
-                        </child>
-                      </object>
-                    </child>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -603,8 +614,6 @@
                   <object class="GtkStatusbar" id="utxoStatus">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="margin-left">10</property>
-                    <property name="margin-right">10</property>
                     <property name="margin-start">10</property>
                     <property name="margin-end">10</property>
                     <property name="margin-top">6</property>
@@ -620,7 +629,7 @@
               </object>
               <packing>
                 <property name="resize">True</property>
-                <property name="shrink">False</property>
+                <property name="shrink">True</property>
               </packing>
             </child>
           </object>
@@ -1691,5 +1700,17 @@
         </child>
       </object>
     </child>
+  </object>
+  <object class="GtkListStore" id="utxoStore">
+    <columns>
+      <!-- column-name txid -->
+      <column type="gchararray"/>
+      <!-- column-name vout -->
+      <column type="guint"/>
+      <!-- column-name amount -->
+      <column type="guint64"/>
+      <!-- column-name height -->
+      <column type="gulong"/>
+    </columns>
   </object>
 </interface>

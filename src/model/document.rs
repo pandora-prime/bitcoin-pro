@@ -317,7 +317,7 @@ impl Document {
     }
 }
 
-#[derive(Clone, PartialEq, Debug, Default, StrictEncode, StrictDecode)]
+#[derive(Clone, PartialEq, Debug, StrictEncode, StrictDecode)]
 pub struct Profile {
     pub magic: u32,
     pub version: u16,

@@ -30,7 +30,9 @@ extern crate glib;
 #[macro_use]
 extern crate serde_with;
 
+mod controller;
 mod model;
+mod util;
 mod view;
 
 use gio::prelude::*;
