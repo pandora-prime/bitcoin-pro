@@ -58,13 +58,19 @@ pub enum Error {
     Resolver(ResolverError),
 
     /// Electrum server error
-    #[from(ElectrumError)]
-    Electrum,
+    #[display("{0}")]
+    Electrum(String),
 
     /// Script processing error
     #[display("{0}")]
     #[from]
     Descriptor(DescriptorError),
+}
+
+impl From<ElectrumError> for Error {
+    fn from(err: ElectrumError) -> Self {
+        Error::Electrum(format!("{:?}", err))
+    }
 }
 
 pub struct DescriptorDlg {
@@ -483,12 +489,14 @@ impl DescriptorDlg {
                 pubkeys.extend(generator.script_pubkey(offset)?);
                 offset += 1;
             }
+            let mut found = 0usize;
             for utxo in resolver
                 .batch_script_list_unspent(pubkeys.iter())?
                 .into_iter()
                 .flatten()
                 .map(UtxoEntry::from)
             {
+                found += 1;
                 if self.utxo_set.borrow_mut().deref_mut().insert(utxo.clone()) {
                     self.utxo_store.insert_with_values(
                         None,
@@ -502,7 +510,7 @@ impl DescriptorDlg {
                     );
                 }
             }
-            if lookup_type != "while" {
+            if lookup_type != "while" || found == 0 {
                 break;
             }
         }

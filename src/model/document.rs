@@ -126,6 +126,24 @@ impl Document {
         self.name.clone()
     }
 
+    pub fn electrum(&self) -> Option<String> {
+        if let ChainResolver::Electrum(electrum) =
+            self.profile.settings.resolver
+        {
+            Some(electrum.to_string())
+        } else {
+            None
+        }
+    }
+
+    pub fn set_electrum(
+        &mut self,
+        addr: InetSocketAddr,
+    ) -> Result<bool, Error> {
+        self.profile.settings.resolver = ChainResolver::Electrum(addr);
+        self.save()
+    }
+
     pub fn fill_tracking_store(&self, store: &gtk::ListStore) {
         store.clear();
         self.profile.tracking.iter().for_each(|tracking_account| {
@@ -236,16 +254,22 @@ pub struct Profile {
     pub settings: Settings,
 }
 
-#[derive(Debug, Display, Error, From)]
+#[derive(Clone, Debug, Display, Error, From)]
 #[display(doc_comments)]
 pub enum ResolverError {
     /// Electrum-specific error
-    #[from]
-    Electrum(ElectrumError),
+    #[display("{0}")]
+    Electrum(String),
 
     /// The current version supports only Electrum server; please specify
     /// server connection string in document settings
     ElectrumRequired,
+}
+
+impl From<ElectrumError> for ResolverError {
+    fn from(err: ElectrumError) -> Self {
+        ResolverError::Electrum(format!("{:?}", err))
+    }
 }
 
 #[derive(Clone, PartialEq, Eq, Debug, Display, StrictEncode, StrictDecode)]
@@ -261,7 +285,7 @@ pub enum ChainResolver {
 impl Default for ChainResolver {
     fn default() -> Self {
         ChainResolver::Electrum(
-            "31.14.40.18:60000"
+            "31.14.40.18:60601"
                 .parse()
                 .expect("Predefined address always parses"),
         )

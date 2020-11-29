@@ -1437,7 +1437,7 @@
                     <property name="top-padding">6</property>
                     <property name="left-padding">24</property>
                     <child>
-                      <!-- n-columns=2 n-rows=3 -->
+                      <!-- n-columns=3 n-rows=3 -->
                       <object class="GtkGrid">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
@@ -1504,7 +1504,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkEntry">
+                          <object class="GtkEntry" id="electrumField">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
                             <property name="input-purpose">url</property>
@@ -1526,6 +1526,44 @@
                             <property name="top-attach">2</property>
                           </packing>
                         </child>
+                        <child>
+                          <object class="GtkButton">
+                            <property name="label" translatable="yes">Test</property>
+                            <property name="visible">True</property>
+                            <property name="sensitive">False</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">True</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">2</property>
+                            <property name="top-attach">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton">
+                            <property name="label" translatable="yes">Test</property>
+                            <property name="visible">True</property>
+                            <property name="sensitive">False</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">True</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">2</property>
+                            <property name="top-attach">2</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="electrumBtn">
+                            <property name="label" translatable="yes">Test</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">True</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">2</property>
+                            <property name="top-attach">1</property>
+                          </packing>
+                        </child>
                       </object>
                     </child>
                   </object>
@@ -1545,17 +1583,6 @@
                 <property name="left-attach">0</property>
                 <property name="top-attach">1</property>
                 <property name="width">3</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="hexpand">True</property>
-              </object>
-              <packing>
-                <property name="left-attach">2</property>
-                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
@@ -1583,6 +1610,17 @@
               <packing>
                 <property name="left-attach">0</property>
                 <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="hexpand">True</property>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
           </object>

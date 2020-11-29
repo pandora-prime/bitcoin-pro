@@ -63,11 +63,19 @@ impl AppWindow {
         let pubkey_store = builder.get_object("pubkeyStore")?;
         let header_bar: gtk::HeaderBar = builder.get_object("headerBar")?;
 
+        let electrum_radio: gtk::RadioButton =
+            builder.get_object("electrum")?;
+        let electrum_field: gtk::Entry = builder.get_object("electrumField")?;
+        let electrum_btn: gtk::Button = builder.get_object("electrumBtn")?;
+
         doc.borrow().fill_tracking_store(&pubkey_store);
         pubkey_tree.set_model(Some(&pubkey_store));
         pubkey_tree.expand_all();
 
         header_bar.set_subtitle(Some(&doc.borrow().name()));
+
+        electrum_radio.set_active(true);
+        electrum_field.set_text(&doc.borrow().electrum().unwrap_or_default());
 
         let me = Rc::new(RefCell::new(Self {
             window: glade_load!(builder, "appWindow")?,
@@ -77,6 +85,48 @@ impl AppWindow {
             new_btn,
             open_btn,
         }));
+
+        electrum_field.connect_changed(
+            clone!(@strong doc, @weak electrum_field => move |_| {
+                match electrum_field.get_text().to_string().parse() {
+                    Ok(addr) => {
+                        electrum_field.set_property_secondary_icon_name(None);
+                        electrum_field.set_property_secondary_icon_tooltip_text(
+                            Some("")
+                        );
+                        let _ = doc.borrow_mut().set_electrum(addr);
+                    }
+                    Err(err) => {
+                        electrum_field.set_property_secondary_icon_name(
+                            Some("dialog-error")
+                        );
+                        electrum_field.set_property_secondary_icon_tooltip_text(
+                            Some(&err.to_string())
+                        );
+                    }
+                }
+            }),
+        );
+
+        electrum_btn.connect_clicked(
+            clone!(@strong doc, @weak electrum_field => move |_| {
+                if let Err(err) = doc.borrow().resolver() {
+                    electrum_field.set_property_secondary_icon_name(
+                        Some("dialog-error")
+                    );
+                    electrum_field.set_property_secondary_icon_tooltip_text(
+                        Some(&err.to_string())
+                    );
+                } else {
+                    electrum_field.set_property_secondary_icon_name(
+                        Some("dialog-ok")
+                    );
+                    electrum_field.set_property_secondary_icon_tooltip_text(
+                        Some("")
+                    );
+                }
+            }),
+        );
 
         let tb: gtk::ToolButton = builder.get_object("pubkeyAdd")?;
         tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
