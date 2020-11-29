@@ -51,13 +51,57 @@ pub struct DescriptorGenerator {
 }
 
 impl DescriptorGenerator {
+    pub fn name(&self) -> String {
+        self.name.clone()
+    }
+
+    pub fn type_name(&self) -> String {
+        match self.content {
+            DescriptorContent::SingleSig(_) => s!("Single-sig."),
+            DescriptorContent::MultiSig(_, _) => s!("Multi-sig."),
+            DescriptorContent::LockScript(_, _) => s!("Custom script"),
+        }
+    }
+
+    pub fn descriptor(&self) -> String {
+        let single = self.content.is_singlesig();
+        let mut d = vec![];
+        if self.types.bare {
+            d.push(if single { "pk" } else { "bare" });
+        }
+        if self.types.hashed {
+            d.push(if single { "pkh" } else { "sh" });
+        }
+        if self.types.compat {
+            d.push(if single { "sh_wpkh" } else { "sh_wsh" });
+        }
+        if self.types.segwit {
+            d.push(if single { "wpkh" } else { "wsh" });
+        }
+        if self.types.taproot {
+            d.push("tpk");
+        }
+        let data = match &self.content {
+            DescriptorContent::SingleSig(key) => key.to_string(),
+            DescriptorContent::MultiSig(threshold, keyset) => {
+                format!(
+                    "thresh_m({},{})",
+                    threshold,
+                    keyset
+                        .iter()
+                        .map(TrackingKey::to_string)
+                        .collect::<Vec<_>>()
+                        .join(",")
+                )
+            }
+            DescriptorContent::LockScript(_, script) => script.clone(),
+        };
+        format!("{}({})", d.join("|"), data)
+    }
+
     pub fn script_pubkey(&self, index: u32) -> Result<Vec<Script>, Error> {
         let mut scripts = Vec::with_capacity(5);
-        let single = if let DescriptorContent::SingleSig(_) = self.content {
-            Some(self.content.public_key(index).expect("Can't fail"))
-        } else {
-            None
-        };
+        let single = self.content.is_singlesig();
         if self.types.bare {
             let d = if let Some(pk) = single {
                 Descriptor::Pk(pk)
@@ -116,6 +160,13 @@ pub enum DescriptorContent {
 }
 
 impl DescriptorContent {
+    pub fn is_singlesig(&self) -> bool {
+        match self {
+            DescriptorContent::SingleSig(_) => true,
+            _ => false,
+        }
+    }
+
     pub fn public_key(&self, index: u32) -> Option<bitcoin::PublicKey> {
         match self {
             DescriptorContent::SingleSig(key) => Some(key.public_key(index)),

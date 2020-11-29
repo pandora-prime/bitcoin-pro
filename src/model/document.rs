@@ -26,7 +26,7 @@ use lnpbp::lnp::{NodeAddr, RemoteNodeAddr};
 use lnpbp::strict_encoding::{self, StrictDecode, StrictEncode};
 // use rgb::fungible;
 
-use super::{operation, TrackingAccount, UtxoEntry};
+use super::{operation, DescriptorGenerator, TrackingAccount, UtxoEntry};
 
 const DOC_NAME: &'static str = "Untitled";
 lazy_static! {
@@ -235,6 +235,14 @@ impl Document {
         }
     }
 
+    pub fn add_descriptor(
+        &mut self,
+        descriptor_generator: DescriptorGenerator,
+    ) -> Result<bool, Error> {
+        self.profile.descriptors.push(descriptor_generator);
+        self.save()
+    }
+
     pub fn resolver(&self) -> Result<ElectrumClient, ResolverError> {
         if let ChainResolver::Electrum(addr) = self.profile.settings.resolver {
             Ok(ElectrumClient::new(&addr.to_string(), None)?)
@@ -248,6 +256,7 @@ impl Document {
 pub struct Profile {
     pub description: Option<String>,
     pub tracking: Vec<TrackingAccount>,
+    pub descriptors: Vec<DescriptorGenerator>,
     pub utxo_cache: Vec<UtxoEntry>,
     // pub assets_cache: Vec<fungible::Asset>,
     pub history: Vec<operation::LogEntry>,

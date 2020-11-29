@@ -201,21 +201,18 @@ impl AppWindow {
         tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
             let descriptor_dlg = DescriptorDlg::load_glade().expect("Must load");
             descriptor_dlg.run(doc.clone(), clone!(@weak me, @strong doc =>
-                move |_descriptor_params| {
-                    /* TODO: Perform assst creation
+                move |descriptor_generator| {
                     let me = me.borrow();
                     me.pubkey_store.insert_with_values(
                         None,
-                        None,
                         &[0, 1, 2],
                         &[
-                            &tracking_account.name(),
-                            &tracking_account.details(),
-                            &tracking_account.count(),
+                            &descriptor_generator.name(),
+                            &descriptor_generator.type_name(),
+                            &descriptor_generator.descriptor(),
                         ],
                     );
-                    let _ = doc.borrow_mut().add_tracking_account(tracking_account);
-                     */
+                    let _ = doc.borrow_mut().add_descriptor(descriptor_generator);
                 }),
                 || {},
             );
