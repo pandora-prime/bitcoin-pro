@@ -25,9 +25,9 @@ use crate::model::{
     Document, ResolverError, SourceType, TrackingAccount, TrackingKey,
     UtxoEntry,
 };
-use crate::view::PubkeySelectDlg;
+use crate::view_controller::PubkeySelectDlg;
 
-static UI: &'static str = include_str!("../../ui/descriptor.glade");
+static UI: &'static str = include_str!("../view/descriptor.glade");
 
 #[derive(Debug, Display, From, Error)]
 #[display(doc_comments)]

@@ -17,9 +17,9 @@ use std::path::PathBuf;
 use std::rc::Rc;
 
 use crate::model::Document;
-use crate::view::{DescriptorDlg, IssueDlg, PubkeyDlg, SaveDlg};
+use crate::view_controller::{DescriptorDlg, IssueDlg, PubkeyDlg, SaveDlg};
 
-static UI: &'static str = include_str!("../../ui/main.glade");
+static UI: &'static str = include_str!("../view/main.glade");
 
 #[derive(Debug, Display, Error, From)]
 #[display(doc_comments)]
@@ -34,7 +34,7 @@ pub enum Error {
     Document(crate::model::Error),
 }
 
-pub struct AppWindow {
+pub struct BproWin {
     window: gtk::ApplicationWindow,
     pubkey_tree: gtk::TreeView,
     pubkey_store: gtk::ListStore,
@@ -45,7 +45,7 @@ pub struct AppWindow {
     open_btn: gtk::Button,
 }
 
-impl AppWindow {
+impl BproWin {
     fn load_glade(
         doc: Option<Document>,
     ) -> Result<Rc<RefCell<Self>>, glade::Error> {
@@ -318,7 +318,7 @@ impl AppWindow {
     }
 }
 
-impl AppWindow {
+impl BproWin {
     pub fn new(path: Option<PathBuf>) -> Result<Rc<RefCell<Self>>, Error> {
         let doc = if let Some(path) = path {
             Some(Document::load(path)?)

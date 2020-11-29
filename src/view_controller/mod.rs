@@ -11,7 +11,7 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-mod app_window;
+mod bpro_win;
 mod descriptor_dlg;
 mod issue_dlg;
 mod open_dlg;
@@ -19,7 +19,7 @@ mod pubkey_dlg;
 mod pubkey_select_dlg;
 mod save_dlg;
 
-pub use app_window::{AppWindow, Error as AppError};
+pub use bpro_win::{BproWin, Error as AppError};
 pub use descriptor_dlg::DescriptorDlg;
 pub use issue_dlg::IssueDlg;
 pub use open_dlg::OpenDlg;

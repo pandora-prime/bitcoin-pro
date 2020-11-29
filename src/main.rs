@@ -33,12 +33,12 @@ extern crate serde_with;
 mod controller;
 mod model;
 mod util;
-mod view;
+mod view_controller;
 
 use gio::prelude::*;
 use std::path::PathBuf;
 
-use crate::view::OpenDlg;
+use crate::view_controller::OpenDlg;
 
 fn main() {
     let application =
@@ -47,7 +47,7 @@ fn main() {
 
     application.connect_activate(|_| {
         fn new_app(path: Option<PathBuf>) {
-            if let Ok(app_window) = view::AppWindow::new(path) {
+            if let Ok(app_window) = view_controller::BproWin::new(path) {
                 let app_window = app_window.borrow();
                 app_window.run(
                     || {

@@ -15,35 +15,38 @@ use gtk::prelude::*;
 use std::path::PathBuf;
 use std::rc::Rc;
 
-static UI: &'static str = include_str!("../../ui/file_open.glade");
+static UI: &'static str = include_str!("../view/file_save.glade");
 
-pub struct OpenDlg {
+pub struct SaveDlg {
     dialog: gtk::FileChooserDialog,
-    open_btn: gtk::Button,
+    save_btn: gtk::Button,
     cancel_btn: gtk::Button,
 }
 
-impl OpenDlg {
+impl SaveDlg {
     pub fn load_glade() -> Result<Rc<Self>, glade::Error> {
         let builder = gtk::Builder::from_string(UI);
 
-        let open_btn = builder.get_object("open")?;
+        let save_btn = builder.get_object("save")?;
         let cancel_btn = builder.get_object("cancel")?;
-        let dialog = builder.get_object("openDlg")?;
+        let dialog = builder.get_object("saveDlg")?;
 
-        Ok(Rc::new(OpenDlg {
+        Ok(Rc::new(SaveDlg {
             dialog,
-            open_btn,
+            save_btn,
             cancel_btn,
         }))
     }
 
     pub fn run(
         self: Rc<Self>,
-        on_open: impl Fn(PathBuf) + 'static,
+        name: String,
+        on_save: impl Fn(PathBuf) + 'static,
         on_cancel: impl Fn() + 'static,
     ) {
         let me = self.clone();
+
+        me.dialog.set_current_name(name.clone());
 
         me.cancel_btn
             .connect_clicked(clone!(@weak self as me => move |_| {
@@ -51,11 +54,12 @@ impl OpenDlg {
                 on_cancel()
             }));
 
-        me.open_btn
-            .connect_clicked(clone!(@weak self as me => move |_| {
-                if let Some(path) = me.dialog.get_filename() {
+        me.save_btn
+            .connect_clicked(clone!(@weak self as me, @strong name => move |_| {
+                if let Some(mut path) = me.dialog.get_current_folder() {
                     me.dialog.hide();
-                    on_open(path);
+                    path.push(me.dialog.get_current_name().unwrap_or(name.clone().into()).as_str());
+                    on_save(path);
                 }
             }));
 

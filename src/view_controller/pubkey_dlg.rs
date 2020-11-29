@@ -27,7 +27,7 @@ use crate::model::{
     Slip32Error, TrackingAccount, TrackingKey,
 };
 
-static UI: &'static str = include_str!("../../ui/pubkey.glade");
+static UI: &'static str = include_str!("../view/pubkey.glade");
 
 #[derive(Debug, Display, From, Error)]
 #[display(doc_comments)]

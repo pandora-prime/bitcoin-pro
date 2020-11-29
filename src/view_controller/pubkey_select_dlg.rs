@@ -19,7 +19,7 @@ use gtk::ResponseType;
 
 use crate::model::{Document, TrackingAccount};
 
-static UI: &'static str = include_str!("../../ui/pubkey_select.glade");
+static UI: &'static str = include_str!("../view/pubkey_select.glade");
 
 #[derive(Debug, Display, From, Error)]
 #[display(doc_comments)]

@@ -16,7 +16,7 @@ use std::rc::Rc;
 
 use crate::model::AssetGenesis;
 
-static UI: &'static str = include_str!("../../ui/asset_create.glade");
+static UI: &'static str = include_str!("../view/asset_create.glade");
 
 #[derive(Debug, Display, From, Error)]
 #[display(doc_comments)]
