@@ -11,6 +11,7 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+use std::collections::HashMap;
 use std::str::FromStr;
 
 use lnpbp::bitcoin::{self, blockdata::script::Error as ScriptError, Script};
@@ -99,7 +100,7 @@ impl DescriptorGenerator {
         format!("{}({})", d.join("|"), data)
     }
 
-    pub fn script_pubket_count(&self) -> u32 {
+    pub fn pubkey_scripts_count(&self) -> u32 {
         self.types.bare as u32
             + self.types.hashed as u32
             + self.types.compat as u32
@@ -107,8 +108,11 @@ impl DescriptorGenerator {
             + self.types.taproot as u32
     }
 
-    pub fn script_pubkey(&self, index: u32) -> Result<Vec<Script>, Error> {
-        let mut scripts = Vec::with_capacity(5);
+    pub fn pubkey_scripts(
+        &self,
+        index: u32,
+    ) -> Result<HashMap<DescriptorType, Script>, Error> {
+        let mut scripts = HashMap::with_capacity(5);
         let single = if let DescriptorContent::SingleSig(_) = self.content {
             Some(self.content.public_key(index).expect("Can't fail"))
         } else {
@@ -120,7 +124,7 @@ impl DescriptorGenerator {
             } else {
                 Descriptor::Bare(self.content.miniscript(index)?)
             };
-            scripts.push(d.script_pubkey());
+            scripts.insert(DescriptorType::Bare, d.script_pubkey());
         }
         if self.types.hashed {
             let d = if let Some(pk) = single {
@@ -128,7 +132,7 @@ impl DescriptorGenerator {
             } else {
                 Descriptor::Sh(self.content.miniscript(index)?)
             };
-            scripts.push(d.script_pubkey());
+            scripts.insert(DescriptorType::Hashed, d.script_pubkey());
         }
         if self.types.compat {
             let d = if let Some(pk) = single {
@@ -136,7 +140,7 @@ impl DescriptorGenerator {
             } else {
                 Descriptor::ShWsh(self.content.miniscript(index)?)
             };
-            scripts.push(d.script_pubkey());
+            scripts.insert(DescriptorType::Compat, d.script_pubkey());
         }
         if self.types.segwit {
             let d = if let Some(pk) = single {
@@ -144,7 +148,7 @@ impl DescriptorGenerator {
             } else {
                 Descriptor::Wsh(self.content.miniscript(index)?)
             };
-            scripts.push(d.script_pubkey());
+            scripts.insert(DescriptorType::SegWit, d.script_pubkey());
         }
         /* TODO: Enable once Taproot will go live
         if self.taproot {
@@ -153,6 +157,17 @@ impl DescriptorGenerator {
          */
         Ok(scripts)
     }
+}
+
+#[derive(
+    Copy, Clone, PartialEq, Eq, Debug, Hash, StrictEncode, StrictDecode,
+)]
+pub enum DescriptorType {
+    Bare,
+    Hashed,
+    Compat,
+    SegWit,
+    Taproot,
 }
 
 #[derive(Clone, PartialEq, Eq, Debug, StrictEncode, StrictDecode)]
@@ -164,7 +179,19 @@ pub struct DescriptorTypes {
     pub taproot: bool,
 }
 
-#[derive(Clone, PartialEq, Eq, Debug, StrictEncode, StrictDecode)]
+impl DescriptorTypes {
+    pub fn has_match(&self, descriptor_type: DescriptorType) -> bool {
+        match descriptor_type {
+            DescriptorType::Bare => self.bare,
+            DescriptorType::Hashed => self.hashed,
+            DescriptorType::Compat => self.compat,
+            DescriptorType::SegWit => self.segwit,
+            DescriptorType::Taproot => self.taproot,
+        }
+    }
+}
+
+#[derive(Clone, PartialEq, Eq, Debug, Hash, StrictEncode, StrictDecode)]
 pub enum DescriptorContent {
     SingleSig(TrackingKey),
     MultiSig(u8, Vec<TrackingKey>),
@@ -228,7 +255,7 @@ impl DescriptorContent {
     }
 }
 
-#[derive(Clone, PartialEq, Eq, Debug, StrictEncode, StrictDecode)]
+#[derive(Clone, PartialEq, Eq, Hash, Debug, StrictEncode, StrictDecode)]
 pub enum SourceType {
     Binary,
     Assembly,

@@ -14,29 +14,26 @@
 use electrum_client::ListUnspentRes;
 use lnpbp::bitcoin::OutPoint;
 
+use super::{DescriptorContent, DescriptorGenerator, DescriptorType};
+
 #[derive(
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    Debug,
-    Display,
-    Serialize,
-    Deserialize,
-    StrictEncode,
-    StrictDecode,
+    Clone, PartialEq, Eq, Hash, Debug, Display, StrictEncode, StrictDecode,
 )]
 #[display("{amount}@{outpoint}")]
 pub struct UtxoEntry {
     pub outpoint: OutPoint,
     pub height: u32,
     pub amount: u64,
+    pub descriptor_content: DescriptorContent,
+    pub descriptor_type: DescriptorType,
 }
 
-impl From<&ListUnspentRes> for UtxoEntry {
-    fn from(res: &ListUnspentRes) -> Self {
+impl UtxoEntry {
+    pub fn with(
+        res: &ListUnspentRes,
+        descriptor_content: DescriptorContent,
+        descriptor_type: DescriptorType,
+    ) -> Self {
         UtxoEntry {
             outpoint: OutPoint {
                 txid: res.tx_hash,
@@ -44,12 +41,13 @@ impl From<&ListUnspentRes> for UtxoEntry {
             },
             height: res.height as u32,
             amount: res.value,
+            descriptor_content,
+            descriptor_type,
         }
     }
-}
 
-impl From<ListUnspentRes> for UtxoEntry {
-    fn from(res: ListUnspentRes) -> Self {
-        UtxoEntry::from(&res)
+    pub fn has_match(&self, generator: &DescriptorGenerator) -> bool {
+        generator.content == self.descriptor_content
+            && generator.types.has_match(self.descriptor_type)
     }
 }

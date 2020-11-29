@@ -14,17 +14,15 @@
 use gtk::prelude::*;
 use std::cell::RefCell;
 use std::collections::HashSet;
-use std::ops::DerefMut;
 use std::rc::Rc;
+use std::str::FromStr;
 
-use electrum_client::{ElectrumApi, Error as ElectrumError};
-use lnpbp::secp256k1::rand::{self, RngCore};
-
+use crate::controller::utxo_lookup::{self, UtxoLookup};
 use crate::model::{
-    DescriptorContent, DescriptorError, DescriptorGenerator, DescriptorTypes,
-    Document, ResolverError, SourceType, TrackingAccount, TrackingKey,
-    UtxoEntry,
+    DescriptorContent, DescriptorGenerator, DescriptorTypes, Document,
+    ResolverError, SourceType, TrackingAccount, TrackingKey, UtxoEntry,
 };
+use crate::util::resolver_mode::{self, ResolverModeType};
 use crate::view_controller::PubkeySelectDlg;
 
 static UI: &'static str = include_str!("../view/descriptor.glade");
@@ -54,24 +52,19 @@ pub enum Error {
     /// You need to specify lookup method
     LookupTypeRequired,
 
-    /// Error connecting to transaction resolver: {0}
+    /// Unrecognizable lookup type string {0}
+    #[from]
+    LookupTypeUnrecognized(resolver_mode::ParseError),
+
+    /// Error with Electrum server connection configuration
+    #[display("{0}")]
     #[from]
     Resolver(ResolverError),
 
-    /// Electrum server error
-    #[display("{0}")]
-    Electrum(String),
-
-    /// Script processing error
+    /// Error during UTXO lookup operation
     #[display("{0}")]
     #[from]
-    Descriptor(DescriptorError),
-}
-
-impl From<ElectrumError> for Error {
-    fn from(err: ElectrumError) -> Self {
-        Error::Electrum(format!("{:?}", err))
-    }
+    UtxoLookup(utxo_lookup::Error),
 }
 
 pub struct DescriptorDlg {
@@ -522,58 +515,19 @@ impl DescriptorDlg {
         doc: Rc<RefCell<Document>>,
         generator: DescriptorGenerator,
     ) -> Result<(), Error> {
-        let resolver = doc.borrow().resolver()?;
-        let mut offset = 0u32;
-        let mut random = None;
-        loop {
-            let lookup_type = self
-                .lookup_combo
-                .get_active_id()
-                .ok_or(Error::LookupTypeRequired)?;
-            let count = match lookup_type.as_str() {
-                "while" => 1,
-                "first" => 1,
-                "first5" => 5,
-                "first10" => 10,
-                "first20" => 20,
-                "first50" => 50,
-                "random10" => {
-                    random = Some(rand::thread_rng());
-                    10
-                }
-                _ => Err(Error::LookupTypeRequired)?,
-            };
-            let mut pubkeys = Vec::with_capacity(count);
-            for _ in 0..count {
-                if let Some(ref mut rng) = random {
-                    offset = rng.next_u32();
-                }
-                pubkeys.extend(generator.script_pubkey(offset)?);
-                offset += 1;
-            }
-            println!("Looking up pubkeys: {:#?}", pubkeys);
-            let mut found = 0usize;
-            let res = resolver.batch_script_list_unspent(pubkeys.iter())?;
-            println!("Got UTXO set from electrum: {:#?}", res);
-            for utxo in res.into_iter().flatten().map(UtxoEntry::from) {
-                found += 1;
-                if self.utxo_set.borrow_mut().deref_mut().insert(utxo.clone()) {
-                    self.utxo_store.insert_with_values(
-                        None,
-                        &[0, 1, 2, 3],
-                        &[
-                            &utxo.outpoint.txid.to_string(),
-                            &utxo.outpoint.vout,
-                            &utxo.amount,
-                            &utxo.height,
-                        ],
-                    );
-                }
-            }
-            if lookup_type != "while" || found == 0 {
-                break;
-            }
-        }
+        self.utxo_lookup(
+            doc.borrow().resolver()?,
+            ResolverModeType::from_str(
+                &*self
+                    .lookup_combo
+                    .get_active_id()
+                    .ok_or(Error::LookupTypeRequired)?,
+            )?,
+            generator,
+            self.utxo_set.clone(),
+            Some(&self.utxo_store),
+        )?;
+
         Ok(())
     }
 
@@ -629,7 +583,7 @@ impl DescriptorDlg {
         self.lookup_btn.set_sensitive(false);
         self.lookup_combo.set_sensitive(false);
 
-        let generator = self.descriptor_generator()?;
+        let _ = self.descriptor_generator()?;
 
         self.lookup_btn.set_sensitive(true);
         self.lookup_combo.set_sensitive(true);
@@ -637,3 +591,5 @@ impl DescriptorDlg {
         Ok(None)
     }
 }
+
+impl UtxoLookup for DescriptorDlg {}

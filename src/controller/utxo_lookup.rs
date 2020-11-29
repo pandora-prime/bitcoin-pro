@@ -20,8 +20,12 @@ use std::rc::Rc;
 use electrum_client::{
     Client as ElectrumClient, ElectrumApi, Error as ElectrumError,
 };
+use lnpbp::bitcoin::Script;
 
-use crate::model::{DescriptorError, DescriptorGenerator, UtxoEntry};
+use crate::model::{
+    DescriptorContent, DescriptorError, DescriptorGenerator, DescriptorType,
+    UtxoEntry,
+};
 use crate::util::resolver_mode::ResolverModeType;
 
 #[derive(Clone, PartialEq, Eq, Debug, Display, From, Error)]
@@ -51,25 +55,52 @@ pub trait UtxoLookup {
         utxo_set: Rc<RefCell<HashSet<UtxoEntry>>>,
         uxto_store: Option<&gtk::ListStore>,
     ) -> Result<usize, Error> {
+        struct LookupItem<'a> {
+            pub script_pubkey: Script,
+            pub descriptor_type: DescriptorType,
+            pub descriptor_content: &'a DescriptorContent,
+        }
+
         let mut total_found = 0usize;
         loop {
-            let mut pubkeys = Vec::with_capacity(
+            let mut lookup: Vec<LookupItem> = Vec::with_capacity(
                 lookup_type.count() as usize
-                    * generator.script_pubket_count() as usize,
+                    * generator.pubkey_scripts_count() as usize,
             );
             for offset in lookup_type {
-                pubkeys.extend(generator.script_pubkey(offset).map_err(
-                    |err| {
+                let scripts =
+                    generator.pubkey_scripts(offset).map_err(|err| {
                         Error::Descriptor(offset, generator.descriptor(), err)
+                    })?;
+                lookup.extend(scripts.into_iter().map(
+                    |(descriptor_type, script_pubkey)| LookupItem {
+                        script_pubkey,
+                        descriptor_type,
+                        descriptor_content: &generator.content,
                     },
-                )?);
+                ));
             }
             let mut found = 0usize;
             for utxo in resolver
-                .batch_script_list_unspent(pubkeys.iter())?
+                .batch_script_list_unspent(
+                    lookup
+                        .iter()
+                        .map(|item| item.script_pubkey.clone())
+                        .collect::<Vec<_>>()
+                        .iter(),
+                )?
                 .into_iter()
+                .zip(lookup)
+                .map(|(list, item)| {
+                    list.into_iter().map(move |res| {
+                        UtxoEntry::with(
+                            &res,
+                            item.descriptor_content.clone(),
+                            item.descriptor_type,
+                        )
+                    })
+                })
                 .flatten()
-                .map(UtxoEntry::from)
             {
                 found += 1;
                 if utxo_set.borrow_mut().deref_mut().insert(utxo.clone()) {

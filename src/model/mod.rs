@@ -20,7 +20,7 @@ mod utxo;
 
 pub use asset::AssetGenesis;
 pub use descriptors::{
-    DescriptorContent, DescriptorGenerator, DescriptorTypes,
+    DescriptorContent, DescriptorGenerator, DescriptorType, DescriptorTypes,
     Error as DescriptorError, SourceType,
 };
 pub use document::{Document, Error, Profile, ResolverError};

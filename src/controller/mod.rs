@@ -11,6 +11,4 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-mod utxo_lookup;
-
-pub use utxo_lookup::UtxoLookup;
+pub mod utxo_lookup;

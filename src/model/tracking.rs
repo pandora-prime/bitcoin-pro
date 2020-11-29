@@ -41,7 +41,9 @@ impl TrackingAccount {
     }
 }
 
-#[derive(Clone, PartialEq, Eq, Debug, Display, StrictEncode, StrictDecode)]
+#[derive(
+    Clone, PartialEq, Eq, Hash, Debug, Display, StrictEncode, StrictDecode,
+)]
 #[display(TrackingKey::details)]
 pub enum TrackingKey {
     SingleKey(secp256k1::PublicKey),
@@ -241,7 +243,7 @@ impl HardenedNormalSplit for DerivationPath {
     }
 }
 
-#[derive(Clone, PartialEq, Eq, Debug, StrictEncode, StrictDecode)]
+#[derive(Clone, PartialEq, Eq, Hash, Debug, StrictEncode, StrictDecode)]
 // master_xpub/branch_path=branch_xpub/terminal_path/index_ranges
 pub struct DerivationComponents {
     pub master_xpub: ExtendedPubKey,
@@ -319,7 +321,7 @@ impl Display for DerivationComponents {
     }
 }
 
-#[derive(Wrapper, Clone, PartialEq, Eq, Debug, From)]
+#[derive(Wrapper, Clone, PartialEq, Eq, Hash, Debug, From)]
 pub struct DerivationRange(RangeInclusive<u32>);
 
 impl DerivationRange {
