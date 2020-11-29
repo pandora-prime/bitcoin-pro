@@ -19,8 +19,8 @@ NB: This is an ultra-early alpha version; use it at your own risk!
 
 ## Features
 
-* Extended public key management [Completed]
-* Creation of arbitrary complex descriptors monitoring onchain transactions [WIP]
+* Extended public key management
+* Creation of arbitrary complex descriptors for UTXOs
 * Creation and management of RGB fungible assets (RGB-20 standard) [WIP]
   - Secondary issuances
   - Renominations
