@@ -1414,7 +1414,7 @@
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="halign">start</property>
-                <property name="label" translatable="yes">Blockchain:</property>
+                <property name="label" translatable="yes">Blockchain &amp; network:</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
                 </attributes>
@@ -1437,7 +1437,7 @@
                     <property name="top-padding">6</property>
                     <property name="left-padding">24</property>
                     <child>
-                      <!-- n-columns=3 n-rows=3 -->
+                      <!-- n-columns=2 n-rows=3 -->
                       <object class="GtkGrid">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
@@ -1447,10 +1447,11 @@
                           <object class="GtkRadioButton" id="bitcoinCore">
                             <property name="label" translatable="yes">Bitcoin Core</property>
                             <property name="visible">True</property>
+                            <property name="sensitive">False</property>
                             <property name="can-focus">True</property>
                             <property name="receives-default">False</property>
+                            <property name="halign">start</property>
                             <property name="draw-indicator">True</property>
-                            <property name="group">bpNode</property>
                           </object>
                           <packing>
                             <property name="left-attach">0</property>
@@ -1463,6 +1464,7 @@
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
                             <property name="receives-default">False</property>
+                            <property name="halign">start</property>
                             <property name="active">True</property>
                             <property name="draw-indicator">True</property>
                             <property name="group">bitcoinCore</property>
@@ -1476,10 +1478,12 @@
                           <object class="GtkRadioButton" id="bpNode">
                             <property name="label" translatable="yes">BP Node</property>
                             <property name="visible">True</property>
+                            <property name="sensitive">False</property>
                             <property name="can-focus">True</property>
                             <property name="receives-default">False</property>
+                            <property name="halign">start</property>
                             <property name="draw-indicator">True</property>
-                            <property name="group">electrum</property>
+                            <property name="group">bitcoinCore</property>
                           </object>
                           <packing>
                             <property name="left-attach">0</property>
@@ -1489,6 +1493,7 @@
                         <child>
                           <object class="GtkEntry">
                             <property name="visible">True</property>
+                            <property name="sensitive">False</property>
                             <property name="can-focus">True</property>
                             <property name="hexpand">True</property>
                             <property name="input-purpose">url</property>
@@ -1512,6 +1517,7 @@
                         <child>
                           <object class="GtkEntry">
                             <property name="visible">True</property>
+                            <property name="sensitive">False</property>
                             <property name="can-focus">True</property>
                             <property name="input-purpose">url</property>
                           </object>
@@ -1519,15 +1525,6 @@
                             <property name="left-attach">1</property>
                             <property name="top-attach">2</property>
                           </packing>
-                        </child>
-                        <child>
-                          <placeholder/>
-                        </child>
-                        <child>
-                          <placeholder/>
-                        </child>
-                        <child>
-                          <placeholder/>
                         </child>
                       </object>
                     </child>

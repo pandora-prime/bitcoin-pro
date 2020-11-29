@@ -11,13 +11,92 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+use std::str::FromStr;
+
+use lnpbp::bitcoin::{self, blockdata::script::Error as ScriptError, Script};
+use lnpbp::hex::{self, FromHex};
+use lnpbp::miniscript::{
+    self, Descriptor, Miniscript, ScriptContext, Terminal,
+};
+
 use super::TrackingKey;
+
+#[derive(Clone, PartialEq, Eq, Debug, Display, From, Error)]
+#[display(doc_comments)]
+pub enum Error {
+    /// Hex encoding error: {0}
+    #[from]
+    Hex(hex::Error),
+
+    /// Bitcoin script error: {0}
+    #[from]
+    Script(ScriptError),
+
+    /// Miniscript error
+    #[display("{0}")]
+    Miniscript(String),
+}
+
+impl From<miniscript::Error> for Error {
+    fn from(err: miniscript::Error) -> Self {
+        Error::Miniscript(err.to_string())
+    }
+}
 
 #[derive(Clone, PartialEq, Eq, Debug, StrictEncode, StrictDecode)]
 pub struct DescriptorGenerator {
     pub name: String,
     pub content: DescriptorContent,
     pub types: DescriptorTypes,
+}
+
+impl DescriptorGenerator {
+    pub fn script_pubkey(&self, index: u32) -> Result<Vec<Script>, Error> {
+        let mut scripts = Vec::with_capacity(5);
+        let single = if let DescriptorContent::SingleSig(_) = self.content {
+            Some(self.content.public_key(index).expect("Can't fail"))
+        } else {
+            None
+        };
+        if self.types.bare {
+            let d = if let Some(pk) = single {
+                Descriptor::Pk(pk)
+            } else {
+                Descriptor::Bare(self.content.miniscript(index)?)
+            };
+            scripts.push(d.script_pubkey());
+        }
+        if self.types.hashed {
+            let d = if let Some(pk) = single {
+                Descriptor::Pkh(pk)
+            } else {
+                Descriptor::Sh(self.content.miniscript(index)?)
+            };
+            scripts.push(d.script_pubkey());
+        }
+        if self.types.compat {
+            let d = if let Some(pk) = single {
+                Descriptor::ShWpkh(pk)
+            } else {
+                Descriptor::ShWsh(self.content.miniscript(index)?)
+            };
+            scripts.push(d.script_pubkey());
+        }
+        if self.types.segwit {
+            let d = if let Some(pk) = single {
+                Descriptor::Wpkh(pk)
+            } else {
+                Descriptor::Wsh(self.content.miniscript(index)?)
+            };
+            scripts.push(d.script_pubkey());
+        }
+        /* TODO: Enable once Taproot will go live
+        if self.taproot {
+            scripts.push(content.taproot());
+        }
+         */
+        Ok(scripts)
+    }
 }
 
 #[derive(Clone, PartialEq, Eq, Debug, StrictEncode, StrictDecode)]
@@ -34,6 +113,56 @@ pub enum DescriptorContent {
     SingleSig(TrackingKey),
     MultiSig(u8, Vec<TrackingKey>),
     LockScript(SourceType, String),
+}
+
+impl DescriptorContent {
+    pub fn public_key(&self, index: u32) -> Option<bitcoin::PublicKey> {
+        match self {
+            DescriptorContent::SingleSig(key) => Some(key.public_key(index)),
+            _ => None,
+        }
+    }
+
+    pub fn miniscript<Ctx>(
+        &self,
+        index: u32,
+    ) -> Result<Miniscript<bitcoin::PublicKey, Ctx>, Error>
+    where
+        Ctx: ScriptContext,
+    {
+        Ok(match self {
+            DescriptorContent::SingleSig(key) => {
+                let pk = key.public_key(index);
+                Miniscript::from_ast(Terminal::PkK(pk))?
+            }
+            DescriptorContent::MultiSig(thresh, keyset) => {
+                let ks = keyset
+                    .into_iter()
+                    .map(|key| key.public_key(index))
+                    .collect();
+                Miniscript::from_ast(Terminal::Multi(*thresh as usize, ks))?
+            }
+            DescriptorContent::LockScript(source_type, script) => {
+                match source_type {
+                    SourceType::Binary => {
+                        let script = Script::from(Vec::from_hex(script)?);
+                        Miniscript::parse(&script)?
+                    }
+                    SourceType::Assembly => {
+                        // TODO: Parse assembly
+                        let script = Script::from(Vec::from_hex(script)?);
+                        Miniscript::parse(&script)?
+                    }
+                    SourceType::Miniscript => Miniscript::from_str(script)?,
+                    SourceType::Policy => {
+                        // TODO: Compiler will require changes to LNP/BP
+                        // policy::Concrete::from_str(script)?.compile()?
+                        Miniscript::from_str(script)?
+                    }
+                }
+            }
+        })
+    }
 }
 
 #[derive(Clone, PartialEq, Eq, Debug, StrictEncode, StrictDecode)]

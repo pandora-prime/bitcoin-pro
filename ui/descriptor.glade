@@ -39,8 +39,6 @@
       <column type="guint64"/>
       <!-- column-name height -->
       <column type="gulong"/>
-      <!-- column-name mined -->
-      <column type="gchararray"/>
     </columns>
   </object>
   <object class="GtkDialog" id="descriptorDlg">
@@ -1170,23 +1168,6 @@
                     </child>
                   </object>
                 </child>
-                <child>
-                  <object class="GtkTreeViewColumn">
-                    <property name="resizable">True</property>
-                    <property name="sizing">fixed</property>
-                    <property name="title" translatable="yes">Timestamp</property>
-                    <property name="clickable">True</property>
-                    <property name="reorderable">True</property>
-                    <property name="sort-indicator">True</property>
-                    <property name="sort-column-id">5</property>
-                    <child>
-                      <object class="GtkCellRendererText"/>
-                      <attributes>
-                        <attribute name="text">4</attribute>
-                      </attributes>
-                    </child>
-                  </object>
-                </child>
               </object>
               <packing>
                 <property name="left-attach">0</property>
@@ -1234,11 +1215,13 @@
                     <property name="can-focus">False</property>
                     <property name="active">0</property>
                     <items>
-                      <item translatable="yes">While found</item>
-                      <item translatable="yes">First 10 keys</item>
-                      <item translatable="yes">First 100 keys</item>
-                      <item translatable="yes">First 1000 keys</item>
-                      <item translatable="yes">Random 100 keys</item>
+                      <item id="while" translatable="yes">While found</item>
+                      <item id="first" translatable="yes">First key</item>
+                      <item id="first5" translatable="yes">First 5 keys</item>
+                      <item id="first10" translatable="yes">First 10 keys</item>
+                      <item id="first20" translatable="yes">First 20 keys</item>
+                      <item id="first50" translatable="yes">First 50 keys</item>
+                      <item id="random10" translatable="yes">Random 10 keys</item>
                     </items>
                   </object>
                   <packing>

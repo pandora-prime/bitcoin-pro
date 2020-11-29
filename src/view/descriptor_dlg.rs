@@ -13,11 +13,16 @@
 
 use gtk::prelude::*;
 use std::cell::RefCell;
+use std::collections::HashSet;
+use std::ops::DerefMut;
 use std::rc::Rc;
 
+use electrum_client::{ElectrumApi, Error as ElectrumError};
+use lnpbp::secp256k1::rand::{self, RngCore};
+
 use crate::model::{
-    DescriptorContent, DescriptorGenerator, DescriptorTypes, Document,
-    SourceType, TrackingKey, UtxoEntry,
+    DescriptorContent, DescriptorError, DescriptorGenerator, DescriptorTypes,
+    Document, ResolverError, SourceType, TrackingKey, UtxoEntry,
 };
 use crate::view::PubkeySelectDlg;
 
@@ -44,6 +49,22 @@ pub enum Error {
 
     /// {0} is not supported in the current version
     NotYetSupported(&'static str),
+
+    /// You need to specify lookup method
+    LookupTypeRequired,
+
+    /// Error connecting to transaction resolver: {0}
+    #[from]
+    Resolver(ResolverError),
+
+    /// Electrum server error
+    #[from(ElectrumError)]
+    Electrum,
+
+    /// Script processing error
+    #[display("{0}")]
+    #[from]
+    Descriptor(DescriptorError),
 }
 
 pub struct DescriptorDlg {
@@ -51,7 +72,7 @@ pub struct DescriptorDlg {
 
     key: Rc<RefCell<Option<TrackingKey>>>,
     keyset: Rc<RefCell<Vec<TrackingKey>>>,
-    utxo_set: Rc<RefCell<Vec<UtxoEntry>>>,
+    utxo_set: Rc<RefCell<HashSet<UtxoEntry>>>,
 
     msg_box: gtk::Box,
     msg_label: gtk::Label,
@@ -319,12 +340,12 @@ impl DescriptorDlg {
             }),
         );
 
-        me.lookup_btn.connect_clicked(clone!(@weak me => move |_| {
+        me.lookup_btn.connect_clicked(clone!(@weak me, @strong doc => move |_| {
             match me.descriptor_generator() {
                 Ok(generator) => {
                     if let DescriptorContent::LockScript(..) = generator.content {
                         me.display_error(Error::NotYetSupported("Custom script lookup"))
-                    } else if let Err(err) = me.lookup(generator) {
+                    } else if let Err(err) = me.lookup(doc.clone(), generator) {
                         me.display_error(err);
                     }
                 },
@@ -428,7 +449,63 @@ impl DescriptorDlg {
         }
     }
 
-    pub fn lookup(&self, generator: DescriptorGenerator) -> Result<(), Error> {
+    pub fn lookup(
+        &self,
+        doc: Rc<RefCell<Document>>,
+        generator: DescriptorGenerator,
+    ) -> Result<(), Error> {
+        let resolver = doc.borrow().resolver()?;
+        let mut offset = 0u32;
+        let mut random = None;
+        loop {
+            let lookup_type = self
+                .lookup_combo
+                .get_active_id()
+                .ok_or(Error::LookupTypeRequired)?;
+            let count = match lookup_type.as_str() {
+                "while" => 1,
+                "first" => 1,
+                "first5" => 5,
+                "first10" => 10,
+                "first20" => 20,
+                "first50" => 50,
+                "random10" => {
+                    random = Some(rand::thread_rng());
+                    10
+                }
+                _ => Err(Error::LookupTypeRequired)?,
+            };
+            let mut pubkeys = Vec::with_capacity(count);
+            for _ in 0..count {
+                if let Some(ref mut rng) = random {
+                    offset = rng.next_u32();
+                }
+                pubkeys.extend(generator.script_pubkey(offset)?);
+                offset += 1;
+            }
+            for utxo in resolver
+                .batch_script_list_unspent(pubkeys.iter())?
+                .into_iter()
+                .flatten()
+                .map(UtxoEntry::from)
+            {
+                if self.utxo_set.borrow_mut().deref_mut().insert(utxo.clone()) {
+                    self.utxo_store.insert_with_values(
+                        None,
+                        &[0, 1, 2, 3],
+                        &[
+                            &utxo.outpoint.txid.to_string(),
+                            &utxo.outpoint.vout,
+                            &utxo.amount,
+                            &utxo.height,
+                        ],
+                    );
+                }
+            }
+            if lookup_type != "while" {
+                break;
+            }
+        }
         Ok(())
     }
 

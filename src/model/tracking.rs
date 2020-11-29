@@ -22,8 +22,8 @@ use lnpbp::bitcoin::util::bip32::{
     self, ChildNumber, DerivationPath, ExtendedPrivKey, ExtendedPubKey,
 };
 use lnpbp::bp::bip32::Decode;
-use lnpbp::secp256k1;
 use lnpbp::strict_encoding::{self, StrictDecode, StrictEncode};
+use lnpbp::{bitcoin, secp256k1};
 
 #[derive(Getters, Clone, PartialEq, Eq, Debug, StrictEncode, StrictDecode)]
 pub struct TrackingAccount {
@@ -60,6 +60,16 @@ impl TrackingKey {
         match self {
             TrackingKey::SingleKey(_) => 1,
             TrackingKey::HdKeySet(ref keyset) => keyset.count(),
+        }
+    }
+
+    pub fn public_key(&self, index: u32) -> bitcoin::PublicKey {
+        match self {
+            TrackingKey::SingleKey(pk) => bitcoin::PublicKey {
+                compressed: true,
+                key: *pk,
+            },
+            TrackingKey::HdKeySet(keyset) => keyset.public_key(index),
         }
     }
 }
@@ -283,6 +293,10 @@ impl DerivationComponents {
         self.branch_xpub
             .derive_pub(&lnpbp::SECP256K1, &derivation)
             .expect("Non-hardened derivation does not fail")
+    }
+
+    pub fn public_key(&self, index: u32) -> bitcoin::PublicKey {
+        self.child(index).public_key
     }
 }
 

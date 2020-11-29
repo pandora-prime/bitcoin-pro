@@ -20,9 +20,10 @@ mod utxo;
 
 pub use asset::AssetGenesis;
 pub use descriptors::{
-    DescriptorContent, DescriptorGenerator, DescriptorTypes, SourceType,
+    DescriptorContent, DescriptorGenerator, DescriptorTypes,
+    Error as DescriptorError, SourceType,
 };
-pub use document::{Document, Error, Profile};
+pub use document::{Document, Error, Profile, ResolverError};
 pub use tracking::{
     DerivationComponents, DerivationRange, Error as Slip32Error, FromSlip32,
     HardenedNormalSplit, TrackingAccount, TrackingKey,

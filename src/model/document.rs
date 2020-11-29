@@ -19,6 +19,8 @@ use std::io::{self, Seek, SeekFrom};
 use std::path::PathBuf;
 use std::sync::Mutex;
 
+use electrum_client::{Client as ElectrumClient, Error as ElectrumError};
+
 use lnpbp::bp::Chain;
 use lnpbp::lnp::{NodeAddr, RemoteNodeAddr};
 use lnpbp::strict_encoding::{self, StrictDecode, StrictEncode};
@@ -54,7 +56,7 @@ impl From<io::Error> for Error {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub struct Document {
     name: String,
     file: Option<File>,
@@ -85,6 +87,7 @@ impl Document {
                     format!("{}{}", DOC_NAME, *DOC_NO.lock().unwrap())
                 }),
             profile,
+            ..Default::default()
         })
     }
 
@@ -213,6 +216,14 @@ impl Document {
             self.save()
         }
     }
+
+    pub fn resolver(&self) -> Result<ElectrumClient, ResolverError> {
+        if let ChainResolver::Electrum(addr) = self.profile.settings.resolver {
+            Ok(ElectrumClient::new(&addr.to_string(), None)?)
+        } else {
+            Err(ResolverError::ElectrumRequired)
+        }
+    }
 }
 
 #[derive(Clone, PartialEq, Eq, Debug, Default, StrictEncode, StrictDecode)]
@@ -223,6 +234,18 @@ pub struct Profile {
     // pub assets_cache: Vec<fungible::Asset>,
     pub history: Vec<operation::LogEntry>,
     pub settings: Settings,
+}
+
+#[derive(Debug, Display, Error, From)]
+#[display(doc_comments)]
+pub enum ResolverError {
+    /// Electrum-specific error
+    #[from]
+    Electrum(ElectrumError),
+
+    /// The current version supports only Electrum server; please specify
+    /// server connection string in document settings
+    ElectrumRequired,
 }
 
 #[derive(Clone, PartialEq, Eq, Debug, Display, StrictEncode, StrictDecode)]
