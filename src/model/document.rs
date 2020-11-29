@@ -21,6 +21,7 @@ use std::path::PathBuf;
 use std::sync::Mutex;
 
 use electrum_client::{Client as ElectrumClient, Error as ElectrumError};
+use lnpbp::bitcoin::OutPoint;
 
 use lnpbp::bitcoin::Transaction;
 use lnpbp::bp::{Chain, Psbt};
@@ -314,6 +315,7 @@ impl Document {
         store: &gtk::ListStore,
         filter_by: Option<&DescriptorGenerator>,
     ) {
+        store.clear();
         self.profile.utxo_cache.iter().for_each(|utxo| {
             if filter_by
                 .map(|generator| utxo.has_match(generator))
@@ -338,6 +340,33 @@ impl Document {
         utxo_set_update: HashSet<UtxoEntry>,
     ) -> Result<bool, Error> {
         self.profile.utxo_cache.extend(utxo_set_update);
+        self.save()
+    }
+
+    pub fn utxo_by_outpoint(&self, outpoint: OutPoint) -> Option<UtxoEntry> {
+        self.profile
+            .utxo_cache
+            .iter()
+            .find(|utxo| utxo.outpoint == outpoint)
+            .cloned()
+    }
+
+    pub fn remove_utxo(&mut self, utxo: UtxoEntry) -> Result<bool, Error> {
+        self.profile.utxo_cache.remove(&utxo);
+        self.save()
+    }
+
+    pub fn remove_utxo_by_descriptor(
+        &mut self,
+        descriptor_generator: DescriptorGenerator,
+    ) -> Result<bool, Error> {
+        self.profile.utxo_cache = self
+            .profile
+            .utxo_cache
+            .iter()
+            .filter(|utxo| !utxo.has_match(&descriptor_generator))
+            .cloned()
+            .collect();
         self.save()
     }
 

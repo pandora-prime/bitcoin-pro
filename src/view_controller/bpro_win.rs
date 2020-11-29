@@ -15,6 +15,9 @@ use gtk::prelude::*;
 use std::cell::RefCell;
 use std::path::PathBuf;
 use std::rc::Rc;
+use std::str::FromStr;
+
+use lnpbp::bitcoin::{OutPoint, Txid};
 
 use crate::model::Document;
 use crate::view_controller::{DescriptorDlg, IssueDlg, PubkeyDlg, SaveDlg};
@@ -40,6 +43,8 @@ pub struct BproWin {
     pubkey_store: gtk::ListStore,
     descriptor_tree: gtk::TreeView,
     descriptor_store: gtk::ListStore,
+    utxo_descr_tree: gtk::TreeView,
+    utxo_descr_store: gtk::ListStore,
     utxo_tree: gtk::TreeView,
     utxo_store: gtk::ListStore,
     header_bar: gtk::HeaderBar,
@@ -49,6 +54,9 @@ pub struct BproWin {
     pubkey_remove_btn: gtk::ToolButton,
     descriptor_edit_btn: gtk::ToolButton,
     descriptor_remove_btn: gtk::ToolButton,
+    utxo_descr_remove_btn: gtk::ToolButton,
+    utxo_descr_clear_btn: gtk::ToolButton,
+    utxo_remove_btn: gtk::ToolButton,
 }
 
 impl BproWin {
@@ -73,12 +81,18 @@ impl BproWin {
         let pubkey_remove_btn = builder.get_object("pubkeyRemove")?;
         let descriptor_edit_btn = builder.get_object("descriptorEdit")?;
         let descriptor_remove_btn = builder.get_object("descriptorRemove")?;
+        let utxo_descr_remove_btn = builder.get_object("utxoDescrRemove")?;
+        let utxo_descr_clear_btn = builder.get_object("utxoDescrClear")?;
+        let utxo_remove_btn = builder.get_object("utxoRemove")?;
 
         let pubkey_tree: gtk::TreeView = builder.get_object("pubkeyTree")?;
         let pubkey_store = builder.get_object("pubkeyStore")?;
         let descriptor_tree: gtk::TreeView =
             builder.get_object("locatorTree")?;
         let descriptor_store = builder.get_object("locatorStore")?;
+        let utxo_descr_tree: gtk::TreeView =
+            builder.get_object("utxoDescrTree")?;
+        let utxo_descr_store = builder.get_object("utxoDescrStore")?;
         let utxo_tree: gtk::TreeView = builder.get_object("utxoTree")?;
         let utxo_store = builder.get_object("utxoStore")?;
 
@@ -89,6 +103,7 @@ impl BproWin {
 
         doc.borrow().fill_tracking_store(&pubkey_store);
         doc.borrow().fill_descriptor_store(&descriptor_store);
+        doc.borrow().fill_utxo_store(&utxo_store, None);
 
         header_bar.set_subtitle(Some(&doc.borrow().name()));
 
@@ -101,6 +116,8 @@ impl BproWin {
             pubkey_store,
             descriptor_tree,
             descriptor_store,
+            utxo_descr_tree,
+            utxo_descr_store,
             utxo_tree,
             utxo_store,
             header_bar,
@@ -110,6 +127,9 @@ impl BproWin {
             pubkey_remove_btn,
             descriptor_edit_btn,
             descriptor_remove_btn,
+            utxo_descr_remove_btn,
+            utxo_descr_clear_btn,
+            utxo_remove_btn,
         }));
 
         electrum_field.connect_changed(
@@ -237,10 +257,10 @@ impl BproWin {
         me.borrow().descriptor_tree.get_selection().connect_changed(
             clone!(@weak me, @strong doc => move |_| {
                 let me = me.borrow();
-                        me.utxo_store.clear();
+                me.utxo_descr_store.clear();
                 if let Some((generator, _, _)) = me.descriptor_selection() {
                     if let Some(descriptor_generator) = doc.borrow().descriptor_by_generator(&generator) {
-                        doc.borrow().fill_utxo_store(&me.utxo_store, Some(&descriptor_generator));
+                        doc.borrow().fill_utxo_store(&me.utxo_descr_store, Some(&descriptor_generator));
                     }
                     me.descriptor_edit_btn.set_sensitive(true);
                     me.descriptor_remove_btn.set_sensitive(true);
@@ -248,6 +268,7 @@ impl BproWin {
                     me.descriptor_edit_btn.set_sensitive(false);
                     me.descriptor_remove_btn.set_sensitive(false);
                 }
+                me.utxo_descr_clear_btn.set_sensitive(me.utxo_descr_store.get_iter_first().is_some());
             }),
         );
 
@@ -284,12 +305,14 @@ impl BproWin {
                 descriptor_dlg.run(doc.clone(), Some(descriptor_generator.clone()), clone!(@weak me, @strong doc =>
                     move |new_descriptor_generator, utxo_set_update| {
                         let me = me.borrow();
+                        me.utxo_descr_clear_btn.set_sensitive(!utxo_set_update.is_empty());
                         me.descriptor_store.set_value(&iter, 0, &new_descriptor_generator.name().to_value());
                         me.descriptor_store.set_value(&iter, 1, &new_descriptor_generator.type_name().to_value());
                         me.descriptor_store.set_value(&iter, 2, &new_descriptor_generator.descriptor().to_value());
                         let _ = doc.borrow_mut().update_descriptor(&descriptor_generator, new_descriptor_generator);
                         let _ = doc.borrow_mut().update_utxo_set(utxo_set_update);
-                        doc.borrow().fill_utxo_store(&me.utxo_store, Some(&descriptor_generator));
+                        doc.borrow().fill_utxo_store(&me.utxo_descr_store, Some(&descriptor_generator));
+                        doc.borrow().fill_utxo_store(&me.utxo_store, None);
                     }),
                     || {},
                 );
@@ -317,6 +340,99 @@ impl BproWin {
                 if dlg.run() == gtk::ResponseType::Yes {
                     me.descriptor_store.remove(&iter);
                     let _ = doc.borrow_mut().remove_descriptor(descriptor_generator);
+                }
+                dlg.hide();
+            }
+        }));
+
+        me.borrow().utxo_descr_tree.get_selection().connect_changed(
+            clone!(@weak me, @strong doc => move |_| {
+                let me = me.borrow();
+                me.utxo_descr_remove_btn.set_sensitive(me.utxo_descr_tree.get_selection().get_selected().is_some());
+            }),
+        );
+
+        me.borrow().utxo_descr_remove_btn.connect_clicked(clone!(@weak me, @strong doc => move |_| {
+            let me = me.borrow();
+            if let Some((outpoint, _, iter)) = Self::utxo_selection(&me.utxo_descr_tree) {
+                let utxo = doc
+                    .borrow()
+                    .utxo_by_outpoint(outpoint)
+                    .expect("UTXO must be known since it is selected");
+                let dlg = gtk::MessageDialog::new(
+                    Some(&me.window),
+                    gtk::DialogFlags::MODAL,
+                    gtk::MessageType::Question,
+                    gtk::ButtonsType::YesNo,
+                    &format!("Please confirm deletion of {}", utxo)
+                );
+                if dlg.run() == gtk::ResponseType::Yes {
+                    me.utxo_descr_store.remove(&iter);
+                    let _ = doc.borrow_mut().remove_utxo(utxo);
+                    doc.borrow().fill_utxo_store(&me.utxo_store, None);
+                }
+                dlg.hide();
+            }
+        }));
+
+        me.borrow().utxo_descr_clear_btn.connect_clicked(clone!(@weak me, @strong doc => move |_| {
+            let me = me.borrow();
+            if let Some((generator, _, _)) = me.descriptor_selection() {
+                let descriptor_generator = doc
+                    .borrow()
+                    .descriptor_by_generator(&generator)
+                    .expect("Descriptor must be known since it is selected");
+                let dlg = gtk::MessageDialog::new(
+                    Some(&me.window),
+                    gtk::DialogFlags::MODAL,
+                    gtk::MessageType::Question,
+                    gtk::ButtonsType::YesNo,
+                    &format!("Please confirm deletion of all UTXOs for {}", generator)
+                );
+                if dlg.run() == gtk::ResponseType::Yes {
+                    me.utxo_descr_store.clear();
+                    let _ = doc.borrow_mut().remove_utxo_by_descriptor(descriptor_generator);
+                    doc.borrow().fill_utxo_store(&me.utxo_store, None);
+                    me.utxo_descr_clear_btn.set_sensitive(false);
+                }
+                dlg.hide();
+            }
+        }));
+
+        me.borrow().utxo_tree.get_selection().connect_changed(
+            clone!(@weak me, @strong doc => move |_| {
+                let me = me.borrow();
+                me.utxo_remove_btn.set_sensitive(me.utxo_tree.get_selection().get_selected().is_some());
+            }),
+        );
+
+        me.borrow().utxo_remove_btn.connect_clicked(clone!(@weak me, @strong doc => move |_| {
+            let me = me.borrow();
+            if let Some((outpoint, _, iter)) = Self::utxo_selection(&me.utxo_tree) {
+                let utxo = doc
+                    .borrow()
+                    .utxo_by_outpoint(outpoint)
+                    .expect("UTXO must be known since it is selected");
+                let dlg = gtk::MessageDialog::new(
+                    Some(&me.window),
+                    gtk::DialogFlags::MODAL,
+                    gtk::MessageType::Question,
+                    gtk::ButtonsType::YesNo,
+                    &format!("Please confirm deletion of {}", utxo)
+                );
+                if dlg.run() == gtk::ResponseType::Yes {
+                    me.utxo_store.remove(&iter);
+                    let _ = doc.borrow_mut().remove_utxo(utxo);
+                    if let Some((generator, _, _)) = me.descriptor_selection() {
+                        let descriptor_generator = doc
+                            .borrow()
+                            .descriptor_by_generator(&generator)
+                            .expect("Descriptor must be known since it is selected");
+                        doc.borrow().fill_utxo_store(&me.utxo_descr_store, Some(&descriptor_generator));
+                    } else {
+                        me.utxo_descr_store.clear();
+                    }
+                    me.utxo_descr_clear_btn.set_sensitive(me.utxo_descr_store.get_iter_first().is_some());
                 }
                 dlg.hide();
             }
@@ -418,6 +534,32 @@ impl BproWin {
                     .flatten()
                     .map(|name| (name, model, iter))
             })
+    }
+
+    pub fn utxo_selection(
+        utxo_tree: &gtk::TreeView,
+    ) -> Option<(OutPoint, gtk::TreeModel, gtk::TreeIter)> {
+        utxo_tree
+            .get_selection()
+            .get_selected()
+            .map(|(model, iter)| {
+                let txid = model
+                    .get_value(&iter, 0)
+                    .get::<String>()
+                    .ok()
+                    .flatten()
+                    .map(|txid| Txid::from_str(&txid))
+                    .transpose()
+                    .ok()
+                    .flatten();
+                let vout =
+                    model.get_value(&iter, 1).get::<u32>().ok().flatten();
+                vout.map(|vout| {
+                    txid.map(|txid| (OutPoint { txid, vout }, model, iter))
+                })
+                .flatten()
+            })
+            .flatten()
     }
 
     pub fn update_ui(&self) {}
