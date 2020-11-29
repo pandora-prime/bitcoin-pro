@@ -236,8 +236,12 @@ impl BproWin {
 
         me.borrow().descriptor_tree.get_selection().connect_changed(
             clone!(@weak me, @strong doc => move |_| {
-            let me = me.borrow();
+                let me = me.borrow();
+                        me.utxo_store.clear();
                 if let Some((generator, _, _)) = me.descriptor_selection() {
+                    if let Some(descriptor_generator) = doc.borrow().descriptor_by_generator(&generator) {
+                        doc.borrow().fill_utxo_store(&me.utxo_store, Some(&descriptor_generator));
+                    }
                     me.descriptor_edit_btn.set_sensitive(true);
                     me.descriptor_remove_btn.set_sensitive(true);
                 } else {
