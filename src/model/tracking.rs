@@ -11,6 +11,7 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+use std::cmp::Ordering;
 use std::fmt::{self, Display, Formatter};
 use std::io;
 use std::iter::FromIterator;
@@ -42,7 +43,16 @@ impl TrackingAccount {
 }
 
 #[derive(
-    Clone, PartialEq, Eq, Hash, Debug, Display, StrictEncode, StrictDecode,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Debug,
+    Display,
+    StrictEncode,
+    StrictDecode,
 )]
 #[display(TrackingKey::details)]
 pub enum TrackingKey {
@@ -243,7 +253,17 @@ impl HardenedNormalSplit for DerivationPath {
     }
 }
 
-#[derive(Clone, PartialEq, Eq, Hash, Debug, StrictEncode, StrictDecode)]
+#[derive(
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Debug,
+    StrictEncode,
+    StrictDecode,
+)]
 // master_xpub/branch_path=branch_xpub/terminal_path/index_ranges
 pub struct DerivationComponents {
     pub master_xpub: ExtendedPubKey,
@@ -323,6 +343,24 @@ impl Display for DerivationComponents {
 
 #[derive(Wrapper, Clone, PartialEq, Eq, Hash, Debug, From)]
 pub struct DerivationRange(RangeInclusive<u32>);
+
+impl PartialOrd for DerivationRange {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        match self.start().partial_cmp(&other.start()) {
+            Some(Ordering::Equal) => self.end().partial_cmp(&other.end()),
+            other => other,
+        }
+    }
+}
+
+impl Ord for DerivationRange {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match self.start().cmp(&other.start()) {
+            Ordering::Equal => self.end().cmp(&other.end()),
+            other => other,
+        }
+    }
+}
 
 impl DerivationRange {
     pub fn count(&self) -> u32 {

@@ -17,7 +17,16 @@ use lnpbp::bitcoin::OutPoint;
 use super::{DescriptorContent, DescriptorGenerator, DescriptorType};
 
 #[derive(
-    Clone, PartialEq, Eq, Hash, Debug, Display, StrictEncode, StrictDecode,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Debug,
+    Display,
+    StrictEncode,
+    StrictDecode,
 )]
 #[display("{amount}@{outpoint}")]
 pub struct UtxoEntry {
@@ -26,6 +35,7 @@ pub struct UtxoEntry {
     pub amount: u64,
     pub descriptor_content: DescriptorContent,
     pub descriptor_type: DescriptorType,
+    pub derivation_index: u32,
 }
 
 impl UtxoEntry {
@@ -33,6 +43,7 @@ impl UtxoEntry {
         res: &ListUnspentRes,
         descriptor_content: DescriptorContent,
         descriptor_type: DescriptorType,
+        derivation_index: u32,
     ) -> Self {
         UtxoEntry {
             outpoint: OutPoint {
@@ -43,6 +54,7 @@ impl UtxoEntry {
             amount: res.value,
             descriptor_content,
             descriptor_type,
+            derivation_index,
         }
     }
 

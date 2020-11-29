@@ -13,6 +13,7 @@
 
 use amplify::internet::InetSocketAddr;
 use gtk::prelude::*;
+use std::collections::HashSet;
 use std::ffi::OsStr;
 use std::fs::{File, OpenOptions};
 use std::io::{self, Seek, SeekFrom};
@@ -308,6 +309,38 @@ impl Document {
         self.save()
     }
 
+    pub fn fill_utxo_store(
+        &self,
+        store: &gtk::ListStore,
+        filter_by: Option<&DescriptorGenerator>,
+    ) {
+        self.profile.utxo_cache.iter().for_each(|utxo| {
+            if filter_by
+                .map(|generator| utxo.has_match(generator))
+                .unwrap_or(true)
+            {
+                store.insert_with_values(
+                    None,
+                    &[0, 1, 2, 3],
+                    &[
+                        &utxo.outpoint.txid.to_string(),
+                        &utxo.outpoint.vout,
+                        &utxo.amount,
+                        &utxo.height,
+                    ],
+                );
+            }
+        });
+    }
+
+    pub fn update_utxo_set(
+        &mut self,
+        utxo_set_update: HashSet<UtxoEntry>,
+    ) -> Result<bool, Error> {
+        self.profile.utxo_cache.extend(utxo_set_update);
+        self.save()
+    }
+
     pub fn resolver(&self) -> Result<ElectrumClient, ResolverError> {
         if let ChainResolver::Electrum(addr) = self.profile.settings.resolver {
             Ok(ElectrumClient::new(&addr.to_string(), None)?)
@@ -324,15 +357,15 @@ pub struct Profile {
     pub description: Option<String>,
     pub tracking: Vec<TrackingAccount>,
     pub descriptors: Vec<DescriptorGenerator>,
-    pub utxo_cache: Vec<UtxoEntry>,
+    pub utxo_cache: HashSet<UtxoEntry>,
     pub tx_cache: Vec<Transaction>,
     pub psbt_cache: Vec<Psbt>,
-    pub schema_cache: Vec<u8>,     // Placeholder
-    pub assets_cache: Vec<u8>,     // Placeholder
-    pub nft_cache: Vec<u8>,        // Placeholder
-    pub identities_cache: Vec<u8>, // Placeholder
-    pub audit_cache: Vec<u8>,      // Placeholder
-    pub contracts_cache: Vec<u8>,  // Placeholder
+    pub schema_cache: HashSet<u8>, // Placeholder
+    pub assets_cache: HashSet<u8>, // Placeholder
+    pub nft_cache: HashSet<u8>,    // Placeholder
+    pub identities_cache: HashSet<u8>, // Placeholder
+    pub audit_cache: HashSet<u8>,  // Placeholder
+    pub contracts_cache: HashSet<u8>, // Placeholder
     pub history: Vec<operation::LogEntry>,
     pub settings: Settings,
 }
@@ -345,15 +378,15 @@ impl Default for Profile {
             description: None,
             tracking: vec![],
             descriptors: vec![],
-            utxo_cache: vec![],
+            utxo_cache: set![],
             tx_cache: vec![],
             psbt_cache: vec![],
-            schema_cache: vec![],
-            assets_cache: vec![],
-            nft_cache: vec![],
-            identities_cache: vec![],
-            audit_cache: vec![],
-            contracts_cache: vec![],
+            schema_cache: set![],
+            assets_cache: set![],
+            nft_cache: set![],
+            identities_cache: set![],
+            audit_cache: set![],
+            contracts_cache: set![],
             history: vec![],
             settings: Settings::default(),
         }

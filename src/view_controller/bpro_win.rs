@@ -40,9 +40,15 @@ pub struct BproWin {
     pubkey_store: gtk::ListStore,
     descriptor_tree: gtk::TreeView,
     descriptor_store: gtk::ListStore,
+    utxo_tree: gtk::TreeView,
+    utxo_store: gtk::ListStore,
     header_bar: gtk::HeaderBar,
     new_btn: gtk::Button,
     open_btn: gtk::Button,
+    pubkey_edit_btn: gtk::ToolButton,
+    pubkey_remove_btn: gtk::ToolButton,
+    descriptor_edit_btn: gtk::ToolButton,
+    descriptor_remove_btn: gtk::ToolButton,
 }
 
 impl BproWin {
@@ -63,11 +69,18 @@ impl BproWin {
         let open_btn: gtk::Button = builder.get_object("open")?;
         let header_bar: gtk::HeaderBar = builder.get_object("headerBar")?;
 
+        let pubkey_edit_btn = builder.get_object("pubkeyEdit")?;
+        let pubkey_remove_btn = builder.get_object("pubkeyRemove")?;
+        let descriptor_edit_btn = builder.get_object("descriptorEdit")?;
+        let descriptor_remove_btn = builder.get_object("descriptorRemove")?;
+
         let pubkey_tree: gtk::TreeView = builder.get_object("pubkeyTree")?;
         let pubkey_store = builder.get_object("pubkeyStore")?;
         let descriptor_tree: gtk::TreeView =
             builder.get_object("locatorTree")?;
         let descriptor_store = builder.get_object("locatorStore")?;
+        let utxo_tree: gtk::TreeView = builder.get_object("utxoTree")?;
+        let utxo_store = builder.get_object("utxoStore")?;
 
         let electrum_radio: gtk::RadioButton =
             builder.get_object("electrum")?;
@@ -76,8 +89,6 @@ impl BproWin {
 
         doc.borrow().fill_tracking_store(&pubkey_store);
         doc.borrow().fill_descriptor_store(&descriptor_store);
-        pubkey_tree.set_model(Some(&pubkey_store));
-        pubkey_tree.expand_all();
 
         header_bar.set_subtitle(Some(&doc.borrow().name()));
 
@@ -90,9 +101,15 @@ impl BproWin {
             pubkey_store,
             descriptor_tree,
             descriptor_store,
+            utxo_tree,
+            utxo_store,
             header_bar,
             new_btn,
             open_btn,
+            pubkey_edit_btn,
+            pubkey_remove_btn,
+            descriptor_edit_btn,
+            descriptor_remove_btn,
         }));
 
         electrum_field.connect_changed(
@@ -137,6 +154,19 @@ impl BproWin {
             }),
         );
 
+        me.borrow().pubkey_tree.get_selection().connect_changed(
+            clone!(@weak me, @strong doc => move |_| {
+                let me = me.borrow();
+                if let Some(_) = me.pubkey_selection() {
+                    me.pubkey_edit_btn.set_sensitive(true);
+                    me.pubkey_remove_btn.set_sensitive(true);
+                } else {
+                    me.pubkey_edit_btn.set_sensitive(false);
+                    me.pubkey_remove_btn.set_sensitive(false);
+                }
+            }),
+        );
+
         let tb: gtk::ToolButton = builder.get_object("pubkeyAdd")?;
         tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
             let pubkey_dlg = PubkeyDlg::load_glade().expect("Must load");
@@ -158,8 +188,7 @@ impl BproWin {
             );
         }));
 
-        let tb: gtk::ToolButton = builder.get_object("pubkeyEdit")?;
-        tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
+        me.borrow().pubkey_edit_btn.connect_clicked(clone!(@weak me, @strong doc => move |_| {
             let meb = me.borrow();
             let pubkey_dlg = PubkeyDlg::load_glade().expect("Must load");
             if let Some((keyname, _, iter)) = meb.pubkey_selection() {
@@ -180,8 +209,7 @@ impl BproWin {
             }
         }));
 
-        let tb: gtk::ToolButton = builder.get_object("pubkeyRemove")?;
-        tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
+        me.borrow().pubkey_remove_btn.connect_clicked(clone!(@weak me, @strong doc => move |_| {
             let me = me.borrow();
             if let Some((keyname, _, iter)) = me.pubkey_selection() {
                 let tracking_account = doc
@@ -206,11 +234,24 @@ impl BproWin {
             }
         }));
 
+        me.borrow().descriptor_tree.get_selection().connect_changed(
+            clone!(@weak me, @strong doc => move |_| {
+            let me = me.borrow();
+                if let Some((generator, _, _)) = me.descriptor_selection() {
+                    me.descriptor_edit_btn.set_sensitive(true);
+                    me.descriptor_remove_btn.set_sensitive(true);
+                } else {
+                    me.descriptor_edit_btn.set_sensitive(false);
+                    me.descriptor_remove_btn.set_sensitive(false);
+                }
+            }),
+        );
+
         let tb: gtk::ToolButton = builder.get_object("descriptorAdd")?;
         tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
             let descriptor_dlg = DescriptorDlg::load_glade().expect("Must load");
             descriptor_dlg.run(doc.clone(), None, clone!(@weak me, @strong doc =>
-                move |descriptor_generator| {
+                move |descriptor_generator, utxo_set_update| {
                     let me = me.borrow();
                     me.descriptor_store.insert_with_values(
                         None,
@@ -222,13 +263,13 @@ impl BproWin {
                         ],
                     );
                     let _ = doc.borrow_mut().add_descriptor(descriptor_generator);
+                    let _ = doc.borrow_mut().update_utxo_set(utxo_set_update);
                 }),
                 || {},
             );
         }));
 
-        let tb: gtk::ToolButton = builder.get_object("descriptorEdit")?;
-        tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
+        me.borrow().descriptor_edit_btn.connect_clicked(clone!(@weak me, @strong doc => move |_| {
             let meb = me.borrow();
             let descriptor_dlg = DescriptorDlg::load_glade().expect("Must load");
             if let Some((generator, _, iter)) = meb.descriptor_selection() {
@@ -237,20 +278,21 @@ impl BproWin {
                     .descriptor_by_generator(&generator)
                     .expect("Descriptor account must be known since it is selected");
                 descriptor_dlg.run(doc.clone(), Some(descriptor_generator.clone()), clone!(@weak me, @strong doc =>
-                    move |new_descriptor_generator| {
+                    move |new_descriptor_generator, utxo_set_update| {
                         let me = me.borrow();
                         me.descriptor_store.set_value(&iter, 0, &new_descriptor_generator.name().to_value());
                         me.descriptor_store.set_value(&iter, 1, &new_descriptor_generator.type_name().to_value());
                         me.descriptor_store.set_value(&iter, 2, &new_descriptor_generator.descriptor().to_value());
                         let _ = doc.borrow_mut().update_descriptor(&descriptor_generator, new_descriptor_generator);
+                        let _ = doc.borrow_mut().update_utxo_set(utxo_set_update);
+                        doc.borrow().fill_utxo_store(&me.utxo_store, Some(&descriptor_generator));
                     }),
                     || {},
                 );
             }
         }));
 
-        let tb: gtk::ToolButton = builder.get_object("descriptorRemove")?;
-        tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
+        me.borrow().descriptor_remove_btn.connect_clicked(clone!(@weak me, @strong doc => move |_| {
             let me = me.borrow();
             if let Some((generator, _, iter)) = me.descriptor_selection() {
                 let descriptor_generator = doc

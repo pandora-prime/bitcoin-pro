@@ -59,15 +59,17 @@ pub trait UtxoLookup {
             pub script_pubkey: Script,
             pub descriptor_type: DescriptorType,
             pub descriptor_content: &'a DescriptorContent,
+            pub derivation_index: u32,
         }
 
         let mut total_found = 0usize;
+        let mut lookup_iter = lookup_type.into_iter();
         loop {
             let mut lookup: Vec<LookupItem> = Vec::with_capacity(
                 lookup_type.count() as usize
                     * generator.pubkey_scripts_count() as usize,
             );
-            for offset in lookup_type {
+            for offset in lookup_iter.by_ref() {
                 let scripts =
                     generator.pubkey_scripts(offset).map_err(|err| {
                         Error::Descriptor(offset, generator.descriptor(), err)
@@ -77,18 +79,20 @@ pub trait UtxoLookup {
                         script_pubkey,
                         descriptor_type,
                         descriptor_content: &generator.content,
+                        derivation_index: offset,
                     },
                 ));
             }
             let mut found = 0usize;
-            for utxo in resolver
-                .batch_script_list_unspent(
-                    lookup
-                        .iter()
-                        .map(|item| item.script_pubkey.clone())
-                        .collect::<Vec<_>>()
-                        .iter(),
-                )?
+            let request: Vec<_> = lookup
+                .iter()
+                .map(|item| item.script_pubkey.clone())
+                .collect();
+            println!("Requesting lookup for: {:#?}", request);
+            let response =
+                resolver.batch_script_list_unspent(request.iter())?;
+            println!("Response:\n{:#?}", response);
+            for utxo in response
                 .into_iter()
                 .zip(lookup)
                 .map(|(list, item)| {
@@ -97,6 +101,7 @@ pub trait UtxoLookup {
                             &res,
                             item.descriptor_content.clone(),
                             item.descriptor_type,
+                            item.derivation_index,
                         )
                     })
                 })
@@ -119,7 +124,7 @@ pub trait UtxoLookup {
                 }
             }
             total_found += found;
-            if lookup_type.is_while() || found == 0 {
+            if !lookup_type.is_while() || found == 0 {
                 break;
             }
         }

@@ -160,7 +160,16 @@ impl DescriptorGenerator {
 }
 
 #[derive(
-    Copy, Clone, PartialEq, Eq, Debug, Hash, StrictEncode, StrictDecode,
+    Copy,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Debug,
+    Hash,
+    StrictEncode,
+    StrictDecode,
 )]
 pub enum DescriptorType {
     Bare,
@@ -170,7 +179,9 @@ pub enum DescriptorType {
     Taproot,
 }
 
-#[derive(Clone, PartialEq, Eq, Debug, StrictEncode, StrictDecode)]
+#[derive(
+    Clone, PartialEq, Eq, PartialOrd, Ord, Debug, StrictEncode, StrictDecode,
+)]
 pub struct DescriptorTypes {
     pub bare: bool,
     pub hashed: bool,
@@ -191,7 +202,17 @@ impl DescriptorTypes {
     }
 }
 
-#[derive(Clone, PartialEq, Eq, Debug, Hash, StrictEncode, StrictDecode)]
+#[derive(
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Debug,
+    Hash,
+    StrictEncode,
+    StrictDecode,
+)]
 pub enum DescriptorContent {
     SingleSig(TrackingKey),
     MultiSig(u8, Vec<TrackingKey>),
@@ -255,7 +276,17 @@ impl DescriptorContent {
     }
 }
 
-#[derive(Clone, PartialEq, Eq, Hash, Debug, StrictEncode, StrictDecode)]
+#[derive(
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Debug,
+    StrictEncode,
+    StrictDecode,
+)]
 pub enum SourceType {
     Binary,
     Assembly,

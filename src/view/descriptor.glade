@@ -1276,7 +1276,7 @@
         </child>
         <child>
           <object class="GtkButton" id="save">
-            <property name="label" translatable="yes">Add</property>
+            <property name="label" translatable="yes">Save</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>

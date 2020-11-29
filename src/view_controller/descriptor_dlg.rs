@@ -260,7 +260,7 @@ impl DescriptorDlg {
         self: Rc<Self>,
         doc: Rc<RefCell<Document>>,
         descriptor_generator: Option<DescriptorGenerator>,
-        on_save: impl Fn(DescriptorGenerator) + 'static,
+        on_save: impl Fn(DescriptorGenerator, HashSet<UtxoEntry>) + 'static,
         on_cancel: impl Fn() + 'static,
     ) {
         let me = self.clone();
@@ -371,7 +371,8 @@ impl DescriptorDlg {
             clone!(@weak me => move |_| match self.descriptor_generator() {
                 Ok(descriptor_generator) => {
                     me.dialog.close();
-                    on_save(descriptor_generator);
+                    let utxo_set = (*me.utxo_set).clone().into_inner();
+                    on_save(descriptor_generator, utxo_set);
                 }
                 Err(err) => {
                     me.display_error(err);
