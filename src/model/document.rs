@@ -21,13 +21,18 @@ use std::sync::Mutex;
 
 use electrum_client::{Client as ElectrumClient, Error as ElectrumError};
 
-use lnpbp::bp::Chain;
+use lnpbp::bitcoin::Transaction;
+use lnpbp::bp::{Chain, Psbt};
 use lnpbp::lnp::{NodeAddr, RemoteNodeAddr};
 use lnpbp::strict_encoding::{self, StrictDecode, StrictEncode};
 // use rgb::fungible;
 
 use super::{operation, DescriptorGenerator, TrackingAccount, UtxoEntry};
 
+/// Equals to first 4 bytes of SHA256("pandoracore:bpro")
+/// = dbe2b664ee4e81d3a55d53aeba1915c468927c79a03587ddfc5c3aec483028ab
+/// Check with `echo -n "pandoracore:bpro" | shasum -a 256`
+const DOC_MAGIC: u32 = 0xdbe2b664;
 const DOC_NAME: &'static str = "Untitled";
 lazy_static! {
     static ref DOC_NO: Mutex<u32> = Mutex::new(0);
@@ -74,7 +79,10 @@ impl Document {
 
     pub fn load(path: PathBuf) -> Result<Document, Error> {
         let file = File::open(path.clone())?;
-        let profile = Profile::strict_decode(&file)?;
+        let mut profile = Profile::strict_decode(&file)?;
+        // TODO: Change this to checking document magic number once all docs
+        //       will be updated
+        profile.magic = DOC_MAGIC;
         let file = OpenOptions::new().write(true).open(path.clone())?;
         Ok(Document {
             file: Some(file),
@@ -309,15 +317,47 @@ impl Document {
     }
 }
 
-#[derive(Clone, PartialEq, Eq, Debug, Default, StrictEncode, StrictDecode)]
+#[derive(Clone, PartialEq, Debug, Default, StrictEncode, StrictDecode)]
 pub struct Profile {
+    pub magic: u32,
+    pub version: u16,
     pub description: Option<String>,
     pub tracking: Vec<TrackingAccount>,
     pub descriptors: Vec<DescriptorGenerator>,
     pub utxo_cache: Vec<UtxoEntry>,
-    // pub assets_cache: Vec<fungible::Asset>,
+    pub tx_cache: Vec<Transaction>,
+    pub psbt_cache: Vec<Psbt>,
+    pub schema_cache: Vec<u8>,     // Placeholder
+    pub assets_cache: Vec<u8>,     // Placeholder
+    pub nft_cache: Vec<u8>,        // Placeholder
+    pub identities_cache: Vec<u8>, // Placeholder
+    pub audit_cache: Vec<u8>,      // Placeholder
+    pub contracts_cache: Vec<u8>,  // Placeholder
     pub history: Vec<operation::LogEntry>,
     pub settings: Settings,
+}
+
+impl Default for Profile {
+    fn default() -> Self {
+        Profile {
+            magic: DOC_MAGIC,
+            version: 0,
+            description: None,
+            tracking: vec![],
+            descriptors: vec![],
+            utxo_cache: vec![],
+            tx_cache: vec![],
+            psbt_cache: vec![],
+            schema_cache: vec![],
+            assets_cache: vec![],
+            nft_cache: vec![],
+            identities_cache: vec![],
+            audit_cache: vec![],
+            contracts_cache: vec![],
+            history: vec![],
+            settings: Settings::default(),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Display, Error, From)]
