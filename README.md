@@ -19,14 +19,22 @@ NB: This is an ultra-early alpha version; use it at your own risk!
 
 ## Features
 
-* Extended public key management
+* Extended public key management with advanced convertor and derivation 
+  functionality
 * Creation of arbitrary complex descriptors for UTXOs
+* View on bitcoin UTXOs, transactions [Partially implemented]
 * Creation and management of RGB fungible assets (RGB-20 standard) [WIP]
-  - Secondary issuances
-  - Renominations
+  - Secondary issuance
+  - Renomination
   - Burn & replacement
 * Creation and management of RGB collectibles/non-fungible token contracts 
   (RGB-21 standard) [Planned]
+* Identity management with RGB-22 schema [Planned]
+* Audit logs with RGB-23 schema [Planned]
+* Monitoring new bitcoin transactions under certain descriptors [Planned]
+* Bitcoin transaction and blockchain explorer [Planned]
+* PSBT composer/editor [Planned]
+* Custom RGB schema and state transition editor [Planned]
 
 ## Installation
 
@@ -35,7 +43,7 @@ Install rust language and run
 ```constole
 $ sudo apt update
 $ sudo apt install -y cargo libssl-dev libzmq3-dev pkg-config g++ cmake libgtk-3-dev
-$ cargo install bitcoin-pro --version 0.1.0-alpha.1
+$ cargo install bitcoin-pro --version 0.1.0-alpha.3
 $ bitcoin-pro
 ```
 
@@ -43,19 +51,19 @@ $ bitcoin-pro
 
 ### Main interface
 
-![Main window](https://github.com/pandoracore/bitcoin-pro/raw/v0.1.0-alpha.2/doc/ui/main_app.png)
+![Main window](https://github.com/pandoracore/bitcoin-pro/raw/v0.1.0-alpha.3/doc/ui/main_app.png)
 
 ### Extended public key management
 
-![Extended public key management](https://github.com/pandoracore/bitcoin-pro/raw/v0.1.0-alpha.2/doc/ui/xpub_dlg.png)
+![Extended public key management](https://github.com/pandoracore/bitcoin-pro/raw/v0.1.0-alpha.3/doc/ui/xpub_dlg.png)
 
 ### Output descriptors
 
-![Output descriptors](https://github.com/pandoracore/bitcoin-pro/raw/v0.1.0-alpha.2/doc/ui/descriptors.png)
+![Output descriptors](https://github.com/pandoracore/bitcoin-pro/raw/v0.1.0-alpha.3/doc/ui/descriptors.png)
 
 ### RGB-20 assets
 
-![Asset creation](https://github.com/pandoracore/bitcoin-pro/raw/v0.1.0-alpha.2/doc/ui/asset_creation.png)
+![Asset creation](https://github.com/pandoracore/bitcoin-pro/raw/v0.1.0-alpha.3/doc/ui/asset_creation.png)
 
 ## License
 
