@@ -55,7 +55,6 @@ dkms.conf
 #Added by cargo
 
 /target
-Cargo.lock
 
 # Idea IDE
 /.idea
