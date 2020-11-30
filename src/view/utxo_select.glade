@@ -24,7 +24,7 @@
       <column type="gulong"/>
     </columns>
   </object>
-  <object class="GtkDialog">
+  <object class="GtkDialog" id="utxoDlg">
     <property name="height-request">666</property>
     <property name="can-focus">False</property>
     <property name="type-hint">dialog</property>
@@ -73,7 +73,7 @@
                 <property name="search-column">0</property>
                 <property name="fixed-height-mode">True</property>
                 <child internal-child="selection">
-                  <object class="GtkTreeSelection"/>
+                  <object class="GtkTreeSelection" id="locatorSelection"/>
                 </child>
                 <child>
                   <object class="GtkTreeViewColumn">
@@ -147,7 +147,7 @@
                 <property name="enable-tree-lines">True</property>
                 <property name="activate-on-single-click">True</property>
                 <child internal-child="selection">
-                  <object class="GtkTreeSelection"/>
+                  <object class="GtkTreeSelection" id="utxoSelection"/>
                 </child>
                 <child>
                   <object class="GtkTreeViewColumn">

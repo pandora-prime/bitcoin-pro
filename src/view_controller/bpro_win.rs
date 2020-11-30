@@ -20,9 +20,9 @@ use std::str::FromStr;
 use lnpbp::bitcoin::{OutPoint, Txid};
 
 use crate::model::Document;
-use crate::view_controller::{DescriptorDlg, IssueDlg, PubkeyDlg, SaveDlg};
+use crate::view_controller::{AssetDlg, DescriptorDlg, PubkeyDlg, SaveDlg};
 
-static UI: &'static str = include_str!("../view/main.glade");
+static UI: &'static str = include_str!("../view/bpro.glade");
 
 #[derive(Debug, Display, Error, From)]
 #[display(doc_comments)]
@@ -450,8 +450,8 @@ impl BproWin {
 
         let tb: gtk::ToolButton = builder.get_object("assetCreate")?;
         tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
-            let issue_dlg = IssueDlg::load_glade().expect("Must load");
-            issue_dlg.run(clone!(@weak me, @strong doc =>
+            let issue_dlg = AssetDlg::load_glade().expect("Must load");
+            issue_dlg.run(doc.clone(), None, clone!(@weak me, @strong doc =>
                 move |_asset_genesis| {
                     /* TODO: Perform assst creation
                     let me = me.borrow();

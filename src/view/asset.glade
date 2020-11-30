@@ -4,10 +4,14 @@
   <requires lib="gtk+" version="3.22"/>
   <object class="GtkListStore" id="allocationStore">
     <columns>
-      <!-- column-name txid -->
+      <!-- column-name descriptor -->
       <column type="gchararray"/>
-      <!-- column-name vout -->
-      <column type="guint"/>
+      <!-- column-name name -->
+      <column type="gchararray"/>
+      <!-- column-name satoshis -->
+      <column type="guint64"/>
+      <!-- column-name outpoint -->
+      <column type="gchararray"/>
       <!-- column-name amount -->
       <column type="gfloat"/>
     </columns>
@@ -19,12 +23,17 @@
     <property name="step-increment">1000000</property>
     <property name="page-increment">1000000000</property>
   </object>
+  <object class="GtkTextBuffer" id="contractBuffer"/>
   <object class="GtkListStore" id="inflationStore">
     <columns>
-      <!-- column-name txid -->
+      <!-- column-name descriptor -->
       <column type="gchararray"/>
-      <!-- column-name vout -->
-      <column type="guint"/>
+      <!-- column-name name -->
+      <column type="gchararray"/>
+      <!-- column-name satoshis -->
+      <column type="guint64"/>
+      <!-- column-name outpoint -->
+      <column type="gchararray"/>
       <!-- column-name amount -->
       <column type="gfloat"/>
     </columns>
@@ -35,11 +44,12 @@
     <property name="icon-name">document-open</property>
   </object>
   <object class="GtkAdjustment" id="precisionAdjustment">
-    <property name="upper">63</property>
+    <property name="upper">18</property>
+    <property name="value">8</property>
     <property name="step-increment">1</property>
-    <property name="page-increment">10</property>
+    <property name="page-increment">2</property>
   </object>
-  <object class="GtkDialog" id="assetCreateDlg">
+  <object class="GtkDialog" id="assetDlg">
     <property name="width-request">666</property>
     <property name="can-focus">False</property>
     <property name="window-position">center</property>
@@ -111,7 +121,7 @@
           </packing>
         </child>
         <child>
-          <!-- n-columns=2 n-rows=7 -->
+          <!-- n-columns=2 n-rows=4 -->
           <object class="GtkGrid">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
@@ -144,115 +154,6 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="halign">end</property>
-                <property name="label" translatable="yes">Title:</property>
-                <property name="justify">right</property>
-              </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">2</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="halign">end</property>
-                <property name="label" translatable="yes">Fractional digits:</property>
-                <property name="justify">right</property>
-              </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">3</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkEntry" id="titleEntry">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="hexpand">True</property>
-                <property name="max-length">32</property>
-                <property name="max-width-chars">256</property>
-                <property name="placeholder-text" translatable="yes">Short human-readable name (up to 32 characters)</property>
-                <signal name="changed" handler="titleChanged" swapped="no"/>
-              </object>
-              <packing>
-                <property name="left-attach">1</property>
-                <property name="top-attach">2</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkSpinButton" id="precisionSpinner">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="hexpand">True</property>
-                <property name="max-length">2</property>
-                <property name="primary-icon-name">dialog-information</property>
-                <property name="primary-icon-tooltip-text" translatable="yes">Number of allowed fractional digits. For instance, with usual currencies we have two digits after comma (like 5.43 USD), with bitcoin we have eight.</property>
-                <property name="input-purpose">digits</property>
-                <property name="adjustment">precisionAdjustment</property>
-                <property name="numeric">True</property>
-                <signal name="value-changed" handler="precisionChanged" swapped="no"/>
-              </object>
-              <packing>
-                <property name="left-attach">1</property>
-                <property name="top-attach">3</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkCheckButton" id="detailsCheckbox">
-                <property name="label" translatable="yes">Contract text (Ricardian contract):</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">False</property>
-                <property name="halign">start</property>
-                <property name="hexpand">True</property>
-                <property name="draw-indicator">True</property>
-                <signal name="toggled" handler="detailsToggled" swapped="no"/>
-              </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">5</property>
-                <property name="width">2</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkFrame">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label-xalign">0</property>
-                <property name="label-yalign">0</property>
-                <property name="shadow-type">out</property>
-                <child>
-                  <object class="GtkTextView" id="detailsText">
-                    <property name="width-request">400</property>
-                    <property name="height-request">120</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="hexpand">True</property>
-                    <property name="border-width">1</property>
-                    <property name="wrap-mode">word</property>
-                    <property name="left-margin">6</property>
-                    <property name="right-margin">6</property>
-                    <property name="top-margin">6</property>
-                    <property name="bottom-margin">6</property>
-                    <property name="input-hints">GTK_INPUT_HINT_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
-                  </object>
-                </child>
-                <child type="label_item">
-                  <placeholder/>
-                </child>
-              </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">6</property>
-                <property name="width">2</property>
-              </packing>
-            </child>
-            <child>
               <object class="GtkCheckButton" id="epochCheckbox">
                 <property name="label" translatable="yes">Allow burn &amp; 
 replacements:</property>
@@ -260,18 +161,18 @@ replacements:</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">False</property>
                 <property name="halign">start</property>
-                <property name="hexpand">True</property>
                 <property name="draw-indicator">True</property>
               </object>
               <packing>
                 <property name="left-attach">0</property>
-                <property name="top-attach">4</property>
+                <property name="top-attach">2</property>
               </packing>
             </child>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="hexpand">True</property>
                 <property name="spacing">6</property>
                 <child>
                   <object class="GtkEntry" id="epochEntry">
@@ -288,7 +189,7 @@ replacements:</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton">
+                  <object class="GtkButton" id="epochBtn">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
@@ -304,20 +205,7 @@ replacements:</property>
               </object>
               <packing>
                 <property name="left-attach">1</property>
-                <property name="top-attach">4</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkEntry" id="idEntry">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="hexpand">True</property>
-                <property name="caps-lock-warning">False</property>
-                <property name="placeholder-text" translatable="yes">Asset ID will be assigned upon issuance</property>
-              </object>
-              <packing>
-                <property name="left-attach">1</property>
-                <property name="top-attach">0</property>
+                <property name="top-attach">2</property>
               </packing>
             </child>
             <child>
@@ -330,19 +218,114 @@ replacements:</property>
                   <object class="GtkEntry" id="tickerEntry">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="hexpand">False</property>
-                    <property name="max-length">16</property>
-                    <property name="width-chars">16</property>
-                    <property name="max-width-chars">16</property>
+                    <property name="max-length">8</property>
+                    <property name="width-chars">13</property>
+                    <property name="max-width-chars">8</property>
                     <property name="primary-icon-name">dialog-information</property>
                     <property name="primary-icon-tooltip-text" translatable="yes">You must ensure that the ticker name is unique and not used by other assets. While it is possible to issue assets with the same name, this will confuse users.</property>
-                    <property name="placeholder-text" translatable="yes">Maximum 16 characters</property>
+                    <property name="placeholder-text" translatable="yes">Max 8 chars</property>
                     <property name="input-purpose">alpha</property>
                     <property name="input-hints">GTK_INPUT_HINT_UPPERCASE_CHARS | GTK_INPUT_HINT_NONE</property>
                     <signal name="changed" handler="tickerChanged" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="halign">end</property>
+                    <property name="margin-start">13</property>
+                    <property name="label" translatable="yes">Title:</property>
+                    <property name="justify">right</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkEntry" id="titleEntry">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="hexpand">True</property>
+                    <property name="max-length">32</property>
+                    <property name="width-chars">32</property>
+                    <property name="max-width-chars">32</property>
+                    <property name="primary-icon-tooltip-text" translatable="yes">Up to 32 characters</property>
+                    <property name="placeholder-text" translatable="yes">Short human-readable name</property>
+                    <signal name="changed" handler="titleChanged" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="halign">end</property>
+                    <property name="margin-start">13</property>
+                    <property name="label" translatable="yes">Fractionals:</property>
+                    <property name="justify">right</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkSpinButton" id="precisionSpinner">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="hexpand">True</property>
+                    <property name="max-length">2</property>
+                    <property name="width-chars">6</property>
+                    <property name="max-width-chars">2</property>
+                    <property name="primary-icon-name">dialog-information</property>
+                    <property name="primary-icon-tooltip-text" translatable="yes">Number of allowed fractional digits. For instance, with usual currencies we have two digits after comma (like 5.43 USD), with bitcoin we have eight.</property>
+                    <property name="input-purpose">digits</property>
+                    <property name="adjustment">precisionAdjustment</property>
+                    <property name="numeric">True</property>
+                    <property name="value">8</property>
+                    <signal name="value-changed" handler="precisionChanged" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">4</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkBox">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="hexpand">True</property>
+                <property name="spacing">6</property>
+                <child>
+                  <object class="GtkEntry" id="idEntry">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="caps-lock-warning">False</property>
+                    <property name="placeholder-text" translatable="yes">Asset ID will be assigned upon issuance</property>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
                     <property name="fill">True</property>
                     <property name="position">0</property>
                   </packing>
@@ -363,12 +346,11 @@ replacements:</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkComboBoxText" id="networkCombo">
+                  <object class="GtkComboBoxText" id="chainCombo">
                     <property name="visible">True</property>
                     <property name="sensitive">False</property>
                     <property name="can-focus">False</property>
                     <property name="tooltip-text" translatable="yes">Network is automatically selected basing on the current active network configuration</property>
-                    <property name="hexpand">True</property>
                     <property name="active">1</property>
                     <property name="active-id">testnet</property>
                     <items>
@@ -387,7 +369,52 @@ replacements:</property>
               </object>
               <packing>
                 <property name="left-attach">1</property>
-                <property name="top-attach">1</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="detailsCheckbox">
+                <property name="label" translatable="yes">Ricardian 
+contract:</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">False</property>
+                <property name="halign">start</property>
+                <property name="valign">start</property>
+                <property name="draw-indicator">True</property>
+                <signal name="toggled" handler="detailsToggled" swapped="no"/>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow">
+                <property name="height-request">120</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="hexpand">True</property>
+                <property name="shadow-type">in</property>
+                <child>
+                  <object class="GtkTextView" id="contractText">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="hexpand">True</property>
+                    <property name="vexpand">True</property>
+                    <property name="wrap-mode">word</property>
+                    <property name="left-margin">6</property>
+                    <property name="right-margin">6</property>
+                    <property name="top-margin">6</property>
+                    <property name="bottom-margin">6</property>
+                    <property name="buffer">contractBuffer</property>
+                    <property name="input-hints">GTK_INPUT_HINT_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">3</property>
               </packing>
             </child>
           </object>
@@ -395,33 +422,6 @@ replacements:</property>
             <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="position">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkSeparator">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">3</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="halign">start</property>
-            <property name="label" translatable="yes">Asset allocations &amp; secondary issue:</property>
-            <attributes>
-              <attribute name="weight" value="bold"/>
-            </attributes>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">4</property>
           </packing>
         </child>
         <child>
@@ -436,6 +436,7 @@ replacements:</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkTreeView" id="allocationTree">
+                    <property name="width-request">800</property>
                     <property name="height-request">200</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
@@ -457,8 +458,8 @@ replacements:</property>
                       <object class="GtkTreeViewColumn">
                         <property name="resizable">True</property>
                         <property name="sizing">fixed</property>
-                        <property name="min-width">120</property>
-                        <property name="title" translatable="yes">Transaction ID</property>
+                        <property name="min-width">50</property>
+                        <property name="title" translatable="yes">Descriptor</property>
                         <property name="expand">True</property>
                         <property name="clickable">True</property>
                         <property name="reorderable">True</property>
@@ -476,13 +477,15 @@ replacements:</property>
                       <object class="GtkTreeViewColumn">
                         <property name="resizable">True</property>
                         <property name="sizing">fixed</property>
-                        <property name="title" translatable="yes">Output no</property>
+                        <property name="min-width">50</property>
+                        <property name="title" translatable="yes">Descriptor name</property>
+                        <property name="expand">True</property>
                         <property name="clickable">True</property>
                         <property name="reorderable">True</property>
                         <property name="sort-indicator">True</property>
                         <property name="sort-column-id">1</property>
                         <child>
-                          <object class="GtkCellRendererSpin"/>
+                          <object class="GtkCellRendererText"/>
                           <attributes>
                             <attribute name="text">1</attribute>
                           </attributes>
@@ -493,15 +496,48 @@ replacements:</property>
                       <object class="GtkTreeViewColumn">
                         <property name="resizable">True</property>
                         <property name="sizing">fixed</property>
-                        <property name="title" translatable="yes">Accounting amount</property>
+                        <property name="title" translatable="yes">Satoshis</property>
+                        <property name="clickable">True</property>
+                        <property name="reorderable">True</property>
+                        <property name="sort-column-id">2</property>
+                        <child>
+                          <object class="GtkCellRendererText"/>
+                          <attributes>
+                            <attribute name="text">2</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn">
+                        <property name="resizable">True</property>
+                        <property name="sizing">fixed</property>
+                        <property name="title" translatable="yes">Outpoint (txid:output no)</property>
+                        <property name="expand">True</property>
+                        <property name="clickable">True</property>
+                        <property name="reorderable">True</property>
+                        <property name="sort-column-id">3</property>
+                        <child>
+                          <object class="GtkCellRendererText"/>
+                          <attributes>
+                            <attribute name="text">3</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn">
+                        <property name="resizable">True</property>
+                        <property name="sizing">fixed</property>
+                        <property name="title" translatable="yes">Allocation</property>
                         <property name="clickable">True</property>
                         <property name="reorderable">True</property>
                         <property name="sort-indicator">True</property>
-                        <property name="sort-column-id">2</property>
+                        <property name="sort-column-id">4</property>
                         <child>
                           <object class="GtkCellRendererSpin"/>
                           <attributes>
-                            <attribute name="text">2</attribute>
+                            <attribute name="text">4</attribute>
                           </attributes>
                         </child>
                       </object>
@@ -518,7 +554,7 @@ replacements:</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <child>
-                      <object class="GtkToolButton" id="addAllocation">
+                      <object class="GtkToolButton" id="allocationAdd">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="tooltip-text" translatable="yes">Add asset allocation - an unspent bitcoin transaction output which will contain the issued asset</property>
@@ -533,8 +569,9 @@ replacements:</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkToolButton" id="removeAllocation">
+                      <object class="GtkToolButton" id="allocationRemove">
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can-focus">False</property>
                         <property name="tooltip-text" translatable="yes">Remove selected asset allocation</property>
                         <property name="is-important">True</property>
@@ -558,11 +595,12 @@ replacements:</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkToolButton" id="editAllocation">
+                      <object class="GtkToolButton" id="amountEdit">
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can-focus">False</property>
                         <property name="is-important">True</property>
-                        <property name="label" translatable="yes">Edit amount</property>
+                        <property name="label" translatable="yes">Change amount</property>
                         <property name="use-underline">True</property>
                       </object>
                       <packing>
@@ -596,6 +634,7 @@ replacements:</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkTreeView" id="inflationTree">
+                    <property name="width-request">800</property>
                     <property name="height-request">200</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
@@ -604,7 +643,7 @@ replacements:</property>
                     <property name="model">inflationStore</property>
                     <property name="reorderable">True</property>
                     <property name="enable-search">False</property>
-                    <property name="search-column">1</property>
+                    <property name="search-column">0</property>
                     <property name="fixed-height-mode">True</property>
                     <property name="show-expanders">False</property>
                     <property name="enable-grid-lines">both</property>
@@ -617,8 +656,8 @@ replacements:</property>
                       <object class="GtkTreeViewColumn">
                         <property name="resizable">True</property>
                         <property name="sizing">fixed</property>
-                        <property name="min-width">120</property>
-                        <property name="title" translatable="yes">Transaction ID</property>
+                        <property name="min-width">50</property>
+                        <property name="title" translatable="yes">Descriptor</property>
                         <property name="expand">True</property>
                         <property name="clickable">True</property>
                         <property name="reorderable">True</property>
@@ -636,13 +675,15 @@ replacements:</property>
                       <object class="GtkTreeViewColumn">
                         <property name="resizable">True</property>
                         <property name="sizing">fixed</property>
-                        <property name="title" translatable="yes">Output no</property>
+                        <property name="min-width">50</property>
+                        <property name="title" translatable="yes">Descriptor name</property>
+                        <property name="expand">True</property>
                         <property name="clickable">True</property>
                         <property name="reorderable">True</property>
                         <property name="sort-indicator">True</property>
                         <property name="sort-column-id">1</property>
                         <child>
-                          <object class="GtkCellRendererSpin"/>
+                          <object class="GtkCellRendererText"/>
                           <attributes>
                             <attribute name="text">1</attribute>
                           </attributes>
@@ -653,15 +694,48 @@ replacements:</property>
                       <object class="GtkTreeViewColumn">
                         <property name="resizable">True</property>
                         <property name="sizing">fixed</property>
-                        <property name="title" translatable="yes">Can issue up to</property>
+                        <property name="title" translatable="yes">Satoshis</property>
+                        <property name="clickable">True</property>
+                        <property name="reorderable">True</property>
+                        <property name="sort-column-id">2</property>
+                        <child>
+                          <object class="GtkCellRendererText"/>
+                          <attributes>
+                            <attribute name="text">2</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn">
+                        <property name="resizable">True</property>
+                        <property name="sizing">fixed</property>
+                        <property name="title" translatable="yes">Outpoint (txid:output no)</property>
+                        <property name="expand">True</property>
+                        <property name="clickable">True</property>
+                        <property name="reorderable">True</property>
+                        <property name="sort-column-id">3</property>
+                        <child>
+                          <object class="GtkCellRendererText"/>
+                          <attributes>
+                            <attribute name="text">3</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn">
+                        <property name="resizable">True</property>
+                        <property name="sizing">fixed</property>
+                        <property name="title" translatable="yes">Inflation cap</property>
                         <property name="clickable">True</property>
                         <property name="reorderable">True</property>
                         <property name="sort-indicator">True</property>
-                        <property name="sort-column-id">2</property>
+                        <property name="sort-column-id">4</property>
                         <child>
                           <object class="GtkCellRendererSpin"/>
                           <attributes>
-                            <attribute name="text">2</attribute>
+                            <attribute name="text">4</attribute>
                           </attributes>
                         </child>
                       </object>
@@ -678,7 +752,7 @@ replacements:</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <child>
-                      <object class="GtkToolButton" id="addInflation">
+                      <object class="GtkToolButton" id="inflationAdd">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="is-important">True</property>
@@ -692,8 +766,9 @@ replacements:</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkToolButton" id="removeInflation">
+                      <object class="GtkToolButton" id="inflationRemove">
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can-focus">False</property>
                         <property name="is-important">True</property>
                         <property name="label" translatable="yes">Remove</property>
@@ -716,11 +791,12 @@ replacements:</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkToolButton" id="editInflation">
+                      <object class="GtkToolButton" id="capEdit">
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can-focus">False</property>
                         <property name="is-important">True</property>
-                        <property name="label" translatable="yes">Edit amount</property>
+                        <property name="label" translatable="yes">Change inflation cap</property>
                         <property name="use-underline">True</property>
                       </object>
                       <packing>
@@ -755,7 +831,7 @@ replacements:</property>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">5</property>
+            <property name="position">3</property>
           </packing>
         </child>
         <child>
@@ -766,33 +842,16 @@ replacements:</property>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">6</property>
+            <property name="position">5</property>
           </packing>
         </child>
         <child>
-          <!-- n-columns=4 n-rows=6 -->
+          <!-- n-columns=4 n-rows=5 -->
           <object class="GtkGrid">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="row-spacing">6</property>
             <property name="column-spacing">6</property>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="halign">start</property>
-                <property name="margin-bottom">6</property>
-                <property name="label" translatable="yes">Supply information:</property>
-                <attributes>
-                  <attribute name="weight" value="bold"/>
-                </attributes>
-              </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">0</property>
-                <property name="width">4</property>
-              </packing>
-            </child>
             <child>
               <object class="GtkCheckButton">
                 <property name="label" translatable="yes">Secondary issuance allowed up to:</property>
@@ -805,39 +864,8 @@ replacements:</property>
               </object>
               <packing>
                 <property name="left-attach">0</property>
-                <property name="top-attach">4</property>
+                <property name="top-attach">2</property>
                 <property name="width">2</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkImage">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="halign">end</property>
-                <property name="valign">start</property>
-                <property name="icon-name">dialog-information</property>
-              </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="halign">start</property>
-                <property name="hexpand">True</property>
-                <property name="label" translatable="yes">Supply information is automatically derived from the provided initial asset allocation 
-and secondary issue data</property>
-                <attributes>
-                  <attribute name="style" value="oblique"/>
-                </attributes>
-              </object>
-              <packing>
-                <property name="left-attach">1</property>
-                <property name="top-attach">1</property>
-                <property name="width">3</property>
               </packing>
             </child>
             <child>
@@ -849,7 +877,7 @@ and secondary issue data</property>
               </object>
               <packing>
                 <property name="left-attach">1</property>
-                <property name="top-attach">3</property>
+                <property name="top-attach">1</property>
               </packing>
             </child>
             <child>
@@ -861,18 +889,6 @@ and secondary issue data</property>
               </object>
               <packing>
                 <property name="left-attach">1</property>
-                <property name="top-attach">5</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkSpinButton">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="hexpand">True</property>
-                <property name="editable">False</property>
-              </object>
-              <packing>
-                <property name="left-attach">3</property>
                 <property name="top-attach">3</property>
               </packing>
             </child>
@@ -885,7 +901,7 @@ and secondary issue data</property>
               </object>
               <packing>
                 <property name="left-attach">3</property>
-                <property name="top-attach">4</property>
+                <property name="top-attach">1</property>
               </packing>
             </child>
             <child>
@@ -897,7 +913,19 @@ and secondary issue data</property>
               </object>
               <packing>
                 <property name="left-attach">3</property>
-                <property name="top-attach">5</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSpinButton">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="hexpand">True</property>
+                <property name="editable">False</property>
+              </object>
+              <packing>
+                <property name="left-attach">3</property>
+                <property name="top-attach">3</property>
               </packing>
             </child>
             <child>
@@ -935,7 +963,7 @@ and secondary issue data</property>
               </object>
               <packing>
                 <property name="left-attach">2</property>
-                <property name="top-attach">2</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
@@ -973,6 +1001,86 @@ and secondary issue data</property>
               </object>
               <packing>
                 <property name="left-attach">3</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkBox">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="margin-right">13</property>
+                <property name="margin-end">13</property>
+                <property name="hexpand">True</property>
+                <property name="spacing">6</property>
+                <child>
+                  <object class="GtkSpinButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="hexpand">True</property>
+                    <property name="editable">False</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="halign">start</property>
+                    <property name="label" translatable="yes">USDT</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkBox">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="margin-right">13</property>
+                <property name="margin-end">13</property>
+                <property name="hexpand">True</property>
+                <property name="spacing">6</property>
+                <child>
+                  <object class="GtkSpinButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="hexpand">True</property>
+                    <property name="editable">False</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="halign">start</property>
+                    <property name="label" translatable="yes">USDT</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
                 <property name="top-attach">2</property>
               </packing>
             </child>
@@ -1017,90 +1125,53 @@ and secondary issue data</property>
               </packing>
             </child>
             <child>
-              <object class="GtkBox">
+              <object class="GtkImage">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="margin-right">13</property>
-                <property name="margin-end">13</property>
-                <property name="hexpand">True</property>
-                <property name="spacing">6</property>
-                <child>
-                  <object class="GtkSpinButton">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="hexpand">True</property>
-                    <property name="editable">False</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="halign">start</property>
-                    <property name="label" translatable="yes">USDT</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
+                <property name="halign">end</property>
+                <property name="valign">start</property>
+                <property name="margin-top">6</property>
+                <property name="icon-name">dialog-information</property>
               </object>
               <packing>
-                <property name="left-attach">2</property>
+                <property name="left-attach">0</property>
                 <property name="top-attach">4</property>
               </packing>
             </child>
             <child>
-              <object class="GtkBox">
+              <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="margin-right">13</property>
-                <property name="margin-end">13</property>
+                <property name="halign">start</property>
+                <property name="margin-top">6</property>
                 <property name="hexpand">True</property>
-                <property name="spacing">6</property>
-                <child>
-                  <object class="GtkSpinButton">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="hexpand">True</property>
-                    <property name="editable">False</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="halign">start</property>
-                    <property name="label" translatable="yes">USDT</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
+                <property name="label" translatable="yes">Supply information is automatically derived from the provided initial asset allocation and secondary issue data</property>
+                <property name="wrap">True</property>
+                <attributes>
+                  <attribute name="style" value="oblique"/>
+                </attributes>
               </object>
               <packing>
-                <property name="left-attach">2</property>
-                <property name="top-attach">5</property>
+                <property name="left-attach">1</property>
+                <property name="top-attach">4</property>
+                <property name="width">3</property>
               </packing>
             </child>
             <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">Supply information:</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
+                <property name="width">2</property>
+              </packing>
             </child>
             <child>
               <placeholder/>
@@ -1112,7 +1183,7 @@ and secondary issue data</property>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">7</property>
+            <property name="position">6</property>
           </packing>
         </child>
       </object>

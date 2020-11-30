@@ -11,18 +11,20 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+mod asset_dlg;
 mod bpro_win;
 mod descriptor_dlg;
-mod issue_dlg;
 mod open_dlg;
 mod pubkey_dlg;
 mod pubkey_select_dlg;
 mod save_dlg;
+mod utxo_select_dlg;
 
+pub use asset_dlg::AssetDlg;
 pub use bpro_win::{BproWin, Error as AppError};
 pub use descriptor_dlg::DescriptorDlg;
-pub use issue_dlg::IssueDlg;
 pub use open_dlg::OpenDlg;
 pub use pubkey_dlg::PubkeyDlg;
 pub use pubkey_select_dlg::PubkeySelectDlg;
 pub use save_dlg::SaveDlg;
+pub use utxo_select_dlg::UtxoSelectDlg;

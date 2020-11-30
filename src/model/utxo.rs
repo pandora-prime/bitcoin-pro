@@ -28,7 +28,7 @@ use super::{DescriptorContent, DescriptorGenerator, DescriptorType};
     StrictEncode,
     StrictDecode,
 )]
-#[display("{amount}@{outpoint}")]
+#[display("{amount}@{outpoint} (descriptor_content)")]
 pub struct UtxoEntry {
     pub outpoint: OutPoint,
     pub height: u32,

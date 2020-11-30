@@ -31,6 +31,7 @@ use lnpbp::strict_encoding::{self, StrictDecode, StrictEncode};
 // use rgb::fungible;
 
 use super::{operation, DescriptorGenerator, TrackingAccount, UtxoEntry};
+use crate::model::DescriptorContent;
 
 /// Equals to first 4 bytes of SHA256("pandoracore:bpro")
 /// = dbe2b664ee4e81d3a55d53aeba1915c468927c79a03587ddfc5c3aec483028ab
@@ -282,6 +283,17 @@ impl Document {
             .descriptors
             .iter()
             .find(|g| g.descriptor() == generator_str)
+            .cloned()
+    }
+
+    pub fn descriptor_by_content(
+        &self,
+        content: &DescriptorContent,
+    ) -> Option<DescriptorGenerator> {
+        self.profile
+            .descriptors
+            .iter()
+            .find(|g| &g.content == content)
             .cloned()
     }
 

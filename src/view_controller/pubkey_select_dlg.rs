@@ -68,6 +68,12 @@ impl PubkeySelectDlg {
     ) {
         doc.borrow().fill_tracking_store(&self.pubkey_store);
 
+        self.pubkey_selection.connect_changed(
+            clone!(@weak self as me => move |_| {
+                me.update_ui();
+            }),
+        );
+
         self.cancel_btn
             .connect_clicked(clone!(@weak self as me => move |_| {
                 me.dialog.response(ResponseType::Cancel);
@@ -89,8 +95,15 @@ impl PubkeySelectDlg {
                 }
             }));
 
+        self.update_ui();
+
         self.dialog.run();
         self.dialog.hide();
+    }
+
+    pub fn update_ui(&self) {
+        self.select_btn
+            .set_sensitive(self.pubkey_selection.get_selected().is_some())
     }
 
     pub fn selected_pubkey(&self) -> Option<String> {
