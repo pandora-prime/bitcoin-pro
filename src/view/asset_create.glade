@@ -111,7 +111,7 @@
           </packing>
         </child>
         <child>
-          <!-- n-columns=2 n-rows=9 -->
+          <!-- n-columns=2 n-rows=7 -->
           <object class="GtkGrid">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
@@ -166,39 +166,6 @@
               </object>
               <packing>
                 <property name="left-attach">0</property>
-                <property name="top-attach">5</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkEntry" id="tickerEntry">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="hexpand">True</property>
-                <property name="max-length">16</property>
-                <property name="width-chars">16</property>
-                <property name="max-width-chars">16</property>
-                <property name="primary-icon-name">dialog-information</property>
-                <property name="primary-icon-tooltip-text" translatable="yes">You must ensure that the ticker name is unique and not used by other assets. While it is possible to issue assets with the same name, this will confuse users.</property>
-                <property name="placeholder-text" translatable="yes">Maximum 16 characters</property>
-                <property name="input-purpose">alpha</property>
-                <property name="input-hints">GTK_INPUT_HINT_UPPERCASE_CHARS | GTK_INPUT_HINT_NONE</property>
-                <signal name="changed" handler="tickerChanged" swapped="no"/>
-              </object>
-              <packing>
-                <property name="left-attach">1</property>
-                <property name="top-attach">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="halign">end</property>
-                <property name="label" translatable="yes">Blockchain network</property>
-                <property name="justify">right</property>
-              </object>
-              <packing>
-                <property name="left-attach">0</property>
                 <property name="top-attach">3</property>
               </packing>
             </child>
@@ -218,25 +185,6 @@
               </packing>
             </child>
             <child>
-              <object class="GtkComboBoxText" id="networkCombo">
-                <property name="visible">True</property>
-                <property name="sensitive">False</property>
-                <property name="can-focus">False</property>
-                <property name="hexpand">True</property>
-                <property name="active-id">liquid</property>
-                <items>
-                  <item id="mainnet" translatable="yes">Bitcoin mainnet</item>
-                  <item id="liquid" translatable="yes">Liquid</item>
-                  <item id="signet" translatable="yes">Bitcoin signet</item>
-                  <item id="testnet" translatable="yes">Bitcoin testnet</item>
-                </items>
-              </object>
-              <packing>
-                <property name="left-attach">1</property>
-                <property name="top-attach">3</property>
-              </packing>
-            </child>
-            <child>
               <object class="GtkSpinButton" id="precisionSpinner">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
@@ -251,7 +199,7 @@
               </object>
               <packing>
                 <property name="left-attach">1</property>
-                <property name="top-attach">5</property>
+                <property name="top-attach">3</property>
               </packing>
             </child>
             <child>
@@ -267,7 +215,7 @@
               </object>
               <packing>
                 <property name="left-attach">0</property>
-                <property name="top-attach">7</property>
+                <property name="top-attach">5</property>
                 <property name="width">2</property>
               </packing>
             </child>
@@ -300,39 +248,8 @@
               </object>
               <packing>
                 <property name="left-attach">0</property>
-                <property name="top-attach">8</property>
+                <property name="top-attach">6</property>
                 <property name="width">2</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkImage">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="halign">end</property>
-                <property name="valign">start</property>
-                <property name="icon-name">dialog-information</property>
-              </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">4</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="halign">start</property>
-                <property name="margin-bottom">6</property>
-                <property name="hexpand">False</property>
-                <property name="label" translatable="yes">Network is automatically selected basing on the current active network configuration</property>
-                <property name="single-line-mode">True</property>
-                <attributes>
-                  <attribute name="style" value="oblique"/>
-                </attributes>
-              </object>
-              <packing>
-                <property name="left-attach">1</property>
-                <property name="top-attach">4</property>
               </packing>
             </child>
             <child>
@@ -348,7 +265,7 @@ replacements:</property>
               </object>
               <packing>
                 <property name="left-attach">0</property>
-                <property name="top-attach">6</property>
+                <property name="top-attach">4</property>
               </packing>
             </child>
             <child>
@@ -387,7 +304,7 @@ replacements:</property>
               </object>
               <packing>
                 <property name="left-attach">1</property>
-                <property name="top-attach">6</property>
+                <property name="top-attach">4</property>
               </packing>
             </child>
             <child>
@@ -401,6 +318,76 @@ replacements:</property>
               <packing>
                 <property name="left-attach">1</property>
                 <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkBox">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="hexpand">True</property>
+                <property name="spacing">6</property>
+                <child>
+                  <object class="GtkEntry" id="tickerEntry">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="hexpand">False</property>
+                    <property name="max-length">16</property>
+                    <property name="width-chars">16</property>
+                    <property name="max-width-chars">16</property>
+                    <property name="primary-icon-name">dialog-information</property>
+                    <property name="primary-icon-tooltip-text" translatable="yes">You must ensure that the ticker name is unique and not used by other assets. While it is possible to issue assets with the same name, this will confuse users.</property>
+                    <property name="placeholder-text" translatable="yes">Maximum 16 characters</property>
+                    <property name="input-purpose">alpha</property>
+                    <property name="input-hints">GTK_INPUT_HINT_UPPERCASE_CHARS | GTK_INPUT_HINT_NONE</property>
+                    <signal name="changed" handler="tickerChanged" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="halign">end</property>
+                    <property name="margin-start">13</property>
+                    <property name="label" translatable="yes">Blockchain:</property>
+                    <property name="justify">right</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkComboBoxText" id="networkCombo">
+                    <property name="visible">True</property>
+                    <property name="sensitive">False</property>
+                    <property name="can-focus">False</property>
+                    <property name="tooltip-text" translatable="yes">Network is automatically selected basing on the current active network configuration</property>
+                    <property name="hexpand">True</property>
+                    <property name="active">1</property>
+                    <property name="active-id">testnet</property>
+                    <items>
+                      <item id="bitcoin" translatable="yes">Bitcoin (mainnet)</item>
+                      <item id="testnet" translatable="yes">Testnet</item>
+                      <item id="signet" translatable="yes">Signet</item>
+                      <item id="liquidv1" translatable="yes">Liquid</item>
+                    </items>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">1</property>
               </packing>
             </child>
           </object>
@@ -841,8 +828,8 @@ replacements:</property>
                 <property name="can-focus">False</property>
                 <property name="halign">start</property>
                 <property name="hexpand">True</property>
-                <property name="label" translatable="yes">Supply information is automatically derived from the provided issue allocations 
-and secondary issue rights</property>
+                <property name="label" translatable="yes">Supply information is automatically derived from the provided initial asset allocation 
+and secondary issue data</property>
                 <attributes>
                   <attribute name="style" value="oblique"/>
                 </attributes>

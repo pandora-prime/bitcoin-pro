@@ -20,6 +20,7 @@ use lnpbp::bitcoin::util::bip32::{
     self, ChildNumber, DerivationPath, ExtendedPrivKey, ExtendedPubKey,
 };
 use lnpbp::bitcoin::util::key;
+use lnpbp::bp::Chain;
 use lnpbp::{bitcoin, secp256k1};
 
 use crate::model::{
@@ -372,6 +373,7 @@ impl PubkeyDlg {
     pub fn run(
         self: Rc<Self>,
         tracking_account: Option<TrackingAccount>,
+        chain: &Chain,
         on_save: impl Fn(TrackingAccount) + 'static,
         on_cancel: impl Fn() + 'static,
     ) {
@@ -380,6 +382,8 @@ impl PubkeyDlg {
         if let Some(tracking_account) = tracking_account {
             self.apply_tracking_account(tracking_account);
         }
+
+        me.network_combo.set_active_id(Some(&chain.to_string()));
 
         me.update_ui();
 

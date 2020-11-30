@@ -1623,15 +1623,15 @@
             <property name="row-spacing">26</property>
             <property name="column-spacing">6</property>
             <child>
-              <object class="GtkComboBoxText">
+              <object class="GtkComboBoxText" id="chainCombo">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="active">2</property>
                 <items>
-                  <item translatable="yes">Mainnet</item>
-                  <item translatable="yes">Testnet</item>
-                  <item translatable="yes">Signet</item>
-                  <item translatable="yes">Liquid</item>
+                  <item id="bitcoin" translatable="yes">Bitcoin (mainnet)</item>
+                  <item id="testnet" translatable="yes">Testnet</item>
+                  <item id="signet" translatable="yes">Signet</item>
+                  <item id="liquidv1" translatable="yes">Liquid</item>
                 </items>
               </object>
               <packing>

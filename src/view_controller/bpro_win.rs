@@ -96,6 +96,7 @@ impl BproWin {
         let utxo_tree: gtk::TreeView = builder.get_object("utxoTree")?;
         let utxo_store = builder.get_object("utxoStore")?;
 
+        let chain_combo: gtk::ComboBox = builder.get_object("chainCombo")?;
         let electrum_radio: gtk::RadioButton =
             builder.get_object("electrum")?;
         let electrum_field: gtk::Entry = builder.get_object("electrumField")?;
@@ -107,6 +108,7 @@ impl BproWin {
 
         header_bar.set_subtitle(Some(&doc.borrow().name()));
 
+        chain_combo.set_active_id(Some(&doc.borrow().chain().to_string()));
         electrum_radio.set_active(true);
         electrum_field.set_text(&doc.borrow().electrum().unwrap_or_default());
 
@@ -131,6 +133,14 @@ impl BproWin {
             utxo_descr_clear_btn,
             utxo_remove_btn,
         }));
+
+        chain_combo.connect_changed(
+            clone!(@weak chain_combo, @strong doc => move |_| {
+                if let Some(chain_name) = chain_combo.get_active_id() {
+                    let _ = doc.borrow_mut().set_chain(&chain_name);
+                }
+            }),
+        );
 
         electrum_field.connect_changed(
             clone!(@strong doc, @weak electrum_field => move |_| {
@@ -190,7 +200,7 @@ impl BproWin {
         let tb: gtk::ToolButton = builder.get_object("pubkeyAdd")?;
         tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
             let pubkey_dlg = PubkeyDlg::load_glade().expect("Must load");
-            pubkey_dlg.run(None, clone!(@weak me, @strong doc =>
+            pubkey_dlg.run(None, doc.borrow().chain(), clone!(@weak me, @strong doc =>
                 move |tracking_account| {
                     let me = me.borrow();
                     me.pubkey_store.insert_with_values(
@@ -216,7 +226,7 @@ impl BproWin {
                     .borrow()
                     .tracking_account_by_key(&keyname)
                     .expect("Tracking account must be known since it is selected");
-                pubkey_dlg.run(Some(tracking_account.clone()), clone!(@weak me, @strong doc =>
+                pubkey_dlg.run(Some(tracking_account.clone()), doc.borrow().chain(), clone!(@weak me, @strong doc =>
                     move |new_tracking_account| {
                         let me = me.borrow();
                         me.pubkey_store.set_value(&iter, 0, &new_tracking_account.name().to_value());

@@ -18,6 +18,7 @@ use std::ffi::OsStr;
 use std::fs::{File, OpenOptions};
 use std::io::{self, Seek, SeekFrom};
 use std::path::PathBuf;
+use std::str::FromStr;
 use std::sync::Mutex;
 
 use electrum_client::{Client as ElectrumClient, Error as ElectrumError};
@@ -134,6 +135,16 @@ impl Document {
 
     pub fn name(&self) -> String {
         self.name.clone()
+    }
+
+    pub fn chain(&self) -> &Chain {
+        &self.profile.settings.chain
+    }
+
+    pub fn set_chain(&mut self, chain_name: &str) -> Result<bool, Error> {
+        self.profile.settings.chain =
+            Chain::from_str(chain_name).unwrap_or(Chain::Testnet3);
+        self.save()
     }
 
     pub fn electrum(&self) -> Option<String> {

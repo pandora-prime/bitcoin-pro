@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.36.0 -->
+<!-- Generated with glade 3.39.0 -->
 <interface>
   <requires lib="gtk+" version="3.22"/>
+  <object class="GtkListStore" id="locatorStore">
+    <columns>
+      <!-- column-name name -->
+      <column type="gchararray"/>
+      <!-- column-name type -->
+      <column type="gchararray"/>
+      <!-- column-name descriptor -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
   <object class="GtkListStore" id="utxoStore">
     <columns>
       <!-- column-name txid -->
@@ -12,35 +22,25 @@
       <column type="guint64"/>
       <!-- column-name height -->
       <column type="gulong"/>
-      <!-- column-name mined -->
-      <column type="gchararray"/>
     </columns>
-    <data>
-      <row>
-        <col id="0" translatable="yes">92c72675acdecf970d83bd4d1f8ff2d0575f157199756a20b902e37e68eb19ff</col>
-        <col id="1">0</col>
-        <col id="2">22012200</col>
-        <col id="3">658743</col>
-        <col id="4" translatable="yes">2020-11-26 13:05:59</col>
-      </row>
-    </data>
   </object>
   <object class="GtkDialog">
-    <property name="can_focus">False</property>
-    <property name="type_hint">dialog</property>
+    <property name="height-request">666</property>
+    <property name="can-focus">False</property>
+    <property name="type-hint">dialog</property>
     <child internal-child="vbox">
       <object class="GtkBox">
-        <property name="can_focus">False</property>
-        <property name="margin_start">13</property>
-        <property name="margin_end">13</property>
-        <property name="margin_top">13</property>
-        <property name="margin_bottom">13</property>
+        <property name="can-focus">False</property>
+        <property name="margin-start">13</property>
+        <property name="margin-end">13</property>
+        <property name="margin-top">13</property>
+        <property name="margin-bottom">13</property>
         <property name="orientation">vertical</property>
         <property name="spacing">2</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox">
-            <property name="can_focus">False</property>
-            <property name="layout_style">end</property>
+            <property name="can-focus">False</property>
+            <property name="layout-style">end</property>
             <child>
               <placeholder/>
             </child>
@@ -57,32 +57,34 @@
         <child>
           <object class="GtkPaned">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
+            <property name="can-focus">True</property>
             <property name="hexpand">True</property>
             <property name="vexpand">True</property>
             <property name="orientation">vertical</property>
-            <property name="wide_handle">True</property>
+            <property name="wide-handle">True</property>
             <child>
-              <object class="GtkTreeView" id="utxoTree">
-                <property name="height_request">160</property>
+              <object class="GtkTreeView" id="locatorTree">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
+                <property name="can-focus">True</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
-                <property name="enable_search">False</property>
-                <property name="search_column">0</property>
+                <property name="model">locatorStore</property>
+                <property name="enable-search">False</property>
+                <property name="search-column">0</property>
+                <property name="fixed-height-mode">True</property>
                 <child internal-child="selection">
                   <object class="GtkTreeSelection"/>
                 </child>
                 <child>
                   <object class="GtkTreeViewColumn">
-                    <property name="sizing">autosize</property>
-                    <property name="min_width">200</property>
+                    <property name="resizable">True</property>
+                    <property name="sizing">fixed</property>
+                    <property name="min-width">200</property>
                     <property name="title" translatable="yes">Name</property>
+                    <property name="expand">True</property>
                     <property name="clickable">True</property>
                     <property name="reorderable">True</property>
-                    <property name="sort_indicator">True</property>
-                    <property name="sort_column_id">0</property>
+                    <property name="sort-column-id">0</property>
                     <child>
                       <object class="GtkCellRendererText"/>
                       <attributes>
@@ -94,32 +96,33 @@
                 <child>
                   <object class="GtkTreeViewColumn">
                     <property name="resizable">True</property>
+                    <property name="sizing">fixed</property>
                     <property name="title" translatable="yes">Type</property>
                     <property name="clickable">True</property>
                     <property name="reorderable">True</property>
-                    <property name="sort_column_id">2</property>
+                    <property name="sort-indicator">True</property>
+                    <property name="sort-column-id">1</property>
                     <child>
                       <object class="GtkCellRendererText"/>
                       <attributes>
-                        <attribute name="text">2</attribute>
+                        <attribute name="text">1</attribute>
                       </attributes>
                     </child>
                   </object>
                 </child>
                 <child>
                   <object class="GtkTreeViewColumn">
-                    <property name="sizing">autosize</property>
-                    <property name="min_width">500</property>
+                    <property name="sizing">fixed</property>
+                    <property name="min-width">500</property>
                     <property name="title" translatable="yes">Descriptor</property>
                     <property name="expand">True</property>
                     <property name="clickable">True</property>
                     <property name="reorderable">True</property>
-                    <property name="sort_indicator">True</property>
-                    <property name="sort_column_id">1</property>
+                    <property name="sort-column-id">2</property>
                     <child>
                       <object class="GtkCellRendererText"/>
                       <attributes>
-                        <attribute name="text">1</attribute>
+                        <attribute name="text">2</attribute>
                       </attributes>
                     </child>
                   </object>
@@ -131,19 +134,18 @@
               </packing>
             </child>
             <child>
-              <object class="GtkTreeView">
-                <property name="height_request">240</property>
+              <object class="GtkTreeView" id="utxoTree">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
+                <property name="can-focus">True</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
                 <property name="model">utxoStore</property>
-                <property name="search_column">0</property>
-                <property name="fixed_height_mode">True</property>
-                <property name="show_expanders">False</property>
-                <property name="enable_grid_lines">both</property>
-                <property name="enable_tree_lines">True</property>
-                <property name="activate_on_single_click">True</property>
+                <property name="search-column">0</property>
+                <property name="fixed-height-mode">True</property>
+                <property name="show-expanders">False</property>
+                <property name="enable-grid-lines">both</property>
+                <property name="enable-tree-lines">True</property>
+                <property name="activate-on-single-click">True</property>
                 <child internal-child="selection">
                   <object class="GtkTreeSelection"/>
                 </child>
@@ -155,8 +157,8 @@
                     <property name="expand">True</property>
                     <property name="clickable">True</property>
                     <property name="reorderable">True</property>
-                    <property name="sort_indicator">True</property>
-                    <property name="sort_column_id">0</property>
+                    <property name="sort-indicator">True</property>
+                    <property name="sort-column-id">0</property>
                     <child>
                       <object class="GtkCellRendererText"/>
                       <attributes>
@@ -172,8 +174,8 @@
                     <property name="title" translatable="yes">#</property>
                     <property name="clickable">True</property>
                     <property name="reorderable">True</property>
-                    <property name="sort_indicator">True</property>
-                    <property name="sort_column_id">1</property>
+                    <property name="sort-indicator">True</property>
+                    <property name="sort-column-id">1</property>
                     <child>
                       <object class="GtkCellRendererText"/>
                       <attributes>
@@ -189,8 +191,8 @@
                     <property name="title" translatable="yes">Amount (sat)</property>
                     <property name="clickable">True</property>
                     <property name="reorderable">True</property>
-                    <property name="sort_indicator">True</property>
-                    <property name="sort_column_id">2</property>
+                    <property name="sort-indicator">True</property>
+                    <property name="sort-column-id">2</property>
                     <child>
                       <object class="GtkCellRendererText"/>
                       <attributes>
@@ -206,8 +208,8 @@
                     <property name="title" translatable="yes">Height</property>
                     <property name="clickable">True</property>
                     <property name="reorderable">True</property>
-                    <property name="sort_indicator">True</property>
-                    <property name="sort_column_id">3</property>
+                    <property name="sort-indicator">True</property>
+                    <property name="sort-column-id">3</property>
                     <child>
                       <object class="GtkCellRendererText"/>
                       <attributes>
@@ -216,27 +218,10 @@
                     </child>
                   </object>
                 </child>
-                <child>
-                  <object class="GtkTreeViewColumn">
-                    <property name="resizable">True</property>
-                    <property name="sizing">fixed</property>
-                    <property name="title" translatable="yes">Timestamp</property>
-                    <property name="clickable">True</property>
-                    <property name="reorderable">True</property>
-                    <property name="sort_indicator">True</property>
-                    <property name="sort_column_id">5</property>
-                    <child>
-                      <object class="GtkCellRendererText"/>
-                      <attributes>
-                        <attribute name="text">4</attribute>
-                      </attributes>
-                    </child>
-                  </object>
-                </child>
               </object>
               <packing>
                 <property name="resize">True</property>
-                <property name="shrink">True</property>
+                <property name="shrink">False</property>
               </packing>
             </child>
           </object>
@@ -251,25 +236,25 @@
     <child type="titlebar">
       <object class="GtkHeaderBar">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <property name="title" translatable="yes">Select UTXO</property>
         <child>
           <object class="GtkButton" id="cancel">
             <property name="label" translatable="yes">Cancel</property>
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
           </object>
         </child>
         <child>
           <object class="GtkButton" id="select">
             <property name="label" translatable="yes">Select</property>
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
           </object>
           <packing>
-            <property name="pack_type">end</property>
+            <property name="pack-type">end</property>
             <property name="position">1</property>
           </packing>
         </child>
