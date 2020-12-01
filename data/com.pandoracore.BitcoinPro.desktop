@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Bitcoin Pro
+Comment=Professional bitcoin accounts &amp; assets management
+Type=Application
+# should be the same as the Cargo project name
+Exec=bitcoin-pro
+Terminal=false
+Categories=Utility;GTK;
+Keywords=Rust;Flatpak;GTK;
+Icon=com.pandoracore.BitcoinPro
+StartupNotify=true

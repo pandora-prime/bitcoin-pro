@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+    <id>com.pandoracore.BitcoinPro</id>
+    <metadata_license>CC0</metadata_license>
+    <project_license>AGPL-3.0+</project_license>
+    <name>Bitcoin Pro</name>
+    <summary>Professional bitcoin accounts &amp; assets management</summary>
+    <description>
+        <h2>Features</h2>h2>
+
+        <ul>
+            <li>Extended public key management with advanced convertor and derivation
+                functionality</li>
+            <li>Creation of arbitrary complex descriptors for UTXOs</li>
+            <li>View on bitcoin UTXOs, transactions [Partially implemented]</li>
+            <li>Creation and management of RGB fungible assets (RGB-20 standard) [WIP]</li>
+                <ul>
+                    <li>Secondary issuance</li>
+                    <li>Renomination</li>
+                    <li>Burn &amp; replacement</li>
+                </ul>
+            <li>Creation and management of RGB collectibles/non-fungible token contracts
+            (RGB-21 standard) [Planned]</li>
+            <li>Identity management with RGB-22 schema [Planned]</li>
+            <li>Audit logs with RGB-23 schema [Planned]</li>
+            <li>Monitoring new bitcoin transactions under certain descriptors [Planned]</li>
+            <li>Bitcoin transaction and blockchain explorer [Planned]</li>
+            <li>PSBT composer/editor [Planned]</li>
+            <li>Custom RGB schema and state transition editor [Planned]</li>
+        </ul>
+
+        <p>Application is founded on <a href="https://github.com/LNP-BP/rust-lnpbp">LNP/BP Core Library</a>
+        and allows <a href="https://rgb-org.github.com">RGB smart contracts</a> management.</p>
+
+        <p>The application **is not a bitcoin wallet**: it does not require access to
+        private keys or creates any signatures. All operations are saved & exported in
+        form of PSBTs (partially-signed bitcoin transactions) and for their completion
+            must be signed and published to bitcoin network outside of the application.</p>
+
+        <p>Bitcoin Pro is written exclusively in Rust language with GTK framework and
+        natively compiles/works on Linux, MacOS (GTK is not supported on Big Sur yet;
+        but previous versions should work fine) and (probably) Windows 10.</p>
+
+        <p>NB: This is an ultra-early beta version; use it at your own risk!</p>
+    </description>
+    <screenshots>
+        <screenshot type="default">
+            <image>https://gitlab.gnome.org/World/design/contrast/raw/master/data/resources/screenshots/screenshot1.png</image>
+            <caption>Main Window</caption>
+        </screenshot>
+    </screenshots>
+    <url type="homepage">https://github.com/pandoracore/bitcoin-pro</url>
+    <!--
+    Open Age Rating Service
+    https://hughsie.github.io/oars/index.html
+    -->
+    <content_rating type="oars-1.0" />
+    <releases>
+        <release version="0.1.0" date="2020-11-01">
+            <description>
+                <p>First release of Bitcoin Pro</p>
+            </description>
+        </release>
+    </releases>
+    <kudos>
+        <!--
+        GNOME Software kudos:
+        https://gitlab.gnome.org/GNOME/gnome-software/blob/master/doc/kudos.md
+        -->
+        <kudo>ModernToolkit</kudo>
+        <kudo>HiDpiIcon</kudo>
+    </kudos>
+    <developer_name>Pandora Core AG</developer_name>
+    <update_contact>info@pandoracore.com</update_contact>
+
+    <launchable type="desktop-id">com.pandoracore.BitcoinPro.desktop</launchable>
+</component>
