@@ -933,8 +933,9 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkToolButton">
+                  <object class="GtkToolButton" id="assetInflate">
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can-focus">False</property>
                     <property name="is-important">True</property>
                     <property name="label" translatable="yes">Inflate</property>
@@ -947,8 +948,9 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkToolButton">
+                  <object class="GtkToolButton" id="assetRenom">
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">Renominate</property>
                     <property name="use-underline">True</property>
@@ -970,8 +972,9 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkToolButton">
+                  <object class="GtkToolButton" id="assetEpoch">
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">New epoch</property>
                     <property name="use-underline">True</property>
@@ -982,8 +985,9 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkToolButton">
+                  <object class="GtkToolButton" id="assetBurn">
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can-focus">False</property>
                     <property name="is-important">True</property>
                     <property name="label" translatable="yes">Burn</property>
@@ -996,8 +1000,9 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkToolButton">
+                  <object class="GtkToolButton" id="assetReplace">
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can-focus">False</property>
                     <property name="is-important">True</property>
                     <property name="label" translatable="yes">Replace</property>
@@ -1193,7 +1198,6 @@
                     <property name="can-focus">True</property>
                     <property name="hexpand">True</property>
                     <property name="vexpand">True</property>
-                    <property name="tab-pos">bottom</property>
                     <property name="show-border">False</property>
                     <child>
                       <!-- n-columns=3 n-rows=3 -->

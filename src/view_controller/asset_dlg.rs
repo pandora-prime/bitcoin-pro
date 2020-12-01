@@ -40,8 +40,22 @@ pub struct AssetDlg {
     msg_label: gtk::Label,
     msg_image: gtk::Image,
 
+    id_field: gtk::Entry,
+    chain_combo: gtk::ComboBox,
+    ticker_field: gtk::Entry,
+    title_field: gtk::Entry,
+    fract_spin: gtk::SpinButton,
+    fract_adj: gtk::Adjustment,
+    epoch_check: gtk::CheckButton,
     epoch_btn: gtk::Button,
     epoch_field: gtk::Entry,
+    inflation_check: gtk::CheckButton,
+    inflation_combo: gtk::ComboBox,
+    inflation_spin: gtk::SpinButton,
+    inflation_adj: gtk::Adjustment,
+    contract_check: gtk::CheckButton,
+    contract_text: gtk::TextView,
+    contract_buffer: gtk::TextBuffer,
 
     allocation_tree: gtk::TreeView,
     allocation_store: gtk::ListStore,
@@ -55,8 +69,6 @@ pub struct AssetDlg {
     inflation_add_btn: gtk::ToolButton,
     inflation_remove_btn: gtk::ToolButton,
     cap_edit_btn: gtk::ToolButton,
-
-    chain_combo: gtk::ComboBox,
 
     create_btn: gtk::Button,
     cancel_btn: gtk::Button,
@@ -73,8 +85,22 @@ impl AssetDlg {
         let msg_image = builder.get_object("messageImage")?;
         let msg_label = builder.get_object("messageLabel")?;
 
+        let id_field = builder.get_object("idField")?;
+        let chain_combo = builder.get_object("chainCombo")?;
+        let ticker_field = builder.get_object("tickerField")?;
+        let title_field = builder.get_object("titleField")?;
+        let fract_spin = builder.get_object("fractSpin")?;
+        let fract_adj = builder.get_object("fractAdj")?;
+        let epoch_check = builder.get_object("epochCheck")?;
         let epoch_btn = builder.get_object("epochBtn")?;
         let epoch_field = builder.get_object("epochEntry")?;
+        let inflation_check = builder.get_object("inflationCheck")?;
+        let inflation_combo = builder.get_object("inflationCombo")?;
+        let inflation_spin = builder.get_object("inflationSpin")?;
+        let inflation_adj = builder.get_object("inflationAdj")?;
+        let contract_check = builder.get_object("contractCheck")?;
+        let contract_text = builder.get_object("contractText")?;
+        let contract_buffer = builder.get_object("contractBuffer")?;
 
         let allocation_tree = builder.get_object("allocationTree")?;
         let allocation_store = builder.get_object("allocationStore")?;
@@ -88,8 +114,6 @@ impl AssetDlg {
         let inflation_remove_btn = builder.get_object("inflationRemove")?;
         let cap_edit_btn = builder.get_object("capEdit")?;
 
-        let chain_combo = builder.get_object("chainCombo")?;
-
         let me = Rc::new(Self {
             dialog: glade_load!(builder, "assetDlg")?,
 
@@ -101,8 +125,22 @@ impl AssetDlg {
             msg_image,
             msg_label,
 
+            id_field,
+            chain_combo,
+            ticker_field,
+            title_field,
+            fract_spin,
+            fract_adj,
+            epoch_check,
             epoch_btn,
             epoch_field,
+            inflation_check,
+            inflation_combo,
+            inflation_spin,
+            inflation_adj,
+            contract_check,
+            contract_text,
+            contract_buffer,
 
             allocation_tree,
             allocation_store,
@@ -115,8 +153,6 @@ impl AssetDlg {
             inflation_add_btn,
             inflation_remove_btn,
             cap_edit_btn,
-
-            chain_combo,
 
             create_btn,
             cancel_btn,
