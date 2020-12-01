@@ -1198,6 +1198,7 @@
                     <property name="can-focus">True</property>
                     <property name="hexpand">True</property>
                     <property name="vexpand">True</property>
+                    <property name="tab-pos">bottom</property>
                     <property name="show-border">False</property>
                     <child>
                       <!-- n-columns=3 n-rows=3 -->
@@ -1284,7 +1285,7 @@
                       <object class="GtkLabel">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">Genesis</property>
+                        <property name="label" translatable="yes">Issues</property>
                       </object>
                       <packing>
                         <property name="position">1</property>
@@ -1332,7 +1333,7 @@
                       <object class="GtkLabel">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">Issues</property>
+                        <property name="label" translatable="yes">Renominations</property>
                       </object>
                       <packing>
                         <property name="position">2</property>
@@ -1380,58 +1381,10 @@
                       <object class="GtkLabel">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">Renominations</property>
-                      </object>
-                      <packing>
-                        <property name="position">3</property>
-                        <property name="tab-fill">False</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <!-- n-columns=3 n-rows=3 -->
-                      <object class="GtkGrid">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <child>
-                          <placeholder/>
-                        </child>
-                        <child>
-                          <placeholder/>
-                        </child>
-                        <child>
-                          <placeholder/>
-                        </child>
-                        <child>
-                          <placeholder/>
-                        </child>
-                        <child>
-                          <placeholder/>
-                        </child>
-                        <child>
-                          <placeholder/>
-                        </child>
-                        <child>
-                          <placeholder/>
-                        </child>
-                        <child>
-                          <placeholder/>
-                        </child>
-                        <child>
-                          <placeholder/>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="position">4</property>
-                      </packing>
-                    </child>
-                    <child type="tab">
-                      <object class="GtkLabel">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Epochs</property>
                       </object>
                       <packing>
-                        <property name="position">4</property>
+                        <property name="position">3</property>
                         <property name="tab-fill">False</property>
                       </packing>
                     </child>

@@ -431,7 +431,7 @@ issuance:</property>
               </packing>
             </child>
             <child>
-              <object class="GtkBox">
+              <object class="GtkBox" id="inflationBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="spacing">6</property>
@@ -473,6 +473,8 @@ issuance:</property>
                     <property name="can-focus">True</property>
                     <property name="hexpand">True</property>
                     <property name="adjustment">inflationAdj</property>
+                    <property name="digits">8</property>
+                    <property name="value">100000000</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -481,7 +483,7 @@ issuance:</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="assetTicker1">
+                  <object class="GtkLabel" id="ticker1Label">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">USDT</property>
@@ -1054,7 +1056,7 @@ issuance:</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="assetTicker2">
+                  <object class="GtkLabel" id="ticker2Label">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="halign">start</property>
@@ -1093,7 +1095,7 @@ issuance:</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="assetTicker3">
+                  <object class="GtkLabel" id="ticker3Label">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="halign">start</property>
@@ -1132,7 +1134,7 @@ issuance:</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="assetTicker4">
+                  <object class="GtkLabel" id="ticker4Label">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="halign">start</property>

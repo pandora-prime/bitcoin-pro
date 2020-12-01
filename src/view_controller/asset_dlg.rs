@@ -32,6 +32,8 @@ pub enum Error {
 pub struct AssetDlg {
     dialog: gtk::Dialog,
 
+    issue_amount: u64,
+    inflation_cap: f64,
     epoch_utxo: Rc<RefCell<Option<UtxoEntry>>>,
     allocation: Rc<RefCell<HashMap<UtxoEntry, f64>>>,
     inflation: Rc<RefCell<HashMap<UtxoEntry, f64>>>,
@@ -69,6 +71,17 @@ pub struct AssetDlg {
     inflation_add_btn: gtk::ToolButton,
     inflation_remove_btn: gtk::ToolButton,
     cap_edit_btn: gtk::ToolButton,
+
+    issue_cap_display: gtk::Entry,
+    inflation_cap_display: gtk::Entry,
+    total_cap_display: gtk::Entry,
+    issue_amount_display: gtk::Entry,
+    inflation_amount_display: gtk::Entry,
+    total_amount_display: gtk::Entry,
+    ticker1_label: gtk::Label,
+    ticker2_label: gtk::Label,
+    ticker3_label: gtk::Label,
+    ticker4_label: gtk::Label,
 
     create_btn: gtk::Button,
     cancel_btn: gtk::Button,
@@ -114,9 +127,22 @@ impl AssetDlg {
         let inflation_remove_btn = builder.get_object("inflationRemove")?;
         let cap_edit_btn = builder.get_object("capEdit")?;
 
+        let issue_cap_display = builder.get_object("issueAcc")?;
+        let inflation_cap_display = builder.get_object("inflationAcc")?;
+        let total_cap_display = builder.get_object("totalAcc")?;
+        let issue_amount_display = builder.get_object("issueAtomic")?;
+        let inflation_amount_display = builder.get_object("inflationAtomic")?;
+        let total_amount_display = builder.get_object("totalAtomic")?;
+        let ticker1_label = builder.get_object("ticker1Label")?;
+        let ticker2_label = builder.get_object("ticker2Label")?;
+        let ticker3_label = builder.get_object("ticker3Label")?;
+        let ticker4_label = builder.get_object("ticker4Label")?;
+
         let me = Rc::new(Self {
             dialog: glade_load!(builder, "assetDlg")?,
 
+            issue_amount: 0,
+            inflation_cap: 100000000.00,
             epoch_utxo: none!(),
             allocation: none!(),
             inflation: none!(),
@@ -154,9 +180,43 @@ impl AssetDlg {
             inflation_remove_btn,
             cap_edit_btn,
 
+            issue_cap_display,
+            inflation_cap_display,
+            total_cap_display,
+            issue_amount_display,
+            inflation_amount_display,
+            total_amount_display,
+            ticker1_label,
+            ticker2_label,
+            ticker3_label,
+            ticker4_label,
+
             create_btn,
             cancel_btn,
         });
+
+        for ctl in &[&me.ticker_field, &me.title_field] {
+            ctl.connect_changed(clone!(@weak me => move |_| {
+                me.update_ui();
+            }));
+        }
+
+        for ctl in &[&me.fract_spin, &me.inflation_spin] {
+            ctl.connect_changed(clone!(@weak me => move |_| {
+                me.update_ui();
+            }));
+        }
+
+        for ctl in &[&me.epoch_check, &me.inflation_check, &me.contract_check] {
+            ctl.connect_toggled(clone!(@weak me => move |_| {
+                me.update_ui();
+            }));
+        }
+
+        me.inflation_combo
+            .connect_changed(clone!(@weak me => move |_| {
+                me.update_ui();
+            }));
 
         Ok(me)
     }
@@ -311,7 +371,111 @@ impl AssetDlg {
         self.epoch_field.set_text(&name);
     }
 
+    pub fn asset_ticker(&self) -> Option<String> {
+        let ticker = self.ticker_field.get_text().to_string();
+        if ticker.is_empty() {
+            None
+        } else {
+            Some(ticker.to_uppercase())
+        }
+    }
+
+    pub fn asset_title(&self) -> Option<String> {
+        let title = self.title_field.get_text().to_string();
+        if title.is_empty() {
+            None
+        } else {
+            Some(title)
+        }
+    }
+
+    pub fn asset_fractionals(&self) -> u8 {
+        self.fract_spin.get_value_as_int() as u8
+    }
+
+    pub fn is_capped(&self) -> bool {
+        self.inflation_check.get_active()
+            || self
+                .inflation_combo
+                .get_active_id()
+                .map(|id| &*id == "limited")
+                .unwrap_or(false)
+    }
+
+    pub fn precision_divisor(&self) -> f64 {
+        10_u64.pow(self.asset_fractionals() as u32) as f64
+    }
+
+    pub fn issue_cap(&self) -> f64 {
+        self.issue_amount as f64 / self.precision_divisor()
+    }
+
+    pub fn inflation_cap(&self) -> f64 {
+        if !self.inflation_check.get_active() {
+            0.0
+        } else if self.is_capped() {
+            self.inflation_cap
+        } else {
+            u64::MAX as f64 / self.precision_divisor()
+        }
+    }
+
+    pub fn total_cap(&self) -> f64 {
+        self.issue_cap() + self.inflation_cap()
+    }
+
+    pub fn issue_amount(&self) -> u64 {
+        self.issue_amount
+    }
+
+    pub fn inflation_amount(&self) -> u64 {
+        (self.inflation_cap() * self.precision_divisor()) as u64
+    }
+
+    pub fn total_amount(&self) -> u64 {
+        self.issue_amount() + self.inflation_amount()
+    }
+
     pub fn update_ui(&self) {
+        let ticker = self
+            .asset_ticker()
+            .map(|ticker| {
+                self.ticker_field.set_text(&ticker);
+                ticker
+            })
+            .unwrap_or(s!("???"));
+        self.ticker1_label.set_text(&ticker);
+        self.ticker2_label.set_text(&ticker);
+        self.ticker3_label.set_text(&ticker);
+        self.ticker4_label.set_text(&ticker);
+
+        self.epoch_btn.set_sensitive(self.epoch_check.get_active());
+
+        self.fract_adj
+            .set_upper((self.inflation_amount() as f64).log10().floor());
+
+        self.inflation_combo
+            .set_sensitive(self.inflation_check.get_active());
+        self.inflation_adj.set_upper(self.inflation_cap());
+        self.inflation_spin.set_value(self.inflation_cap());
+        self.inflation_spin.set_sensitive(self.is_capped());
+
+        self.contract_text
+            .set_sensitive(self.contract_check.get_active());
+
+        self.issue_cap_display
+            .set_text(&self.issue_cap().to_string());
+        self.inflation_cap_display
+            .set_text(&self.inflation_cap().to_string());
+        self.total_cap_display
+            .set_text(&self.total_cap().to_string());
+        self.issue_amount_display
+            .set_text(&self.issue_amount().to_string());
+        self.inflation_amount_display
+            .set_text(&self.inflation_amount().to_string());
+        self.total_amount_display
+            .set_text(&self.total_amount().to_string());
+
         match self.update_ui_internal() {
             Ok(None) => {
                 self.msg_box.set_visible(false);
