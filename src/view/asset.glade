@@ -44,7 +44,7 @@
       <!-- column-name outpoint -->
       <column type="gchararray"/>
       <!-- column-name amount -->
-      <column type="gfloat"/>
+      <column type="gchararray"/>
     </columns>
   </object>
   <object class="GtkImage" id="openImage">
@@ -53,7 +53,7 @@
     <property name="icon-name">document-open</property>
   </object>
   <object class="GtkDialog" id="assetDlg">
-    <property name="width-request">666</property>
+    <property name="width-request">1000</property>
     <property name="can-focus">False</property>
     <property name="window-position">center</property>
     <property name="default-width">666</property>
@@ -445,6 +445,7 @@ issuance:</property>
                     <property name="can-focus">False</property>
                     <property name="hexpand">True</property>
                     <property name="active">0</property>
+                    <property name="active-id">unlimited</property>
                     <items>
                       <item id="unlimited" translatable="yes">Uncapped</item>
                       <item id="limited" translatable="yes">With total  limit</item>
@@ -537,62 +538,7 @@ issuance:</property>
                     <property name="enable-grid-lines">both</property>
                     <child internal-child="selection">
                       <object class="GtkTreeSelection">
-                        <property name="mode">multiple</property>
                         <signal name="changed" handler="issueSelection" swapped="no"/>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkTreeViewColumn">
-                        <property name="resizable">True</property>
-                        <property name="sizing">fixed</property>
-                        <property name="min-width">50</property>
-                        <property name="title" translatable="yes">Descriptor</property>
-                        <property name="expand">True</property>
-                        <property name="clickable">True</property>
-                        <property name="reorderable">True</property>
-                        <property name="sort-indicator">True</property>
-                        <property name="sort-column-id">0</property>
-                        <child>
-                          <object class="GtkCellRendererText"/>
-                          <attributes>
-                            <attribute name="text">0</attribute>
-                          </attributes>
-                        </child>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkTreeViewColumn">
-                        <property name="resizable">True</property>
-                        <property name="sizing">fixed</property>
-                        <property name="min-width">50</property>
-                        <property name="title" translatable="yes">Descriptor name</property>
-                        <property name="expand">True</property>
-                        <property name="clickable">True</property>
-                        <property name="reorderable">True</property>
-                        <property name="sort-indicator">True</property>
-                        <property name="sort-column-id">1</property>
-                        <child>
-                          <object class="GtkCellRendererText"/>
-                          <attributes>
-                            <attribute name="text">1</attribute>
-                          </attributes>
-                        </child>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkTreeViewColumn">
-                        <property name="resizable">True</property>
-                        <property name="sizing">fixed</property>
-                        <property name="title" translatable="yes">Satoshis</property>
-                        <property name="clickable">True</property>
-                        <property name="reorderable">True</property>
-                        <property name="sort-column-id">2</property>
-                        <child>
-                          <object class="GtkCellRendererText"/>
-                          <attributes>
-                            <attribute name="text">2</attribute>
-                          </attributes>
-                        </child>
                       </object>
                     </child>
                     <child>
@@ -625,6 +571,60 @@ issuance:</property>
                           <object class="GtkCellRendererSpin"/>
                           <attributes>
                             <attribute name="text">4</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn">
+                        <property name="resizable">True</property>
+                        <property name="sizing">fixed</property>
+                        <property name="min-width">50</property>
+                        <property name="title" translatable="yes">Descriptor name</property>
+                        <property name="expand">True</property>
+                        <property name="clickable">True</property>
+                        <property name="reorderable">True</property>
+                        <property name="sort-indicator">True</property>
+                        <property name="sort-column-id">1</property>
+                        <child>
+                          <object class="GtkCellRendererText"/>
+                          <attributes>
+                            <attribute name="text">1</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn">
+                        <property name="resizable">True</property>
+                        <property name="sizing">fixed</property>
+                        <property name="min-width">50</property>
+                        <property name="title" translatable="yes">Descriptor</property>
+                        <property name="expand">True</property>
+                        <property name="clickable">True</property>
+                        <property name="reorderable">True</property>
+                        <property name="sort-indicator">True</property>
+                        <property name="sort-column-id">0</property>
+                        <child>
+                          <object class="GtkCellRendererText"/>
+                          <attributes>
+                            <attribute name="text">0</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn">
+                        <property name="resizable">True</property>
+                        <property name="sizing">fixed</property>
+                        <property name="title" translatable="yes">Satoshis</property>
+                        <property name="clickable">True</property>
+                        <property name="reorderable">True</property>
+                        <property name="sort-column-id">2</property>
+                        <child>
+                          <object class="GtkCellRendererText"/>
+                          <attributes>
+                            <attribute name="text">2</attribute>
                           </attributes>
                         </child>
                       </object>
@@ -735,63 +735,7 @@ issuance:</property>
                     <property name="show-expanders">False</property>
                     <property name="enable-grid-lines">both</property>
                     <child internal-child="selection">
-                      <object class="GtkTreeSelection">
-                        <property name="mode">multiple</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkTreeViewColumn">
-                        <property name="resizable">True</property>
-                        <property name="sizing">fixed</property>
-                        <property name="min-width">50</property>
-                        <property name="title" translatable="yes">Descriptor</property>
-                        <property name="expand">True</property>
-                        <property name="clickable">True</property>
-                        <property name="reorderable">True</property>
-                        <property name="sort-indicator">True</property>
-                        <property name="sort-column-id">0</property>
-                        <child>
-                          <object class="GtkCellRendererText"/>
-                          <attributes>
-                            <attribute name="text">0</attribute>
-                          </attributes>
-                        </child>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkTreeViewColumn">
-                        <property name="resizable">True</property>
-                        <property name="sizing">fixed</property>
-                        <property name="min-width">50</property>
-                        <property name="title" translatable="yes">Descriptor name</property>
-                        <property name="expand">True</property>
-                        <property name="clickable">True</property>
-                        <property name="reorderable">True</property>
-                        <property name="sort-indicator">True</property>
-                        <property name="sort-column-id">1</property>
-                        <child>
-                          <object class="GtkCellRendererText"/>
-                          <attributes>
-                            <attribute name="text">1</attribute>
-                          </attributes>
-                        </child>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkTreeViewColumn">
-                        <property name="resizable">True</property>
-                        <property name="sizing">fixed</property>
-                        <property name="title" translatable="yes">Satoshis</property>
-                        <property name="clickable">True</property>
-                        <property name="reorderable">True</property>
-                        <property name="sort-column-id">2</property>
-                        <child>
-                          <object class="GtkCellRendererText"/>
-                          <attributes>
-                            <attribute name="text">2</attribute>
-                          </attributes>
-                        </child>
-                      </object>
+                      <object class="GtkTreeSelection"/>
                     </child>
                     <child>
                       <object class="GtkTreeViewColumn">
@@ -820,9 +764,63 @@ issuance:</property>
                         <property name="sort-indicator">True</property>
                         <property name="sort-column-id">4</property>
                         <child>
-                          <object class="GtkCellRendererSpin"/>
+                          <object class="GtkCellRendererText"/>
                           <attributes>
                             <attribute name="text">4</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn">
+                        <property name="resizable">True</property>
+                        <property name="sizing">fixed</property>
+                        <property name="min-width">50</property>
+                        <property name="title" translatable="yes">Descriptor name</property>
+                        <property name="expand">True</property>
+                        <property name="clickable">True</property>
+                        <property name="reorderable">True</property>
+                        <property name="sort-indicator">True</property>
+                        <property name="sort-column-id">1</property>
+                        <child>
+                          <object class="GtkCellRendererText"/>
+                          <attributes>
+                            <attribute name="text">1</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn">
+                        <property name="resizable">True</property>
+                        <property name="sizing">fixed</property>
+                        <property name="min-width">50</property>
+                        <property name="title" translatable="yes">Descriptor</property>
+                        <property name="expand">True</property>
+                        <property name="clickable">True</property>
+                        <property name="reorderable">True</property>
+                        <property name="sort-indicator">True</property>
+                        <property name="sort-column-id">0</property>
+                        <child>
+                          <object class="GtkCellRendererText"/>
+                          <attributes>
+                            <attribute name="text">0</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn">
+                        <property name="resizable">True</property>
+                        <property name="sizing">fixed</property>
+                        <property name="title" translatable="yes">Satoshis</property>
+                        <property name="clickable">True</property>
+                        <property name="reorderable">True</property>
+                        <property name="sort-column-id">2</property>
+                        <child>
+                          <object class="GtkCellRendererText"/>
+                          <attributes>
+                            <attribute name="text">2</attribute>
                           </attributes>
                         </child>
                       </object>
@@ -913,6 +911,7 @@ issuance:</property>
                         <property name="hexpand">True</property>
                         <child>
                           <object class="GtkSpinButton" id="customSpin">
+                            <property name="width-request">366</property>
                             <property name="visible">True</property>
                             <property name="sensitive">False</property>
                             <property name="can-focus">True</property>

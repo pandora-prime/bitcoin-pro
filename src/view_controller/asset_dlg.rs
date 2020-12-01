@@ -15,6 +15,9 @@ use gtk::prelude::*;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
+use std::str::FromStr;
+
+use lnpbp::bitcoin::OutPoint;
 
 use crate::model::{AssetGenesis, DescriptorGenerator, Document, UtxoEntry};
 use crate::view_controller::UtxoSelectDlg;
@@ -32,8 +35,8 @@ pub enum Error {
 pub struct AssetDlg {
     dialog: gtk::Dialog,
 
-    issue_amount: u64,
-    inflation_cap: f64,
+    issue_amount: RefCell<u64>,
+    inflation_cap_saved: RefCell<f64>,
     epoch_utxo: Rc<RefCell<Option<UtxoEntry>>>,
     allocation: Rc<RefCell<HashMap<UtxoEntry, f64>>>,
     inflation: Rc<RefCell<HashMap<UtxoEntry, Option<f64>>>>,
@@ -147,8 +150,8 @@ impl AssetDlg {
         let me = Rc::new(Self {
             dialog: glade_load!(builder, "assetDlg")?,
 
-            issue_amount: 0,
-            inflation_cap: 100000000.00,
+            issue_amount: RefCell::new(0u64),
+            inflation_cap_saved: RefCell::new(100000000_f64),
             epoch_utxo: none!(),
             allocation: none!(),
             inflation: none!(),
@@ -230,6 +233,12 @@ impl AssetDlg {
 
         me.inflation_combo
             .connect_changed(clone!(@weak me => move |_| {
+                if me.is_capped() {
+                    me.inflation_spin.set_value(*me.inflation_cap_saved.borrow());
+                } else {
+                    *me.inflation_cap_saved.borrow_mut() =
+                        u64::MAX as f64 / me.precision_divisor();
+                }
                 me.update_ui();
             }));
 
@@ -318,7 +327,7 @@ impl AssetDlg {
                             &dg.as_ref().map(|g| g.name()).unwrap_or(s!("<unknown descriptor>")),
                             &utxo.amount,
                             &utxo.outpoint.to_string(),
-                            &0,
+                            &format!("<equal part>"),
                         ]);
                         me.inflation.borrow_mut().insert(utxo, None);
                     }),
@@ -378,12 +387,14 @@ impl AssetDlg {
     }
 
     pub fn is_capped(&self) -> bool {
-        self.inflation_check.get_active()
-            || self
-                .inflation_combo
+        if !self.inflation_check.get_active() {
+            false
+        } else {
+            self.inflation_combo
                 .get_active_id()
                 .map(|id| &*id == "limited")
                 .unwrap_or(false)
+        }
     }
 
     pub fn precision_divisor(&self) -> f64 {
@@ -391,27 +402,37 @@ impl AssetDlg {
     }
 
     pub fn issue_cap(&self) -> f64 {
-        self.issue_amount as f64 / self.precision_divisor()
+        *self.issue_amount.borrow() as f64 / self.precision_divisor()
     }
 
     pub fn inflation_cap(&self) -> f64 {
         if !self.inflation_check.get_active() {
             0.0
         } else if self.is_capped() {
-            self.inflation_cap
+            self.inflation_spin.get_value()
         } else {
             u64::MAX as f64 / self.precision_divisor()
         }
     }
 
     pub fn assigned_cap(&self) -> f64 {
-        // TODO: Update
-        0.0
+        self.allocation
+            .borrow()
+            .iter()
+            .fold(0.0f64, |sum, (_, amount)| sum + amount)
+    }
+
+    pub fn inflation_sum(&self) -> f64 {
+        self.inflation
+            .borrow()
+            .iter()
+            .fold(0.0f64, |sum, (_, amount)| sum + amount.unwrap_or(0.0f64))
     }
 
     pub fn equal_inflation_cap(&self) -> f64 {
-        // TODO: Update
-        0.0
+        let len = self.inflation.borrow().len();
+        let len = if len == 0 { 1 } else { len };
+        (self.inflation_cap() - self.inflation_sum()) / len as f64
     }
 
     pub fn total_cap(&self) -> f64 {
@@ -419,7 +440,7 @@ impl AssetDlg {
     }
 
     pub fn issue_amount(&self) -> u64 {
-        self.issue_amount
+        *self.issue_amount.borrow()
     }
 
     pub fn inflation_amount(&self) -> u64 {
@@ -431,13 +452,41 @@ impl AssetDlg {
     }
 
     pub fn selected_allocation(&self) -> Option<(UtxoEntry, f64)> {
-        // TODO: Implement
-        None
+        self.allocation_tree
+            .get_selection()
+            .get_selected()
+            .and_then(|(model, iter)| {
+                model.get_value(&iter, 3).get::<String>().ok().flatten()
+            })
+            .and_then(|s| OutPoint::from_str(&s).ok())
+            .and_then(|outpoint| {
+                self.allocation.borrow().iter().find_map(|(utxo, amount)| {
+                    if utxo.outpoint == outpoint {
+                        Some((utxo.clone(), *amount))
+                    } else {
+                        None
+                    }
+                })
+            })
     }
 
     pub fn selected_inflation(&self) -> Option<(UtxoEntry, Option<f64>)> {
-        // TODO: Implement
-        None
+        self.inflation_tree
+            .get_selection()
+            .get_selected()
+            .and_then(|(model, iter)| {
+                model.get_value(&iter, 3).get::<String>().ok().flatten()
+            })
+            .and_then(|s| OutPoint::from_str(&s).ok())
+            .and_then(|outpoint| {
+                self.inflation.borrow().iter().find_map(|(utxo, amount)| {
+                    if utxo.outpoint == outpoint {
+                        Some((utxo.clone(), *amount))
+                    } else {
+                        None
+                    }
+                })
+            })
     }
 
     pub fn display_info(&self, msg: impl ToString) {
@@ -500,15 +549,22 @@ impl AssetDlg {
 
         self.inflation_combo
             .set_sensitive(self.inflation_check.get_active());
-        self.inflation_adj.set_upper(self.inflation_cap());
-        self.inflation_spin.set_value(self.inflation_cap());
+        self.inflation_adj
+            .set_upper(u64::MAX as f64 / self.precision_divisor());
         self.inflation_spin.set_sensitive(self.is_capped());
+        if !self.is_capped() {
+            self.inflation_spin
+                .set_value(u64::MAX as f64 / self.precision_divisor());
+        }
 
         self.contract_text
             .set_sensitive(self.contract_check.get_active());
 
         let allocation = self.selected_allocation();
         let inflation = self.selected_inflation();
+        if !self.inflation_check.get_active() {
+            self.inflation_tree.get_selection().unselect_all()
+        }
         self.amount_edit_btn.set_sensitive(allocation.is_some());
         self.allocation_remove_btn
             .set_sensitive(allocation.is_some());
@@ -520,8 +576,8 @@ impl AssetDlg {
         self.equal_radio.set_sensitive(inflation.is_some());
         self.custom_radio.set_sensitive(inflation.is_some());
         if let Some((_, cap)) = inflation {
-            self.equal_radio.set_sensitive(cap.is_none());
-            self.custom_radio.set_sensitive(cap.is_some());
+            self.custom_spin
+                .set_sensitive(inflation.is_some() && cap.is_some());
             match cap {
                 Some(cap) => {
                     self.custom_spin.set_value(cap);
@@ -531,8 +587,8 @@ impl AssetDlg {
                 }
                 None => {
                     let cap = self.equal_inflation_cap();
-                    self.custom_spin.set_value(cap);
                     self.custom_adj.set_upper(cap);
+                    self.custom_spin.set_value(cap);
                 }
             }
         }
