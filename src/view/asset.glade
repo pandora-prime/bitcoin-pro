@@ -17,6 +17,11 @@
     </columns>
   </object>
   <object class="GtkTextBuffer" id="contractBuffer"/>
+  <object class="GtkAdjustment" id="customAdj">
+    <property name="upper">100000000</property>
+    <property name="step-increment">1000</property>
+    <property name="page-increment">1000000</property>
+  </object>
   <object class="GtkAdjustment" id="fractAdj">
     <property name="upper">18</property>
     <property name="value">8</property>
@@ -284,7 +289,6 @@ replacements:</property>
                   <object class="GtkSpinButton" id="fractSpin">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="hexpand">True</property>
                     <property name="max-length">2</property>
                     <property name="width-chars">6</property>
                     <property name="max-width-chars">2</property>
@@ -874,17 +878,53 @@ issuance:</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkToolButton" id="capEdit">
+                      <object class="GtkRadioToolButton" id="equalRadio">
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="can-focus">False</property>
-                        <property name="is-important">True</property>
-                        <property name="label" translatable="yes">Change inflation cap</property>
+                        <property name="label" translatable="yes">Equally distributed</property>
                         <property name="use-underline">True</property>
+                        <property name="active">True</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
-                        <property name="homogeneous">False</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkRadioToolButton" id="customRadio">
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Custom cap:</property>
+                        <property name="use-underline">True</property>
+                        <property name="active">True</property>
+                        <property name="group">equalRadio</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="homogeneous">True</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolItem">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="hexpand">True</property>
+                        <child>
+                          <object class="GtkSpinButton" id="customSpin">
+                            <property name="visible">True</property>
+                            <property name="sensitive">False</property>
+                            <property name="can-focus">True</property>
+                            <property name="hexpand">True</property>
+                            <property name="adjustment">customAdj</property>
+                            <property name="digits">8</property>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="homogeneous">True</property>
                       </packing>
                     </child>
                   </object>

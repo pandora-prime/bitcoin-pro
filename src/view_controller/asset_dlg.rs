@@ -36,7 +36,7 @@ pub struct AssetDlg {
     inflation_cap: f64,
     epoch_utxo: Rc<RefCell<Option<UtxoEntry>>>,
     allocation: Rc<RefCell<HashMap<UtxoEntry, f64>>>,
-    inflation: Rc<RefCell<HashMap<UtxoEntry, f64>>>,
+    inflation: Rc<RefCell<HashMap<UtxoEntry, Option<f64>>>>,
 
     msg_box: gtk::Box,
     msg_label: gtk::Label,
@@ -70,7 +70,10 @@ pub struct AssetDlg {
 
     inflation_add_btn: gtk::ToolButton,
     inflation_remove_btn: gtk::ToolButton,
-    cap_edit_btn: gtk::ToolButton,
+    equal_radio: gtk::RadioToolButton,
+    custom_radio: gtk::RadioToolButton,
+    custom_spin: gtk::SpinButton,
+    custom_adj: gtk::Adjustment,
 
     issue_cap_display: gtk::Entry,
     inflation_cap_display: gtk::Entry,
@@ -125,7 +128,10 @@ impl AssetDlg {
         let amount_edit_btn = builder.get_object("amountEdit")?;
         let inflation_add_btn = builder.get_object("inflationAdd")?;
         let inflation_remove_btn = builder.get_object("inflationRemove")?;
-        let cap_edit_btn = builder.get_object("capEdit")?;
+        let equal_radio = builder.get_object("equalRadio")?;
+        let custom_radio = builder.get_object("customRadio")?;
+        let custom_spin = builder.get_object("customSpin")?;
+        let custom_adj = builder.get_object("customAdj")?;
 
         let issue_cap_display = builder.get_object("issueAcc")?;
         let inflation_cap_display = builder.get_object("inflationAcc")?;
@@ -178,7 +184,10 @@ impl AssetDlg {
             amount_edit_btn,
             inflation_add_btn,
             inflation_remove_btn,
-            cap_edit_btn,
+            equal_radio,
+            custom_radio,
+            custom_spin,
+            custom_adj,
 
             issue_cap_display,
             inflation_cap_display,
@@ -201,8 +210,14 @@ impl AssetDlg {
             }));
         }
 
-        for ctl in &[&me.fract_spin, &me.inflation_spin] {
+        for ctl in &[&me.fract_spin, &me.inflation_spin, &me.custom_spin] {
             ctl.connect_changed(clone!(@weak me => move |_| {
+                me.update_ui();
+            }));
+        }
+
+        for ctl in &[&me.equal_radio, &me.custom_radio] {
+            ctl.connect_toggled(clone!(@weak me => move |_| {
                 me.update_ui();
             }));
         }
@@ -217,6 +232,15 @@ impl AssetDlg {
             .connect_changed(clone!(@weak me => move |_| {
                 me.update_ui();
             }));
+
+        for ctl in &[
+            &me.allocation_tree.get_selection(),
+            &me.inflation_tree.get_selection(),
+        ] {
+            ctl.connect_changed(clone!(@weak me => move |_| {
+                me.update_ui();
+            }));
+        }
 
         Ok(me)
     }
@@ -296,7 +320,7 @@ impl AssetDlg {
                             &utxo.outpoint.to_string(),
                             &0,
                         ]);
-                        me.inflation.borrow_mut().insert(utxo, 0.0);
+                        me.inflation.borrow_mut().insert(utxo, None);
                     }),
                     || {},
                 );
@@ -329,46 +353,6 @@ impl AssetDlg {
 
     pub fn asset_genesis(&self) -> Result<AssetGenesis, Error> {
         Err(Error::None)
-    }
-
-    pub fn display_info(&self, msg: impl ToString) {
-        self.msg_label.set_text(&msg.to_string());
-        self.msg_image.set_from_icon_name(
-            Some("dialog-information"),
-            gtk::IconSize::SmallToolbar,
-        );
-        self.msg_box.set_visible(true);
-    }
-
-    pub fn display_error(&self, msg: impl std::error::Error) {
-        self.msg_label.set_text(&msg.to_string());
-        self.msg_image.set_from_icon_name(
-            Some("dialog-error"),
-            gtk::IconSize::SmallToolbar,
-        );
-        self.msg_box.set_visible(true);
-    }
-
-    pub fn display_epoch_seal(
-        &self,
-        utxo: &UtxoEntry,
-        descriptor_generator: Option<DescriptorGenerator>,
-    ) {
-        let name = match descriptor_generator {
-            Some(descriptor_generator) => {
-                format!(
-                    "{}: {} ({} sats)",
-                    descriptor_generator.name(),
-                    utxo.outpoint,
-                    utxo.amount
-                )
-            }
-            None => format!(
-                "<unknown descriptor>: {} ({} sats)",
-                utxo.outpoint, utxo.amount
-            ),
-        };
-        self.epoch_field.set_text(&name);
     }
 
     pub fn asset_ticker(&self) -> Option<String> {
@@ -420,6 +404,16 @@ impl AssetDlg {
         }
     }
 
+    pub fn assigned_cap(&self) -> f64 {
+        // TODO: Update
+        0.0
+    }
+
+    pub fn equal_inflation_cap(&self) -> f64 {
+        // TODO: Update
+        0.0
+    }
+
     pub fn total_cap(&self) -> f64 {
         self.issue_cap() + self.inflation_cap()
     }
@@ -434,6 +428,56 @@ impl AssetDlg {
 
     pub fn total_amount(&self) -> u64 {
         self.issue_amount() + self.inflation_amount()
+    }
+
+    pub fn selected_allocation(&self) -> Option<(UtxoEntry, f64)> {
+        // TODO: Implement
+        None
+    }
+
+    pub fn selected_inflation(&self) -> Option<(UtxoEntry, Option<f64>)> {
+        // TODO: Implement
+        None
+    }
+
+    pub fn display_info(&self, msg: impl ToString) {
+        self.msg_label.set_text(&msg.to_string());
+        self.msg_image.set_from_icon_name(
+            Some("dialog-information"),
+            gtk::IconSize::SmallToolbar,
+        );
+        self.msg_box.set_visible(true);
+    }
+
+    pub fn display_error(&self, msg: impl std::error::Error) {
+        self.msg_label.set_text(&msg.to_string());
+        self.msg_image.set_from_icon_name(
+            Some("dialog-error"),
+            gtk::IconSize::SmallToolbar,
+        );
+        self.msg_box.set_visible(true);
+    }
+
+    pub fn display_epoch_seal(
+        &self,
+        utxo: &UtxoEntry,
+        descriptor_generator: Option<DescriptorGenerator>,
+    ) {
+        let name = match descriptor_generator {
+            Some(descriptor_generator) => {
+                format!(
+                    "{}: {} ({} sats)",
+                    descriptor_generator.name(),
+                    utxo.outpoint,
+                    utxo.amount
+                )
+            }
+            None => format!(
+                "<unknown descriptor>: {} ({} sats)",
+                utxo.outpoint, utxo.amount
+            ),
+        };
+        self.epoch_field.set_text(&name);
     }
 
     pub fn update_ui(&self) {
@@ -462,6 +506,39 @@ impl AssetDlg {
 
         self.contract_text
             .set_sensitive(self.contract_check.get_active());
+
+        let allocation = self.selected_allocation();
+        let inflation = self.selected_inflation();
+        self.amount_edit_btn.set_sensitive(allocation.is_some());
+        self.allocation_remove_btn
+            .set_sensitive(allocation.is_some());
+        self.inflation_tree
+            .set_sensitive(self.inflation_check.get_active());
+        self.inflation_add_btn
+            .set_sensitive(self.inflation_check.get_active());
+        self.inflation_remove_btn.set_sensitive(inflation.is_some());
+        self.equal_radio.set_sensitive(inflation.is_some());
+        self.custom_radio.set_sensitive(inflation.is_some());
+        if let Some((_, cap)) = inflation {
+            self.equal_radio.set_sensitive(cap.is_none());
+            self.custom_radio.set_sensitive(cap.is_some());
+            match cap {
+                Some(cap) => {
+                    self.custom_spin.set_value(cap);
+                    self.custom_adj.set_upper(
+                        self.inflation_cap() - self.assigned_cap() + cap,
+                    );
+                }
+                None => {
+                    let cap = self.equal_inflation_cap();
+                    self.custom_spin.set_value(cap);
+                    self.custom_adj.set_upper(cap);
+                }
+            }
+        }
+        self.custom_spin.set_sensitive(
+            inflation.is_some() && self.custom_radio.get_active(),
+        );
 
         self.issue_cap_display
             .set_text(&self.issue_cap().to_string());
