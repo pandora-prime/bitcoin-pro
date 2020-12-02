@@ -1,7 +1,7 @@
 [package]
 name = "bitcoin-pro"
 description = "Professional bitcoin accounts & assets management"
-version = "0.1.0-alpha.3"
+version = "0.1.0-beta.1"
 authors = ["Dr Maxim Orlovsky <orlovsky@pandoracore.com>"]
 edition = "2018"
 license = "AGPL-3.0-only"
@@ -25,10 +25,10 @@ gdk = { version = "~0.13.2", features = ["v3_24"] }
 gio =  { version = "~0.9.1", features = ["v2_64"] }
 glib = { version = "~0.10.3", features = ["v2_64"] }
 glade = "~0.1.0-alpha.2"
-lnpbp = { git = "https://github.com/LNP-BP/rust-lnpbp", branch = "fix/tokio-break", features = ["lnp", "rgb", "tor", "url", "keygen", "elgamal"] }
-lnpbp_derive = { git = "https://github.com/LNP-BP/rust-lnpbp", branch = "fix/tokio-break" }
-electrum-client = "0.3.0-beta.1"
-rgb_node = { git = "https://github.com/LNP-BP/rgb-node", branch = "master" }
+lnpbp = { version = "~0.2.0-beta.4", features = ["lnp", "rgb", "tor", "url", "keygen", "elgamal"] }
+lnpbp_derive = "~0.2.0-beta.4"
+electrum-client = "~0.3.0-beta.1"
+rgb_node = "~0.2.0-beta.5"
 
 [patch.crates-io]
 # Remove this once https://github.com/jean-airoldie/zeromq-src-rs/pull/15 got merged

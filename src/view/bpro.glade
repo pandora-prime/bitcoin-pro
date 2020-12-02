@@ -1010,6 +1010,32 @@
                     <property name="homogeneous">False</property>
                   </packing>
                 </child>
+                <child>
+                  <object class="GtkSeparatorToolItem">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToolButton" id="assetRemove">
+                    <property name="visible">True</property>
+                    <property name="sensitive">False</property>
+                    <property name="can-focus">False</property>
+                    <property name="tooltip-text" translatable="yes">Remove selected asset allocation</property>
+                    <property name="is-important">True</property>
+                    <property name="label" translatable="yes">Remove</property>
+                    <property name="use-underline">True</property>
+                    <property name="icon-name">edit-delete</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">False</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>

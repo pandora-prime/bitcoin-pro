@@ -565,12 +565,11 @@ impl AssetDlg {
     }
 
     pub fn asset_allocation(&self) -> Vec<(OutPoint, AtomicValue)> {
-        let frac = self.asset_fractionals();
         self.allocation
             .borrow()
             .iter()
             .map(|(utxo, amount)| {
-                (utxo.outpoint, AccountingAmount::transmutate(frac, *amount))
+                (utxo.outpoint, (amount * self.precision_divisor()) as u64)
             })
             .collect()
     }

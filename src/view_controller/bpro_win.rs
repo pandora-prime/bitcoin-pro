@@ -61,6 +61,7 @@ pub struct BproWin {
     utxo_descr_remove_btn: gtk::ToolButton,
     utxo_descr_clear_btn: gtk::ToolButton,
     utxo_remove_btn: gtk::ToolButton,
+    asset_remove_btn: gtk::ToolButton,
     asset_id_display: gtk::Entry,
     asset_genesis_display: gtk::Entry,
     asset_contract_display: gtk::TextBuffer,
@@ -94,6 +95,7 @@ impl BproWin {
         let utxo_descr_remove_btn = builder.get_object("utxoDescrRemove")?;
         let utxo_descr_clear_btn = builder.get_object("utxoDescrClear")?;
         let utxo_remove_btn = builder.get_object("utxoRemove")?;
+        let asset_remove_btn = builder.get_object("assetRemove")?;
 
         let pubkey_tree = builder.get_object("pubkeyTree")?;
         let pubkey_store = builder.get_object("pubkeyStore")?;
@@ -155,6 +157,7 @@ impl BproWin {
             utxo_descr_remove_btn,
             utxo_descr_clear_btn,
             utxo_remove_btn,
+            asset_remove_btn,
             asset_id_display,
             asset_genesis_display,
             asset_contract_display,
@@ -491,13 +494,10 @@ impl BproWin {
                         me.asset_total_display.set_text(&asset.supply().max_cap().accounting_value().to_string());
                         me.asset_decimals_display.set_text(&asset.fractional_bits().to_string());
                     }
-                    me.descriptor_edit_btn.set_sensitive(true);
-                    me.descriptor_remove_btn.set_sensitive(true);
+                    me.asset_remove_btn.set_sensitive(true);
                 } else {
-                    me.descriptor_edit_btn.set_sensitive(false);
-                    me.descriptor_remove_btn.set_sensitive(false);
+                    me.asset_remove_btn.set_sensitive(false);
                 }
-                me.utxo_descr_clear_btn.set_sensitive(me.utxo_descr_store.get_iter_first().is_some());
             }),
         );
 
@@ -535,6 +535,30 @@ impl BproWin {
                 || {},
             );
         }));
+
+        me.borrow().asset_remove_btn.connect_clicked(
+            clone!(@weak me, @strong doc => move |_| {
+                let me = me.borrow();
+                if let Some((contract_id, _, iter)) = me.asset_selection() {
+                    let dlg = gtk::MessageDialog::new(
+                        Some(&me.window),
+                        gtk::DialogFlags::MODAL,
+                        gtk::MessageType::Question,
+                        gtk::ButtonsType::YesNo,
+                        &format!(
+                            "Please confirm deletion of the asset with id {}",
+                            contract_id.to_bech32_string()
+                        )
+                    );
+                    if dlg.run() == gtk::ResponseType::Yes {
+                        me.asset_store.remove(&iter);
+                        let _ = doc.borrow_mut().remove_asset(contract_id);
+                    }
+                    dlg.hide();
+                    me.update_ui();
+                }
+            }),
+        );
 
         for ctl in &[
             &me.borrow().asset_id_display,

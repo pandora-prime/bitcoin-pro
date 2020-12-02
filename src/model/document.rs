@@ -466,6 +466,18 @@ impl Document {
         self.save()
     }
 
+    pub fn remove_asset(
+        &mut self,
+        contract_id: ContractId,
+    ) -> Result<bool, Error> {
+        self.profile
+            .assets
+            .iter()
+            .position(|(id, _)| *id == contract_id)
+            .map(|i| self.profile.tracking.remove(i));
+        self.save()
+    }
+
     pub fn resolver(&self) -> Result<ElectrumClient, ResolverError> {
         if let ChainResolver::Electrum(addr) = self.profile.settings.resolver {
             Ok(ElectrumClient::new(&addr.to_string(), None)?)
