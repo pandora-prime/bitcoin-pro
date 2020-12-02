@@ -205,7 +205,8 @@ impl BproWin {
         let tb: gtk::ToolButton = builder.get_object("pubkeyAdd")?;
         tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
             let pubkey_dlg = PubkeyDlg::load_glade().expect("Must load");
-            pubkey_dlg.run(None, doc.borrow().chain(), clone!(@weak me, @strong doc =>
+            let chain = doc.borrow().chain().clone();
+            pubkey_dlg.run(None, &chain, clone!(@weak me, @strong doc =>
                 move |tracking_account| {
                     let me = me.borrow();
                     me.pubkey_store.insert_with_values(
@@ -231,7 +232,8 @@ impl BproWin {
                     .borrow()
                     .tracking_account_by_key(&keyname)
                     .expect("Tracking account must be known since it is selected");
-                pubkey_dlg.run(Some(tracking_account.clone()), doc.borrow().chain(), clone!(@weak me, @strong doc =>
+                let chain = doc.borrow().chain().clone();
+                pubkey_dlg.run(Some(tracking_account.clone()), &chain, clone!(@weak me, @strong doc =>
                     move |new_tracking_account| {
                         let me = me.borrow();
                         me.pubkey_store.set_value(&iter, 0, &new_tracking_account.name().to_value());

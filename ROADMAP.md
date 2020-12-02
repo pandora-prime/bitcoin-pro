@@ -13,17 +13,19 @@ Alpha 3
 
 Beta 1
 ------
-- [ ] Link & launch RGB Node
-- [ ] Add RGB Node settings
+- [x] Link RGB functionality
 - [x] Implement UI for asset creation dlg
 - [ ] Implement allocations & inflation editing
 - [ ] Notify about asset inconsistencies during creation
-- [ ] Implement asset issuance procedure
-- [ ] Display & store assets list
-- [ ] View genesis of the existing asset
+- [x] Implement asset issuance procedure
+- [x] Store assets list
+- [ ] Read asset information
+- [ ] View genesis/info of the existing asset
+- [ ] Add renomination configuration for asset creation
 
 Beta 2
 ------
+- [ ] Add RGB Node settings
 - [ ] Bifrost server connectivity & updates
 - [ ] External RGB Node
 
