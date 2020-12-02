@@ -4,32 +4,20 @@
   <requires lib="gtk+" version="3.22"/>
   <object class="GtkListStore" id="assetStore">
     <columns>
-      <!-- column-name id -->
+      <!-- column-name ticker -->
       <column type="gchararray"/>
       <!-- column-name name -->
       <column type="gchararray"/>
-      <!-- column-name ticker -->
-      <column type="gchararray"/>
-      <!-- column-name decimals -->
-      <column type="guint"/>
-      <!-- column-name knownSupply -->
-      <column type="gfloat"/>
-      <!-- column-name maxSupply -->
-      <column type="gfloat"/>
-      <!-- column-name inflatable -->
-      <column type="gboolean"/>
-      <!-- column-name burnable -->
-      <column type="gboolean"/>
-      <!-- column-name renominatable -->
-      <column type="gboolean"/>
-      <!-- column-name issues -->
-      <column type="guint"/>
-      <!-- column-name epochs -->
-      <column type="guint"/>
-      <!-- column-name renominations -->
-      <column type="guint"/>
       <!-- column-name amountOwned -->
       <column type="gfloat"/>
+      <!-- column-name knownSupply -->
+      <column type="gfloat"/>
+      <!-- column-name issues -->
+      <column type="guint"/>
+      <!-- column-name inflatable -->
+      <column type="gboolean"/>
+      <!-- column-name epochs -->
+      <column type="guint"/>
     </columns>
   </object>
   <object class="GtkImage" id="image1">
@@ -1081,7 +1069,7 @@
                         <child>
                           <object class="GtkCellRendererText"/>
                           <attributes>
-                            <attribute name="text">2</attribute>
+                            <attribute name="text">0</attribute>
                           </attributes>
                         </child>
                       </object>
@@ -1114,7 +1102,7 @@
                         <child>
                           <object class="GtkCellRendererText"/>
                           <attributes>
-                            <attribute name="text">12</attribute>
+                            <attribute name="text">2</attribute>
                           </attributes>
                         </child>
                       </object>
@@ -1130,7 +1118,7 @@
                         <child>
                           <object class="GtkCellRendererText"/>
                           <attributes>
-                            <attribute name="text">4</attribute>
+                            <attribute name="text">3</attribute>
                           </attributes>
                         </child>
                       </object>
@@ -1147,7 +1135,7 @@
                         <child>
                           <object class="GtkCellRendererText"/>
                           <attributes>
-                            <attribute name="text">9</attribute>
+                            <attribute name="text">4</attribute>
                           </attributes>
                         </child>
                       </object>
@@ -1164,7 +1152,7 @@
                         <child>
                           <object class="GtkCellRendererToggle"/>
                           <attributes>
-                            <attribute name="active">6</attribute>
+                            <attribute name="active">5</attribute>
                           </attributes>
                         </child>
                       </object>
@@ -1180,7 +1168,7 @@
                         <child>
                           <object class="GtkCellRendererText"/>
                           <attributes>
-                            <attribute name="text">10</attribute>
+                            <attribute name="text">6</attribute>
                           </attributes>
                         </child>
                       </object>

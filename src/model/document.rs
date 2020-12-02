@@ -13,7 +13,7 @@
 
 use amplify::internet::InetSocketAddr;
 use gtk::prelude::*;
-use std::collections::HashSet;
+use std::collections::{BTreeMap, HashSet};
 use std::ffi::OsStr;
 use std::fs::{File, OpenOptions};
 use std::io::{self, Seek, SeekFrom};
@@ -27,8 +27,8 @@ use lnpbp::bitcoin::OutPoint;
 use lnpbp::bitcoin::Transaction;
 use lnpbp::bp::{Chain, Psbt};
 use lnpbp::lnp::{NodeAddr, RemoteNodeAddr};
+use lnpbp::rgb::{Consignment, ContractId, Schema, SchemaId};
 use lnpbp::strict_encoding::{self, StrictDecode, StrictEncode};
-// use rgb::fungible;
 
 use super::{operation, DescriptorGenerator, TrackingAccount, UtxoEntry};
 use crate::model::DescriptorContent;
@@ -57,6 +57,10 @@ pub enum Error {
 
     /// Wrong position: no item exists at position {0}
     WrongPosition(usize),
+
+    /// Attempt to add contract that already exits; if you are trying to
+    /// update the version please remove older version first
+    DuplicatedContract(ContractId),
 }
 
 impl From<io::Error> for Error {
@@ -393,6 +397,26 @@ impl Document {
         self.save()
     }
 
+    pub fn is_outpoint_known(&self, outpoint: OutPoint) -> bool {
+        self.profile
+            .utxo_cache
+            .iter()
+            .find(|utxo| utxo.outpoint == outpoint)
+            .is_some()
+    }
+
+    pub fn add_asset(
+        &mut self,
+        consignment: Consignment,
+    ) -> Result<bool, Error> {
+        let contract_id = consignment.genesis.contract_id();
+        if self.profile.assets.contains_key(&contract_id) {
+            Err(Error::DuplicatedContract(contract_id))?
+        }
+        self.profile.assets.insert(contract_id, consignment);
+        self.save()
+    }
+
     pub fn resolver(&self) -> Result<ElectrumClient, ResolverError> {
         if let ChainResolver::Electrum(addr) = self.profile.settings.resolver {
             Ok(ElectrumClient::new(&addr.to_string(), None)?)
@@ -411,13 +435,13 @@ pub struct Profile {
     pub descriptors: Vec<DescriptorGenerator>,
     pub utxo_cache: HashSet<UtxoEntry>,
     pub tx_cache: Vec<Transaction>,
-    pub psbt_cache: Vec<Psbt>,
-    pub schema_cache: HashSet<u8>, // Placeholder
-    pub assets_cache: HashSet<u8>, // Placeholder
-    pub nft_cache: HashSet<u8>,    // Placeholder
-    pub identities_cache: HashSet<u8>, // Placeholder
-    pub audit_cache: HashSet<u8>,  // Placeholder
-    pub contracts_cache: HashSet<u8>, // Placeholder
+    pub psbts: Vec<Psbt>,
+    pub schemata: BTreeMap<SchemaId, Schema>,
+    pub assets: BTreeMap<ContractId, Consignment>,
+    pub nfts: BTreeMap<ContractId, Consignment>,
+    pub identities: BTreeMap<ContractId, Consignment>,
+    pub auditlogs: BTreeMap<ContractId, Consignment>,
+    pub contracts: BTreeMap<ContractId, Consignment>,
     pub history: Vec<operation::LogEntry>,
     pub settings: Settings,
 }
@@ -432,13 +456,13 @@ impl Default for Profile {
             descriptors: vec![],
             utxo_cache: set![],
             tx_cache: vec![],
-            psbt_cache: vec![],
-            schema_cache: set![],
-            assets_cache: set![],
-            nft_cache: set![],
-            identities_cache: set![],
-            audit_cache: set![],
-            contracts_cache: set![],
+            psbts: vec![],
+            schemata: bmap![],
+            assets: bmap![],
+            nfts: bmap![],
+            identities: bmap![],
+            auditlogs: bmap![],
+            contracts: bmap![],
             history: vec![],
             settings: Settings::default(),
         }

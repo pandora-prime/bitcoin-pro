@@ -18,9 +18,11 @@ use std::rc::Rc;
 use std::str::FromStr;
 
 use lnpbp::bitcoin::{OutPoint, Txid};
+use lnpbp::rgb::Consignment;
 
 use crate::model::Document;
 use crate::view_controller::{AssetDlg, DescriptorDlg, PubkeyDlg, SaveDlg};
+use rgb::fungible::AccountingAmount;
 
 static UI: &'static str = include_str!("../view/bpro.glade");
 
@@ -47,6 +49,7 @@ pub struct BproWin {
     utxo_descr_store: gtk::ListStore,
     utxo_tree: gtk::TreeView,
     utxo_store: gtk::ListStore,
+    asset_store: gtk::ListStore,
     header_bar: gtk::HeaderBar,
     new_btn: gtk::Button,
     open_btn: gtk::Button,
@@ -95,6 +98,7 @@ impl BproWin {
         let utxo_descr_store = builder.get_object("utxoDescrStore")?;
         let utxo_tree: gtk::TreeView = builder.get_object("utxoTree")?;
         let utxo_store = builder.get_object("utxoStore")?;
+        let asset_store = builder.get_object("assetStore")?;
 
         let chain_combo: gtk::ComboBox = builder.get_object("chainCombo")?;
         let electrum_radio: gtk::RadioButton =
@@ -122,6 +126,7 @@ impl BproWin {
             utxo_descr_store,
             utxo_tree,
             utxo_store,
+            asset_store,
             header_bar,
             new_btn,
             open_btn,
@@ -452,20 +457,33 @@ impl BproWin {
         tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
             let issue_dlg = AssetDlg::load_glade().expect("Must load");
             issue_dlg.run(doc.clone(), None, clone!(@weak me, @strong doc =>
-                move |_asset, _genesis| {
-                    /* TODO: Perform assst creation
+                move |asset, genesis| {
+                    println!("{:?}", asset);
+                    println!("{:?}", genesis);
+
+                    let consignment = Consignment::with(genesis, none!(), none!(), none!());
                     let me = me.borrow();
-                    me.pubkey_store.insert_with_values(
+                    me.asset_store.insert_with_values(
                         None,
-                        &[0, 1, 2],
+                        &[0, 1, 2, 3, 4, 5, 6],
                         &[
-                            &tracking_account.name(),
-                            &tracking_account.details(),
-                            &tracking_account.count(),
+                            &asset.ticker(),
+                            &asset.name(),
+                            &asset.known_allocations().iter().filter(|(outpoint, _)| {
+                                doc.borrow().is_outpoint_known(**outpoint)
+                            }).fold(0f64, |sum, (_, allocations)| {
+                                sum + AccountingAmount::from_asset_atomic_value(
+                                    &asset,
+                                    allocations.iter().fold(0u64, |sum, a| sum + a.value().value)
+                                ).accounting_value()
+                            }),
+                            &asset.supply().known_circulating().accounting_value(),
+                            &1,
+                            &(asset.known_inflation().len() > 0),
+                            &0
                         ],
                     );
-                    let _ = doc.borrow_mut().add_tracking_account(tracking_account);
-                     */
+                    let _ = doc.borrow_mut().add_asset(consignment);
                 }),
                 || {},
             );
