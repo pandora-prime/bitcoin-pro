@@ -13,13 +13,17 @@
 
 use gtk::prelude::*;
 use std::cell::RefCell;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::rc::Rc;
 use std::str::FromStr;
 
 use lnpbp::bitcoin::OutPoint;
+use lnpbp::bp::Chain;
+use lnpbp::rgb::{AtomicValue, Genesis};
+use rgb::fungible::Asset;
+use rgb::fungible::{processor as rgb20, AccountingAmount};
 
-use crate::model::{AssetGenesis, DescriptorGenerator, Document, UtxoEntry};
+use crate::model::{DescriptorGenerator, Document, UtxoEntry};
 use crate::view_controller::UtxoSelectDlg;
 
 static UI: &'static str = include_str!("../view/asset.glade");
@@ -28,13 +32,16 @@ static UI: &'static str = include_str!("../view/asset.glade");
 #[display(doc_comments)]
 /// Errors from processing asset genesis data
 pub enum Error {
-    /// Temporary error
-    None,
+    /// Error from RGB20 procedures
+    #[from]
+    #[display(inner)]
+    Rgb20(rgb::error::ServiceErrorDomain),
 }
 
 pub struct AssetDlg {
     dialog: gtk::Dialog,
 
+    chain: RefCell<Chain>,
     issue_amount: RefCell<u64>,
     inflation_cap_saved: RefCell<f64>,
     epoch_utxo: Rc<RefCell<Option<UtxoEntry>>>,
@@ -150,6 +157,7 @@ impl AssetDlg {
         let me = Rc::new(Self {
             dialog: glade_load!(builder, "assetDlg")?,
 
+            chain: RefCell::new(Chain::default()),
             issue_amount: RefCell::new(0u64),
             inflation_cap_saved: RefCell::new(100000000_f64),
             epoch_utxo: none!(),
@@ -259,14 +267,15 @@ impl AssetDlg {
     pub fn run(
         self: Rc<Self>,
         doc: Rc<RefCell<Document>>,
-        asset_genesis: Option<AssetGenesis>,
-        on_issue: impl Fn(AssetGenesis) + 'static,
+        asset: Option<Asset>,
+        on_issue: impl Fn(Asset, Genesis) + 'static,
         on_cancel: impl Fn() + 'static,
     ) {
         let me = self.clone();
 
+        *me.chain.borrow_mut() = doc.borrow().chain().clone();
         me.chain_combo
-            .set_active_id(Some(&doc.borrow().chain().to_string()));
+            .set_active_id(Some(&me.chain.borrow().to_string()));
 
         me.update_ui();
 
@@ -345,9 +354,9 @@ impl AssetDlg {
 
         me.create_btn.connect_clicked(
             clone!(@weak self as me => move |_| match self.asset_genesis() {
-                Ok(asset_genesis) => {
+                Ok((asset, genesis)) => {
                     me.dialog.close();
-                    on_issue(asset_genesis);
+                    on_issue(asset, genesis);
                 }
                 Err(err) => {
                     me.display_error(err);
@@ -360,8 +369,18 @@ impl AssetDlg {
         me.dialog.close();
     }
 
-    pub fn asset_genesis(&self) -> Result<AssetGenesis, Error> {
-        Err(Error::None)
+    pub fn asset_genesis(&self) -> Result<(Asset, Genesis), Error> {
+        Ok(rgb20::issue(
+            self.chain.borrow().clone(),
+            self.asset_ticker().unwrap_or_default(),
+            self.asset_title().unwrap_or_default(),
+            self.asset_contract(),
+            self.asset_fractionals(),
+            self.asset_allocation(),
+            self.asset_inflation(),
+            self.asset_renomination(),
+            self.asset_epoch(),
+        )?)
     }
 
     pub fn asset_ticker(&self) -> Option<String> {
@@ -382,8 +401,70 @@ impl AssetDlg {
         }
     }
 
+    pub fn asset_contract(&self) -> Option<String> {
+        if self.contract_check.get_active() {
+            self.contract_buffer
+                .get_text(
+                    &self.contract_buffer.get_start_iter(),
+                    &self.contract_buffer.get_end_iter(),
+                    false,
+                )
+                .and_then(|text| {
+                    let text = text.to_string();
+                    if text.is_empty() {
+                        None
+                    } else {
+                        Some(text)
+                    }
+                })
+        } else {
+            None
+        }
+    }
+
     pub fn asset_fractionals(&self) -> u8 {
         self.fract_spin.get_value_as_int() as u8
+    }
+
+    pub fn asset_allocation(&self) -> Vec<(OutPoint, AtomicValue)> {
+        let frac = self.asset_fractionals();
+        self.allocation
+            .borrow()
+            .iter()
+            .map(|(utxo, amount)| {
+                (utxo.outpoint, AccountingAmount::transmutate(frac, *amount))
+            })
+            .collect()
+    }
+
+    pub fn asset_inflation(&self) -> BTreeMap<OutPoint, AtomicValue> {
+        if self.inflation_check.get_active() {
+            let frac = self.asset_fractionals();
+            self.inflation
+                .borrow()
+                .iter()
+                .map(|(utxo, maybe_amount)| {
+                    (
+                        utxo.outpoint,
+                        AccountingAmount::transmutate(
+                            frac,
+                            maybe_amount.unwrap_or(self.equal_inflation_cap()),
+                        ),
+                    )
+                })
+                .collect()
+        } else {
+            bmap! {}
+        }
+    }
+
+    pub fn asset_renomination(&self) -> Option<OutPoint> {
+        // TODO: Implement renomination right
+        None
+    }
+
+    pub fn asset_epoch(&self) -> Option<OutPoint> {
+        self.epoch_utxo.borrow().as_ref().map(|utxo| utxo.outpoint)
     }
 
     pub fn is_capped(&self) -> bool {

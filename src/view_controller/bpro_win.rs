@@ -452,7 +452,7 @@ impl BproWin {
         tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
             let issue_dlg = AssetDlg::load_glade().expect("Must load");
             issue_dlg.run(doc.clone(), None, clone!(@weak me, @strong doc =>
-                move |_asset_genesis| {
+                move |_asset, _genesis| {
                     /* TODO: Perform assst creation
                     let me = me.borrow();
                     me.pubkey_store.insert_with_values(

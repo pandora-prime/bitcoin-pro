@@ -42,7 +42,7 @@ Install rust language and run
 
 ```constole
 $ sudo apt update
-$ sudo apt install -y cargo libssl-dev libzmq3-dev pkg-config g++ cmake libgtk-3-dev
+$ sudo apt install -y cargo libssl-dev libzmq3-dev pkg-config g++ cmake libgtk-3-dev libsqlite3-dev
 $ cargo install bitcoin-pro --version 0.1.0-alpha.3
 $ bitcoin-pro
 ```

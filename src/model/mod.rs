@@ -11,14 +11,12 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-mod asset;
 mod descriptors;
 mod document;
 pub mod operation;
 mod tracking;
 mod utxo;
 
-pub use asset::AssetGenesis;
 pub use descriptors::{
     DescriptorContent, DescriptorGenerator, DescriptorType, DescriptorTypes,
     Error as DescriptorError, SourceType,

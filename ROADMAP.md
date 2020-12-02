@@ -15,7 +15,9 @@ Beta 1
 ------
 - [ ] Link & launch RGB Node
 - [ ] Add RGB Node settings
-- [ ] Implement UI for asset creation dlg
+- [x] Implement UI for asset creation dlg
+- [ ] Implement allocations & inflation editing
+- [ ] Notify about asset inconsistencies during creation
 - [ ] Implement asset issuance procedure
 - [ ] Display & store assets list
 - [ ] View genesis of the existing asset
