@@ -44,6 +44,7 @@ pub struct AssetDlg {
     chain: RefCell<Chain>,
     issue_amount: RefCell<u64>,
     inflation_cap_saved: RefCell<f64>,
+    renomination_utxo: Rc<RefCell<Option<UtxoEntry>>>,
     epoch_utxo: Rc<RefCell<Option<UtxoEntry>>>,
     allocation: Rc<RefCell<HashMap<UtxoEntry, f64>>>,
     inflation: Rc<RefCell<HashMap<UtxoEntry, Option<f64>>>>,
@@ -58,6 +59,9 @@ pub struct AssetDlg {
     title_field: gtk::Entry,
     fract_spin: gtk::SpinButton,
     fract_adj: gtk::Adjustment,
+    renomen_check: gtk::CheckButton,
+    renomen_btn: gtk::Button,
+    renomen_field: gtk::Entry,
     epoch_check: gtk::CheckButton,
     epoch_btn: gtk::Button,
     epoch_field: gtk::Entry,
@@ -76,10 +80,11 @@ pub struct AssetDlg {
 
     allocation_add_btn: gtk::ToolButton,
     allocation_remove_btn: gtk::ToolButton,
-    amount_edit_btn: gtk::ToolButton,
 
     inflation_add_btn: gtk::ToolButton,
     inflation_remove_btn: gtk::ToolButton,
+    amount_spin: gtk::SpinButton,
+    amount_adj: gtk::Adjustment,
     equal_radio: gtk::RadioToolButton,
     custom_radio: gtk::RadioToolButton,
     custom_spin: gtk::SpinButton,
@@ -117,6 +122,9 @@ impl AssetDlg {
         let title_field = builder.get_object("titleField")?;
         let fract_spin = builder.get_object("fractSpin")?;
         let fract_adj = builder.get_object("fractAdj")?;
+        let renomen_check = builder.get_object("renomenCheck")?;
+        let renomen_btn = builder.get_object("renomenBtn")?;
+        let renomen_field = builder.get_object("renomenEntry")?;
         let epoch_check = builder.get_object("epochCheck")?;
         let epoch_btn = builder.get_object("epochBtn")?;
         let epoch_field = builder.get_object("epochEntry")?;
@@ -135,9 +143,10 @@ impl AssetDlg {
 
         let allocation_add_btn = builder.get_object("allocationAdd")?;
         let allocation_remove_btn = builder.get_object("allocationRemove")?;
-        let amount_edit_btn = builder.get_object("amountEdit")?;
         let inflation_add_btn = builder.get_object("inflationAdd")?;
         let inflation_remove_btn = builder.get_object("inflationRemove")?;
+        let amount_spin = builder.get_object("amountSpin")?;
+        let amount_adj = builder.get_object("amountAdj")?;
         let equal_radio = builder.get_object("equalRadio")?;
         let custom_radio = builder.get_object("customRadio")?;
         let custom_spin = builder.get_object("customSpin")?;
@@ -160,6 +169,7 @@ impl AssetDlg {
             chain: RefCell::new(Chain::default()),
             issue_amount: RefCell::new(0u64),
             inflation_cap_saved: RefCell::new(100000000_f64),
+            renomination_utxo: none!(),
             epoch_utxo: none!(),
             allocation: none!(),
             inflation: none!(),
@@ -177,6 +187,9 @@ impl AssetDlg {
             epoch_check,
             epoch_btn,
             epoch_field,
+            renomen_check,
+            renomen_btn,
+            renomen_field,
             inflation_check,
             inflation_combo,
             inflation_spin,
@@ -192,9 +205,10 @@ impl AssetDlg {
 
             allocation_add_btn,
             allocation_remove_btn,
-            amount_edit_btn,
             inflation_add_btn,
             inflation_remove_btn,
+            amount_spin,
+            amount_adj,
             equal_radio,
             custom_radio,
             custom_spin,
@@ -221,7 +235,12 @@ impl AssetDlg {
             }));
         }
 
-        for ctl in &[&me.fract_spin, &me.inflation_spin, &me.custom_spin] {
+        for ctl in &[
+            &me.fract_spin,
+            &me.inflation_spin,
+            &me.amount_spin,
+            &me.custom_spin,
+        ] {
             ctl.connect_changed(clone!(@weak me => move |_| {
                 me.update_ui();
             }));
@@ -233,7 +252,12 @@ impl AssetDlg {
             }));
         }
 
-        for ctl in &[&me.epoch_check, &me.inflation_check, &me.contract_check] {
+        for ctl in &[
+            &me.renomen_check,
+            &me.epoch_check,
+            &me.inflation_check,
+            &me.contract_check,
+        ] {
             ctl.connect_toggled(clone!(@weak me => move |_| {
                 me.update_ui();
             }));
@@ -278,6 +302,25 @@ impl AssetDlg {
             .set_active_id(Some(&me.chain.borrow().to_string()));
 
         me.update_ui();
+
+        me.renomen_btn.connect_clicked(
+            clone!(@weak me, @strong doc => move |_| {
+                let utxo_dlg = UtxoSelectDlg::load_glade().expect("Must load");
+                utxo_dlg.run(
+                    doc.clone(),
+                    clone!(@weak me, @strong doc => move |utxo| {
+                        me.display_renomination_seal(
+                            &utxo,
+                            doc.borrow().descriptor_by_content(&utxo.descriptor_content)
+                        );
+                        *me.renomination_utxo.borrow_mut() = Some(utxo);
+                    }),
+                    || {},
+                );
+
+                me.update_ui()
+            }),
+        );
 
         me.epoch_btn.connect_clicked(
             clone!(@weak me, @strong doc => move |_| {
@@ -459,8 +502,10 @@ impl AssetDlg {
     }
 
     pub fn asset_renomination(&self) -> Option<OutPoint> {
-        // TODO: Implement renomination right
-        None
+        self.renomination_utxo
+            .borrow()
+            .as_ref()
+            .map(|utxo| utxo.outpoint)
     }
 
     pub fn asset_epoch(&self) -> Option<OutPoint> {
@@ -588,6 +633,28 @@ impl AssetDlg {
         self.msg_box.set_visible(true);
     }
 
+    pub fn display_renomination_seal(
+        &self,
+        utxo: &UtxoEntry,
+        descriptor_generator: Option<DescriptorGenerator>,
+    ) {
+        let name = match descriptor_generator {
+            Some(descriptor_generator) => {
+                format!(
+                    "{}: {} ({} sats)",
+                    descriptor_generator.name(),
+                    utxo.outpoint,
+                    utxo.amount
+                )
+            }
+            None => format!(
+                "<unknown descriptor>: {} ({} sats)",
+                utxo.outpoint, utxo.amount
+            ),
+        };
+        self.renomen_field.set_text(&name);
+    }
+
     pub fn display_epoch_seal(
         &self,
         utxo: &UtxoEntry,
@@ -623,6 +690,8 @@ impl AssetDlg {
         self.ticker3_label.set_text(&ticker);
         self.ticker4_label.set_text(&ticker);
 
+        self.renomen_btn
+            .set_sensitive(self.renomen_check.get_active());
         self.epoch_btn.set_sensitive(self.epoch_check.get_active());
 
         self.fract_adj
@@ -646,7 +715,6 @@ impl AssetDlg {
         if !self.inflation_check.get_active() {
             self.inflation_tree.get_selection().unselect_all()
         }
-        self.amount_edit_btn.set_sensitive(allocation.is_some());
         self.allocation_remove_btn
             .set_sensitive(allocation.is_some());
         self.inflation_tree
@@ -654,8 +722,16 @@ impl AssetDlg {
         self.inflation_add_btn
             .set_sensitive(self.inflation_check.get_active());
         self.inflation_remove_btn.set_sensitive(inflation.is_some());
+        self.amount_spin.set_sensitive(allocation.is_some());
         self.equal_radio.set_sensitive(inflation.is_some());
         self.custom_radio.set_sensitive(inflation.is_some());
+        if let Some((_, amount)) = allocation {
+            self.custom_spin.set_value(amount);
+            self.custom_adj.set_upper(
+                u64::MAX as f64 / self.precision_divisor()
+                    - self.assigned_cap(),
+            );
+        }
         if let Some((_, cap)) = inflation {
             self.custom_spin
                 .set_sensitive(inflation.is_some() && cap.is_some());

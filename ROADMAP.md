@@ -19,7 +19,7 @@ Beta 1
 - [ ] Notify about asset inconsistencies during creation
 - [x] Implement asset issuance procedure
 - [x] Store assets list
-- [ ] Read asset information
+- [x] Read asset information
 - [ ] View genesis/info of the existing asset
 - [ ] Add renomination configuration for asset creation
 

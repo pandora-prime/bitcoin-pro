@@ -972,7 +972,7 @@
                     <property name="sensitive">False</property>
                     <property name="can-focus">False</property>
                     <property name="is-important">True</property>
-                    <property name="label" translatable="yes">Renominate</property>
+                    <property name="label" translatable="yes">Renomenate</property>
                     <property name="use-underline">True</property>
                     <property name="icon-name">edit-find-replace</property>
                   </object>
@@ -1584,7 +1584,7 @@
                       <object class="GtkLabel">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">Renominations</property>
+                        <property name="label" translatable="yes">Renomenations</property>
                       </object>
                       <packing>
                         <property name="position">2</property>
