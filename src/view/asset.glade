@@ -276,7 +276,7 @@ replacements:</property>
                     <property name="can-focus">False</property>
                     <property name="halign">end</property>
                     <property name="margin-start">13</property>
-                    <property name="label" translatable="yes">Fractionals:</property>
+                    <property name="label" translatable="yes">Decimals:</property>
                     <property name="justify">right</property>
                   </object>
                   <packing>

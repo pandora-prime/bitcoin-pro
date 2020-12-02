@@ -18,11 +18,11 @@ use std::rc::Rc;
 use std::str::FromStr;
 
 use lnpbp::bitcoin::{OutPoint, Txid};
-use lnpbp::rgb::Consignment;
+use lnpbp::rgb::{Consignment, ContractId, ToBech32};
+use rgb::fungible::AccountingAmount;
 
 use crate::model::Document;
 use crate::view_controller::{AssetDlg, DescriptorDlg, PubkeyDlg, SaveDlg};
-use rgb::fungible::AccountingAmount;
 
 static UI: &'static str = include_str!("../view/bpro.glade");
 
@@ -49,6 +49,7 @@ pub struct BproWin {
     utxo_descr_store: gtk::ListStore,
     utxo_tree: gtk::TreeView,
     utxo_store: gtk::ListStore,
+    asset_tree: gtk::TreeView,
     asset_store: gtk::ListStore,
     header_bar: gtk::HeaderBar,
     new_btn: gtk::Button,
@@ -60,6 +61,12 @@ pub struct BproWin {
     utxo_descr_remove_btn: gtk::ToolButton,
     utxo_descr_clear_btn: gtk::ToolButton,
     utxo_remove_btn: gtk::ToolButton,
+    asset_id_display: gtk::Entry,
+    asset_genesis_display: gtk::Entry,
+    asset_contract_display: gtk::TextBuffer,
+    asset_issued_display: gtk::Entry,
+    asset_total_display: gtk::Entry,
+    asset_decimals_display: gtk::Entry,
 }
 
 impl BproWin {
@@ -88,17 +95,26 @@ impl BproWin {
         let utxo_descr_clear_btn = builder.get_object("utxoDescrClear")?;
         let utxo_remove_btn = builder.get_object("utxoRemove")?;
 
-        let pubkey_tree: gtk::TreeView = builder.get_object("pubkeyTree")?;
+        let pubkey_tree = builder.get_object("pubkeyTree")?;
         let pubkey_store = builder.get_object("pubkeyStore")?;
-        let descriptor_tree: gtk::TreeView =
-            builder.get_object("locatorTree")?;
+        let descriptor_tree = builder.get_object("locatorTree")?;
         let descriptor_store = builder.get_object("locatorStore")?;
-        let utxo_descr_tree: gtk::TreeView =
-            builder.get_object("utxoDescrTree")?;
+        let utxo_descr_tree = builder.get_object("utxoDescrTree")?;
         let utxo_descr_store = builder.get_object("utxoDescrStore")?;
-        let utxo_tree: gtk::TreeView = builder.get_object("utxoTree")?;
+        let utxo_tree = builder.get_object("utxoTree")?;
         let utxo_store = builder.get_object("utxoStore")?;
+        let asset_tree = builder.get_object("assetTree")?;
         let asset_store = builder.get_object("assetStore")?;
+
+        let asset_id_display = builder.get_object("assetIdDisplay")?;
+        let asset_genesis_display =
+            builder.get_object("assetGenesisDisplay")?;
+        let asset_contract_display =
+            builder.get_object("assetContractDisplay")?;
+        let asset_issued_display = builder.get_object("assetIssuedDisplay")?;
+        let asset_total_display = builder.get_object("assetTotalDisplay")?;
+        let asset_decimals_display =
+            builder.get_object("assetDecimalsDisplay")?;
 
         let chain_combo: gtk::ComboBox = builder.get_object("chainCombo")?;
         let electrum_radio: gtk::RadioButton =
@@ -109,6 +125,7 @@ impl BproWin {
         doc.borrow().fill_tracking_store(&pubkey_store);
         doc.borrow().fill_descriptor_store(&descriptor_store);
         doc.borrow().fill_utxo_store(&utxo_store, None);
+        doc.borrow().fill_asset_store(&asset_store);
 
         header_bar.set_subtitle(Some(&doc.borrow().name()));
 
@@ -126,6 +143,7 @@ impl BproWin {
             utxo_descr_store,
             utxo_tree,
             utxo_store,
+            asset_tree,
             asset_store,
             header_bar,
             new_btn,
@@ -137,6 +155,12 @@ impl BproWin {
             utxo_descr_remove_btn,
             utxo_descr_clear_btn,
             utxo_remove_btn,
+            asset_id_display,
+            asset_genesis_display,
+            asset_contract_display,
+            asset_issued_display,
+            asset_total_display,
+            asset_decimals_display,
         }));
 
         chain_combo.connect_changed(
@@ -455,19 +479,39 @@ impl BproWin {
             }
         }));
 
+        me.borrow().asset_tree.get_selection().connect_changed(
+            clone!(@weak me, @strong doc => move |_| {
+                let me = me.borrow();
+                if let Some((id, _, _)) = me.asset_selection() {
+                    if let Some((asset, genesis)) = doc.borrow().asset_by_id(id) {
+                        me.asset_id_display.set_text(&id.to_bech32_string());
+                        me.asset_genesis_display.set_text(&genesis.to_bech32_string());
+                        me.asset_contract_display.set_text(&asset.description().clone().unwrap_or_default());
+                        me.asset_issued_display.set_text(&asset.supply().known_circulating().accounting_value().to_string());
+                        me.asset_total_display.set_text(&asset.supply().max_cap().accounting_value().to_string());
+                        me.asset_decimals_display.set_text(&asset.fractional_bits().to_string());
+                    }
+                    me.descriptor_edit_btn.set_sensitive(true);
+                    me.descriptor_remove_btn.set_sensitive(true);
+                } else {
+                    me.descriptor_edit_btn.set_sensitive(false);
+                    me.descriptor_remove_btn.set_sensitive(false);
+                }
+                me.utxo_descr_clear_btn.set_sensitive(me.utxo_descr_store.get_iter_first().is_some());
+            }),
+        );
+
         let tb: gtk::ToolButton = builder.get_object("assetCreate")?;
         tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
             let issue_dlg = AssetDlg::load_glade().expect("Must load");
             issue_dlg.run(doc.clone(), None, clone!(@weak me, @strong doc =>
                 move |asset, genesis| {
-                    println!("{:?}", asset);
-                    println!("{:?}", genesis);
-
+                    let contract_id = genesis.contract_id();
                     let consignment = Consignment::with(genesis, none!(), none!(), none!());
                     let me = me.borrow();
                     me.asset_store.insert_with_values(
                         None,
-                        &[0, 1, 2, 3, 4, 5, 6],
+                        &[0, 1, 2, 3, 4, 5, 6, 7],
                         &[
                             &asset.ticker(),
                             &asset.name(),
@@ -482,7 +526,8 @@ impl BproWin {
                             &asset.supply().known_circulating().accounting_value(),
                             &1,
                             &(asset.known_inflation().len() > 0),
-                            &0
+                            &0,
+                            &contract_id.to_string()
                         ],
                     );
                     let _ = doc.borrow_mut().add_asset(consignment);
@@ -490,6 +535,22 @@ impl BproWin {
                 || {},
             );
         }));
+
+        for ctl in &[
+            &me.borrow().asset_id_display,
+            &me.borrow().asset_genesis_display,
+            &me.borrow().asset_issued_display,
+            &me.borrow().asset_total_display,
+            &me.borrow().asset_decimals_display,
+        ] {
+            ctl.connect_icon_press(
+                clone!(@weak ctl, @weak me => move |_, _, _| {
+                    let val = ctl.get_text();
+                    gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD)
+                        .set_text(&val);
+                }),
+            );
+        }
 
         let tb: gtk::Button = builder.get_object("save")?;
         tb.set_sensitive(needs_save);
@@ -590,6 +651,22 @@ impl BproWin {
                 .flatten()
             })
             .flatten()
+    }
+
+    pub fn asset_selection(
+        &self,
+    ) -> Option<(ContractId, gtk::TreeModel, gtk::TreeIter)> {
+        self.asset_tree.get_selection().get_selected().and_then(
+            |(model, iter)| {
+                model
+                    .get_value(&iter, 7)
+                    .get::<String>()
+                    .ok()
+                    .flatten()
+                    .and_then(|s| s.parse().ok())
+                    .map(|id| (id, model, iter))
+            },
+        )
     }
 
     pub fn update_ui(&self) {}

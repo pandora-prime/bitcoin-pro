@@ -14,6 +14,7 @@
 use amplify::internet::InetSocketAddr;
 use gtk::prelude::*;
 use std::collections::{BTreeMap, HashSet};
+use std::convert::TryFrom;
 use std::ffi::OsStr;
 use std::fs::{File, OpenOptions};
 use std::io::{self, Seek, SeekFrom};
@@ -27,8 +28,9 @@ use lnpbp::bitcoin::OutPoint;
 use lnpbp::bitcoin::Transaction;
 use lnpbp::bp::{Chain, Psbt};
 use lnpbp::lnp::{NodeAddr, RemoteNodeAddr};
-use lnpbp::rgb::{Consignment, ContractId, Schema, SchemaId};
+use lnpbp::rgb::{Consignment, ContractId, Genesis, Schema, SchemaId};
 use lnpbp::strict_encoding::{self, StrictDecode, StrictEncode};
+use rgb::fungible::{AccountingAmount, Asset};
 
 use super::{operation, DescriptorGenerator, TrackingAccount, UtxoEntry};
 use crate::model::DescriptorContent;
@@ -403,6 +405,53 @@ impl Document {
             .iter()
             .find(|utxo| utxo.outpoint == outpoint)
             .is_some()
+    }
+
+    pub fn fill_asset_store(&self, store: &gtk::ListStore) {
+        store.clear();
+        self.profile.assets.iter().for_each(|(contract_id, _)| {
+            self.asset_by_id(*contract_id).map(|(asset, _)| {
+                store.insert_with_values(
+                    None,
+                    &[0, 1, 2, 3, 4, 5, 6, 7],
+                    &[
+                        &asset.ticker(),
+                        &asset.name(),
+                        &asset
+                            .known_allocations()
+                            .iter()
+                            .filter(|(outpoint, _)| {
+                                self.is_outpoint_known(**outpoint)
+                            })
+                            .fold(0f64, |sum, (_, allocations)| {
+                                sum + AccountingAmount::from_asset_atomic_value(
+                                    &asset,
+                                    allocations.iter().fold(0u64, |sum, a| {
+                                        sum + a.value().value
+                                    }),
+                                )
+                                .accounting_value()
+                            }),
+                        &asset.supply().known_circulating().accounting_value(),
+                        &1,
+                        &(asset.known_inflation().len() > 0),
+                        &0,
+                        &contract_id.to_string(),
+                    ],
+                );
+            });
+        });
+    }
+
+    pub fn asset_by_id(
+        &self,
+        asset_id: ContractId,
+    ) -> Option<(Asset, &Genesis)> {
+        self.profile.assets.get(&asset_id).and_then(|consignment| {
+            Asset::try_from(consignment.genesis.clone())
+                .ok()
+                .map(|asset| (asset, &consignment.genesis))
+        })
     }
 
     pub fn add_asset(
