@@ -4,7 +4,7 @@ Professional bitcoin accounts & smart contract management by
 [Pandora Cora AG](https://pandoracore.com), Switzerland & Dr. Maxim Orlovsky.
 
 Application is founded on [LNP/BP Core Library](https://github.com/LNP-BP/rust-lnpbp)
-and allows [RGB smart contracts](https://rgb-org.github.com) management.
+and allows [RGB smart contracts](https://rgb-org.github.io) management.
 
 The application **is not a bitcoin wallet**: it does not require access to 
 private keys or creates any signatures. All operations are saved & exported in 
