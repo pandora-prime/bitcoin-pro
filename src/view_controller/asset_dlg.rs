@@ -20,8 +20,8 @@ use std::str::FromStr;
 use lnpbp::bitcoin::OutPoint;
 use lnpbp::bp::Chain;
 use lnpbp::rgb::{AtomicValue, ContractId, Genesis, ToBech32};
+use rgb::fungible::processor as rgb20;
 use rgb::fungible::Asset;
-use rgb::fungible::{processor as rgb20, AccountingAmount};
 
 use crate::model::{DescriptorGenerator, Document, UtxoEntry};
 use crate::view_controller::UtxoSelectDlg;
@@ -608,17 +608,15 @@ impl AssetDlg {
 
     pub fn asset_inflation(&self) -> BTreeMap<OutPoint, AtomicValue> {
         if self.inflation_check.get_active() {
-            let frac = self.asset_fractionals();
             self.inflation
                 .borrow()
                 .iter()
                 .map(|(utxo, maybe_amount)| {
                     (
                         utxo.outpoint,
-                        AccountingAmount::transmutate(
-                            frac,
-                            maybe_amount.unwrap_or(self.equal_inflation_cap()),
-                        ),
+                        (maybe_amount.unwrap_or(self.equal_inflation_cap())
+                            * self.precision_divisor())
+                            as u64,
                     )
                 })
                 .collect()

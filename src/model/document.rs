@@ -30,7 +30,7 @@ use lnpbp::bp::{Chain, Psbt};
 use lnpbp::lnp::{NodeAddr, RemoteNodeAddr};
 use lnpbp::rgb::{Consignment, ContractId, Genesis, Schema, SchemaId};
 use lnpbp::strict_encoding::{self, StrictDecode, StrictEncode};
-use rgb::fungible::{AccountingAmount, Asset};
+use rgb::fungible::Asset;
 
 use super::{operation, DescriptorGenerator, TrackingAccount, UtxoEntry};
 use crate::model::DescriptorContent;
@@ -411,6 +411,8 @@ impl Document {
         store.clear();
         self.profile.assets.iter().for_each(|(contract_id, _)| {
             self.asset_by_id(*contract_id).map(|(asset, _)| {
+                let divisor =
+                    10_u64.pow(*asset.fractional_bits() as u32) as f64;
                 store.insert_with_values(
                     None,
                     &[0, 1, 2, 3, 4, 5, 6, 7],
@@ -423,14 +425,10 @@ impl Document {
                             .filter(|(outpoint, _)| {
                                 self.is_outpoint_known(**outpoint)
                             })
-                            .fold(0f64, |sum, (_, allocations)| {
-                                sum + AccountingAmount::from_asset_atomic_value(
-                                    &asset,
-                                    allocations.iter().fold(0u64, |sum, a| {
-                                        sum + a.value().value
-                                    }),
-                                )
-                                .accounting_value()
+                            .map(|(_, allocations)| allocations)
+                            .flatten()
+                            .fold(0f64, |sum, allocation| {
+                                sum + allocation.value().value as f64 / divisor
                             }),
                         &asset.supply().known_circulating().accounting_value(),
                         &1,

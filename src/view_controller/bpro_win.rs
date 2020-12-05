@@ -19,7 +19,6 @@ use std::str::FromStr;
 
 use lnpbp::bitcoin::{OutPoint, Txid};
 use lnpbp::rgb::{Consignment, ContractId, ToBech32};
-use rgb::fungible::AccountingAmount;
 
 use crate::model::Document;
 use crate::view_controller::{AssetDlg, DescriptorDlg, PubkeyDlg, SaveDlg};
@@ -509,20 +508,23 @@ impl BproWin {
                     let contract_id = genesis.contract_id();
                     let consignment = Consignment::with(genesis, none!(), none!(), none!());
                     let me = me.borrow();
+                    let divisor = 10_u64.pow(*asset.fractional_bits() as u32) as f64;
                     me.asset_store.insert_with_values(
                         None,
                         &[0, 1, 2, 3, 4, 5, 6, 7],
                         &[
                             &asset.ticker(),
                             &asset.name(),
-                            &asset.known_allocations().iter().filter(|(outpoint, _)| {
-                                doc.borrow().is_outpoint_known(**outpoint)
-                            }).fold(0f64, |sum, (_, allocations)| {
-                                sum + AccountingAmount::from_asset_atomic_value(
-                                    &asset,
-                                    allocations.iter().fold(0u64, |sum, a| sum + a.value().value)
-                                ).accounting_value()
-                            }),
+                            &asset.known_allocations()
+                                .iter()
+                                .filter(|(outpoint, _)| {
+                                    doc.borrow().is_outpoint_known(**outpoint)
+                                })
+                                .map(|(_, allocations)| allocations)
+                                .flatten()
+                                .fold(0f64, |sum, allocation| {
+                                    sum + allocation.value().value as f64 / divisor
+                                }),
                             &asset.supply().known_circulating().accounting_value(),
                             &1,
                             &(asset.known_inflation().len() > 0),
