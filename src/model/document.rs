@@ -470,11 +470,7 @@ impl Document {
         &mut self,
         contract_id: ContractId,
     ) -> Result<bool, Error> {
-        self.profile
-            .assets
-            .iter()
-            .position(|(id, _)| *id == contract_id)
-            .map(|i| self.profile.tracking.remove(i));
+        self.profile.assets.remove(&contract_id);
         self.save()
     }
 

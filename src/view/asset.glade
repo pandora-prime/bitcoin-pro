@@ -28,7 +28,7 @@
     <property name="page-increment">1000000</property>
   </object>
   <object class="GtkAdjustment" id="fractAdj">
-    <property name="upper">18</property>
+    <property name="upper">16</property>
     <property name="value">8</property>
     <property name="step-increment">1</property>
     <property name="page-increment">2</property>
@@ -53,6 +53,11 @@
     </columns>
   </object>
   <object class="GtkImage" id="openImage">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">document-open</property>
+  </object>
+  <object class="GtkImage" id="openImage1">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
     <property name="icon-name">document-open</property>
@@ -1414,10 +1419,5 @@ renomenation:</property>
         </child>
       </object>
     </child>
-  </object>
-  <object class="GtkImage" id="openImage1">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">document-open</property>
   </object>
 </interface>

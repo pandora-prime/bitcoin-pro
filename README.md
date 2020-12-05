@@ -23,10 +23,11 @@ NB: This is an ultra-early alpha version; use it at your own risk!
   functionality
 * Creation of arbitrary complex descriptors for UTXOs
 * View on bitcoin UTXOs, transactions [Partially implemented]
-* Creation and management of RGB fungible assets (RGB-20 standard) [WIP]
-  - Secondary issuance
-  - Renomination
-  - Burn & replacement
+* Creation and management of RGB fungible assets (RGB-20 standard)
+  - Asset issuance
+  - Secondary issuance [WIP]
+  - Renomination [WIP]
+  - Burn & replacement [WIP]
 * Creation and management of RGB collectibles/non-fungible token contracts 
   (RGB-21 standard) [Planned]
 * Identity management with RGB-22 schema [Planned]
@@ -43,7 +44,8 @@ Install rust language and run
 ```constole
 $ sudo apt update
 $ sudo apt install -y cargo libssl-dev libzmq3-dev pkg-config g++ cmake libgtk-3-dev libsqlite3-dev
-$ cargo install bitcoin-pro --version 0.1.0-beta.1
+$ rustup default nightly
+$ cargo install bitcoin-pro --version 0.1.0-beta.2
 $ bitcoin-pro
 ```
 

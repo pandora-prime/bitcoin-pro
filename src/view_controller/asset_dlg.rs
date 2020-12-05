@@ -256,7 +256,7 @@ impl AssetDlg {
                     me.inflation_spin.set_value(*me.inflation_cap_saved.borrow());
                 } else {
                     *me.inflation_cap_saved.borrow_mut() =
-                        u64::MAX as f64 / me.precision_divisor();
+                        me.max_cap();
                 }
                 me.update_ui();
             }));
@@ -266,11 +266,26 @@ impl AssetDlg {
             &me.inflation_tree.get_selection(),
         ] {
             ctl.connect_changed(clone!(@weak me => move |_| {
+                if let Some((_, amount)) = me.selected_allocation() {
+                    me.amount_spin.set_value(amount);
+                } else {
+                    me.amount_spin.set_value(0.0);
+                }
+                if let Some((_, cap)) = me.selected_inflation() {
+                    me.equal_radio.set_active(cap.is_none());
+                    me.custom_radio.set_active(cap.is_some());
+                    match cap {
+                        Some(cap) => me.custom_spin.set_value(cap),
+                        None => me.custom_spin.set_value(me.equal_inflation_cap()),
+                    }
+                } else {
+                    me.custom_spin.set_value(0.0)
+                }
                 me.update_ui();
             }));
         }
 
-        me.amount_spin.connect_changed(clone!(@weak me => move |_| {
+        me.amount_spin.connect_value_changed(clone!(@weak me => move |_| {
             if let Some((outpoint, _, iter)) = me.selected_allocation_model() {
                 let value = me.amount_spin.get_value();
                 me.allocation
@@ -283,15 +298,27 @@ impl AssetDlg {
             me.update_ui();
         }));
 
-        me.custom_spin.connect_changed(clone!(@weak me => move |_| {
+        me.custom_spin.connect_value_changed(clone!(@weak me => move |_| {
             if let Some((outpoint, _, iter)) = me.selected_inflation_model() {
                 let value = me.custom_spin.get_value();
-                me.inflation
+                    let value = me.inflation
                     .borrow_mut()
                     .iter_mut()
                     .find(|(utxo, _)| utxo.outpoint == outpoint)
-                    .map(|(_, amount)| *amount = Some(value));
-                me.inflation_store.set_value(&iter, 4, &value.to_value());
+                    .and_then(|(_, amount)| amount.as_mut())
+                    .map(|amount| {
+                        *amount = value;
+                        *amount
+                    });
+                match value {
+                    Some(value) => {
+                        me.inflation_store.set_value(&iter, 4, &value.to_value());
+                    }
+                    None => {
+                        me.inflation_store.set_value(&iter, 4, &"<equal part>".to_value());
+                        me.custom_spin.set_value(me.equal_inflation_cap());
+                    }
+                }
             }
             me.update_ui();
         }));
@@ -304,22 +331,26 @@ impl AssetDlg {
                     .find(|(utxo, _)| utxo.outpoint == outpoint)
                     .map(|(_, amount)| *amount = None);
                 me.inflation_store.set_value(&iter, 4, &"<equal part>".to_value());
+                me.custom_spin.set_value(me.equal_inflation_cap());
             }
-            me.update_ui();
         }));
 
-        me.custom_radio.connect_toggled(clone!(@weak me => move |_| {
-            if let Some((outpoint, _, iter)) = me.selected_inflation_model() {
-                let value = 0.0f64;
-                me.inflation
-                    .borrow_mut()
-                    .iter_mut()
-                    .find(|(utxo, _)| utxo.outpoint == outpoint)
-                    .map(|(_, amount)| *amount = Some(value));
-                me.inflation_store.set_value(&iter, 4, &value.to_value());
-            }
-            me.update_ui();
-        }));
+        me.custom_radio
+            .connect_toggled(clone!(@weak me => move |_| {
+                if let Some((outpoint, _, _)) = me.selected_inflation_model() {
+                    let value = me.inflation
+                        .borrow_mut()
+                        .iter_mut()
+                        .find(|(utxo, _)| utxo.outpoint == outpoint)
+                        .and_then(|(_, amount)| {
+                            if amount.is_none() {
+                                *amount = Some(0.0);
+                            }
+                            *amount
+                        });
+                    value.map(|value| me.custom_spin.set_value(value));
+                }
+            }));
 
         me.allocation_remove_btn
             .connect_clicked(clone!(@weak me => move |_| {
@@ -460,6 +491,7 @@ impl AssetDlg {
                             &"<equal part>",
                         ]);
                         me.inflation.borrow_mut().insert(utxo, None);
+                        me.custom_spin.set_value(me.equal_inflation_cap());
                     }),
                     || {},
                 );
@@ -617,6 +649,10 @@ impl AssetDlg {
         }
     }
 
+    pub fn max_cap(&self) -> f64 {
+        (u64::MAX - 1) as f64 / self.precision_divisor()
+    }
+
     pub fn precision_divisor(&self) -> f64 {
         10_u64.pow(self.asset_fractionals() as u32) as f64
     }
@@ -627,9 +663,7 @@ impl AssetDlg {
         } else if self.is_capped() {
             self.inflation_spin.get_value()
         } else {
-            u64::MAX as f64 / self.precision_divisor()
-                - self.assigned_cap()
-                - 1.0 // TODO: Fix this
+            self.max_cap() - self.assigned_cap() - 1.0 // TODO: Fix this
         }
     }
 
@@ -805,17 +839,12 @@ impl AssetDlg {
             .set_sensitive(self.renomen_check.get_active());
         self.epoch_btn.set_sensitive(self.epoch_check.get_active());
 
-        self.fract_adj
-            .set_upper((self.inflation_amount() as f64).log10().floor());
-
         self.inflation_combo
             .set_sensitive(self.inflation_check.get_active());
-        self.inflation_adj
-            .set_upper(u64::MAX as f64 / self.precision_divisor());
+        self.inflation_adj.set_upper(self.max_cap());
         self.inflation_spin.set_sensitive(self.is_capped());
         if !self.is_capped() {
-            self.inflation_spin
-                .set_value(u64::MAX as f64 / self.precision_divisor());
+            self.inflation_spin.set_value(self.max_cap());
         }
 
         self.contract_text
@@ -840,25 +869,23 @@ impl AssetDlg {
         self.equal_radio.set_sensitive(inflation.is_some());
         self.custom_radio.set_sensitive(inflation.is_some());
         if let Some((_, amount)) = allocation {
-            self.amount_spin.set_value(amount);
-            self.amount_adj.set_upper(
-                u64::MAX as f64 / self.precision_divisor()
-                    - self.assigned_cap()
-                    + amount,
-            );
+            self.amount_adj
+                .set_upper(self.max_cap() - self.assigned_cap() + amount);
         }
         if let Some((_, cap)) = inflation {
             match cap {
                 Some(cap) => {
-                    self.custom_spin.set_value(cap);
+                    self.equal_radio.set_active(false);
+                    self.custom_radio.set_active(true);
                     self.custom_adj.set_upper(
                         self.inflation_cap() - self.assigned_cap() + cap,
                     );
                 }
                 None => {
-                    let cap = self.equal_inflation_cap();
-                    self.custom_spin.set_value(cap);
-                    self.custom_adj.set_upper(cap);
+                    self.equal_radio.set_active(true);
+                    self.custom_radio.set_active(false);
+                    self.custom_adj
+                        .set_upper(self.inflation_cap() - self.assigned_cap());
                 }
             }
         }
