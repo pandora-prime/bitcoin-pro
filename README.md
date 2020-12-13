@@ -1,7 +1,7 @@
 # Bitcoin Pro
 
 Professional bitcoin accounts & smart contract management by 
-[Pandora Cora AG](https://pandoracore.com), Switzerland & Dr. Maxim Orlovsky.
+[Pandora Core AG](https://pandoracore.com), Switzerland & Dr. Maxim Orlovsky.
 
 Application is founded on [LNP/BP Core Library](https://github.com/LNP-BP/rust-lnpbp)
 and allows [RGB smart contracts](https://rgb-org.github.io) management.
