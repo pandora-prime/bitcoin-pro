@@ -23,8 +23,8 @@ use electrum_client::{
 use lnpbp::bitcoin::Script;
 
 use crate::model::{
-    DescriptorContent, DescriptorError, DescriptorGenerator, DescriptorType,
-    UtxoEntry,
+    DescriptorCategory, DescriptorContent, DescriptorError,
+    DescriptorGenerator, UtxoEntry,
 };
 use crate::util::resolver_mode::ResolverModeType;
 
@@ -57,7 +57,7 @@ pub trait UtxoLookup {
     ) -> Result<usize, Error> {
         struct LookupItem<'a> {
             pub script_pubkey: Script,
-            pub descriptor_type: DescriptorType,
+            pub descriptor_type: DescriptorCategory,
             pub descriptor_content: &'a DescriptorContent,
             pub derivation_index: u32,
         }

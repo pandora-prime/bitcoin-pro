@@ -22,6 +22,8 @@ use lnpbp::miniscript::{
 
 use super::TrackingKey;
 
+// TODO: Consider moving to LNP/BP Core Library
+
 #[derive(Clone, PartialEq, Eq, Debug, Display, From, Error)]
 #[display(doc_comments)]
 pub enum Error {
@@ -73,7 +75,7 @@ impl DescriptorGenerator {
         if self.types.hashed {
             d.push(if single { "pkh" } else { "sh" });
         }
-        if self.types.compat {
+        if self.types.nested {
             d.push(if single { "sh_wpkh" } else { "sh_wsh" });
         }
         if self.types.segwit {
@@ -103,7 +105,7 @@ impl DescriptorGenerator {
     pub fn pubkey_scripts_count(&self) -> u32 {
         self.types.bare as u32
             + self.types.hashed as u32
-            + self.types.compat as u32
+            + self.types.nested as u32
             + self.types.segwit as u32
             + self.types.taproot as u32
     }
@@ -111,7 +113,7 @@ impl DescriptorGenerator {
     pub fn pubkey_scripts(
         &self,
         index: u32,
-    ) -> Result<HashMap<DescriptorType, Script>, Error> {
+    ) -> Result<HashMap<DescriptorCategory, Script>, Error> {
         let mut scripts = HashMap::with_capacity(5);
         let single = if let DescriptorContent::SingleSig(_) = self.content {
             Some(self.content.public_key(index).expect("Can't fail"))
@@ -124,7 +126,7 @@ impl DescriptorGenerator {
             } else {
                 Descriptor::Bare(self.content.miniscript(index)?)
             };
-            scripts.insert(DescriptorType::Bare, d.script_pubkey());
+            scripts.insert(DescriptorCategory::Bare, d.script_pubkey());
         }
         if self.types.hashed {
             let d = if let Some(pk) = single {
@@ -132,15 +134,15 @@ impl DescriptorGenerator {
             } else {
                 Descriptor::Sh(self.content.miniscript(index)?)
             };
-            scripts.insert(DescriptorType::Hashed, d.script_pubkey());
+            scripts.insert(DescriptorCategory::Hashed, d.script_pubkey());
         }
-        if self.types.compat {
+        if self.types.nested {
             let d = if let Some(pk) = single {
                 Descriptor::ShWpkh(pk)
             } else {
                 Descriptor::ShWsh(self.content.miniscript(index)?)
             };
-            scripts.insert(DescriptorType::Compat, d.script_pubkey());
+            scripts.insert(DescriptorCategory::Nested, d.script_pubkey());
         }
         if self.types.segwit {
             let d = if let Some(pk) = single {
@@ -148,7 +150,7 @@ impl DescriptorGenerator {
             } else {
                 Descriptor::Wsh(self.content.miniscript(index)?)
             };
-            scripts.insert(DescriptorType::SegWit, d.script_pubkey());
+            scripts.insert(DescriptorCategory::SegWit, d.script_pubkey());
         }
         /* TODO: Enable once Taproot will go live
         if self.taproot {
@@ -167,15 +169,39 @@ impl DescriptorGenerator {
     PartialOrd,
     Ord,
     Debug,
+    Display,
     Hash,
     StrictEncode,
     StrictDecode,
 )]
-pub enum DescriptorType {
+#[cfg_attr(
+    feature = "serde",
+    derive(Serialize, Deserialize),
+    serde(crate = "serde_crate")
+)]
+#[non_exhaustive]
+pub enum DescriptorCategory {
+    /// Bare descriptors: `pk` and bare scripts, including `OP_RETURN`s
+    #[display("bare")]
     Bare,
+
+    /// Hash-based descriptors: `pkh` for public key hashes and BIP-16 `sh` for
+    /// P2SH scripts
+    #[display("hashed")]
     Hashed,
-    Compat,
+
+    /// SegWit descriptors for legacy wallets defined in BIP 141 as P2SH nested
+    /// types <https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki#P2WPKH_nested_in_BIP16_P2SH>:
+    /// `sh(wpkh)` and `sh(wsh)`
+    #[display("nested")]
+    Nested,
+
+    /// Native SegWit descriptors: `wpkh` for public keys and `wsh` for scripts
+    #[display("segwit")]
     SegWit,
+
+    /// Netive Taproot descriptors: `taproot`
+    #[display("taproot")]
     Taproot,
 }
 
@@ -185,19 +211,19 @@ pub enum DescriptorType {
 pub struct DescriptorTypes {
     pub bare: bool,
     pub hashed: bool,
-    pub compat: bool,
+    pub nested: bool,
     pub segwit: bool,
     pub taproot: bool,
 }
 
 impl DescriptorTypes {
-    pub fn has_match(&self, descriptor_type: DescriptorType) -> bool {
+    pub fn has_match(&self, descriptor_type: DescriptorCategory) -> bool {
         match descriptor_type {
-            DescriptorType::Bare => self.bare,
-            DescriptorType::Hashed => self.hashed,
-            DescriptorType::Compat => self.compat,
-            DescriptorType::SegWit => self.segwit,
-            DescriptorType::Taproot => self.taproot,
+            DescriptorCategory::Bare => self.bare,
+            DescriptorCategory::Hashed => self.hashed,
+            DescriptorCategory::Nested => self.nested,
+            DescriptorCategory::SegWit => self.segwit,
+            DescriptorCategory::Taproot => self.taproot,
         }
     }
 }

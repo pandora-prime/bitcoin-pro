@@ -434,7 +434,7 @@ impl DescriptorDlg {
         self.hash_check
             .set_active(descriptor_generator.types.hashed);
         self.compat_check
-            .set_active(descriptor_generator.types.compat);
+            .set_active(descriptor_generator.types.nested);
         self.segwit_check
             .set_active(descriptor_generator.types.segwit);
         self.taproot_check
@@ -505,7 +505,7 @@ impl DescriptorDlg {
         DescriptorTypes {
             bare: self.bare_check.get_active(),
             hashed: self.hash_check.get_active(),
-            compat: self.compat_check.get_active(),
+            nested: self.compat_check.get_active(),
             segwit: self.segwit_check.get_active(),
             taproot: self.taproot_check.get_active(),
         }
