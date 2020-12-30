@@ -18,12 +18,11 @@ mod tracking;
 mod utxo;
 
 pub use descriptors::{
-    DescriptorCategory, DescriptorContent, DescriptorGenerator,
-    DescriptorTypes, Error as DescriptorError, SourceType,
+    DescriptorContent, DescriptorGenerator, DescriptorTypes,
+    Error as DescriptorError, SourceType,
 };
 pub use document::{Document, Error, Profile, ResolverError};
 pub use tracking::{
-    DerivationComponents, DerivationRange, Error as Slip32Error, FromSlip32,
-    HardenedNormalSplit, TrackingAccount, TrackingKey,
+    Error as Slip32Error, FromSlip32, TrackingAccount, TrackingKey,
 };
 pub use utxo::UtxoEntry;

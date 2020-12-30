@@ -20,13 +20,12 @@ use lnpbp::bitcoin::util::bip32::{
     self, ChildNumber, DerivationPath, ExtendedPrivKey, ExtendedPubKey,
 };
 use lnpbp::bitcoin::util::key;
-use lnpbp::bp::Chain;
+use lnpbp::bp::{
+    Chain, DerivationComponents, DerivationRange, HardenedNormalSplit,
+};
 use lnpbp::{bitcoin, secp256k1};
 
-use crate::model::{
-    DerivationComponents, DerivationRange, FromSlip32, HardenedNormalSplit,
-    Slip32Error, TrackingAccount, TrackingKey,
-};
+use crate::model::{FromSlip32, Slip32Error, TrackingAccount, TrackingKey};
 
 static UI: &'static str = include_str!("../view/pubkey.glade");
 

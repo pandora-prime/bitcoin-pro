@@ -15,9 +15,10 @@ use std::collections::HashMap;
 use std::str::FromStr;
 
 use lnpbp::bitcoin::{self, blockdata::script::Error as ScriptError, Script};
+use lnpbp::bp::DescriptorCategory;
 use lnpbp::hex::{self, FromHex};
 use lnpbp::miniscript::{
-    self, Descriptor, Miniscript, ScriptContext, Terminal,
+    self, Descriptor, Miniscript, NullCtx, ScriptContext, Terminal,
 };
 
 use super::TrackingKey;
@@ -126,7 +127,7 @@ impl DescriptorGenerator {
             } else {
                 Descriptor::Bare(self.content.miniscript(index)?)
             };
-            scripts.insert(DescriptorCategory::Bare, d.script_pubkey());
+            scripts.insert(DescriptorCategory::Bare, d.script_pubkey(NullCtx));
         }
         if self.types.hashed {
             let d = if let Some(pk) = single {
@@ -134,7 +135,8 @@ impl DescriptorGenerator {
             } else {
                 Descriptor::Sh(self.content.miniscript(index)?)
             };
-            scripts.insert(DescriptorCategory::Hashed, d.script_pubkey());
+            scripts
+                .insert(DescriptorCategory::Hashed, d.script_pubkey(NullCtx));
         }
         if self.types.nested {
             let d = if let Some(pk) = single {
@@ -142,7 +144,8 @@ impl DescriptorGenerator {
             } else {
                 Descriptor::ShWsh(self.content.miniscript(index)?)
             };
-            scripts.insert(DescriptorCategory::Nested, d.script_pubkey());
+            scripts
+                .insert(DescriptorCategory::Nested, d.script_pubkey(NullCtx));
         }
         if self.types.segwit {
             let d = if let Some(pk) = single {
@@ -150,7 +153,8 @@ impl DescriptorGenerator {
             } else {
                 Descriptor::Wsh(self.content.miniscript(index)?)
             };
-            scripts.insert(DescriptorCategory::SegWit, d.script_pubkey());
+            scripts
+                .insert(DescriptorCategory::SegWit, d.script_pubkey(NullCtx));
         }
         /* TODO: Enable once Taproot will go live
         if self.taproot {
@@ -159,50 +163,6 @@ impl DescriptorGenerator {
          */
         Ok(scripts)
     }
-}
-
-#[derive(
-    Copy,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Debug,
-    Display,
-    Hash,
-    StrictEncode,
-    StrictDecode,
-)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Serialize, Deserialize),
-    serde(crate = "serde_crate")
-)]
-#[non_exhaustive]
-pub enum DescriptorCategory {
-    /// Bare descriptors: `pk` and bare scripts, including `OP_RETURN`s
-    #[display("bare")]
-    Bare,
-
-    /// Hash-based descriptors: `pkh` for public key hashes and BIP-16 `sh` for
-    /// P2SH scripts
-    #[display("hashed")]
-    Hashed,
-
-    /// SegWit descriptors for legacy wallets defined in BIP 141 as P2SH nested
-    /// types <https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki#P2WPKH_nested_in_BIP16_P2SH>:
-    /// `sh(wpkh)` and `sh(wsh)`
-    #[display("nested")]
-    Nested,
-
-    /// Native SegWit descriptors: `wpkh` for public keys and `wsh` for scripts
-    #[display("segwit")]
-    SegWit,
-
-    /// Netive Taproot descriptors: `taproot`
-    #[display("taproot")]
-    Taproot,
 }
 
 #[derive(
@@ -224,6 +184,7 @@ impl DescriptorTypes {
             DescriptorCategory::Nested => self.nested,
             DescriptorCategory::SegWit => self.segwit,
             DescriptorCategory::Taproot => self.taproot,
+            _ => false,
         }
     }
 }

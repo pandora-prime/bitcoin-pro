@@ -13,8 +13,9 @@
 
 use electrum_client::ListUnspentRes;
 use lnpbp::bitcoin::OutPoint;
+use lnpbp::bp::DescriptorCategory;
 
-use super::{DescriptorCategory, DescriptorContent, DescriptorGenerator};
+use super::{DescriptorContent, DescriptorGenerator};
 
 #[derive(
     Clone,

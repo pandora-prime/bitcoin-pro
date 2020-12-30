@@ -21,10 +21,10 @@ use electrum_client::{
     Client as ElectrumClient, ElectrumApi, Error as ElectrumError,
 };
 use lnpbp::bitcoin::Script;
+use lnpbp::bp::DescriptorCategory;
 
 use crate::model::{
-    DescriptorCategory, DescriptorContent, DescriptorError,
-    DescriptorGenerator, UtxoEntry,
+    DescriptorContent, DescriptorError, DescriptorGenerator, UtxoEntry,
 };
 use crate::util::resolver_mode::ResolverModeType;
 
