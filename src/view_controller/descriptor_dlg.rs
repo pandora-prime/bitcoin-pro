@@ -22,7 +22,7 @@ use lnpbp::bp::descriptor;
 use crate::controller::utxo_lookup::{self, UtxoLookup};
 use crate::model::{
     DescriptorContent, DescriptorGenerator, Document, ResolverError,
-    SourceType, TrackingAccount, TrackingKey, UtxoEntry,
+    SourceType, TrackingAccount, UtxoEntry,
 };
 use crate::util::resolver_mode::{self, ResolverModeType};
 use crate::view_controller::PubkeySelectDlg;
@@ -72,8 +72,8 @@ pub enum Error {
 pub struct DescriptorDlg {
     dialog: gtk::Dialog,
 
-    key: Rc<RefCell<Option<TrackingKey>>>,
-    keyset: Rc<RefCell<Vec<TrackingKey>>>,
+    key: Rc<RefCell<Option<descriptor::SingleSig>>>,
+    keyset: Rc<RefCell<Vec<descriptor::SingleSig>>>,
     utxo_set: Rc<RefCell<HashSet<UtxoEntry>>>,
 
     msg_box: gtk::Box,
@@ -396,7 +396,7 @@ impl DescriptorDlg {
         match descriptor_generator.content {
             DescriptorContent::SingleSig(key) => {
                 self.singlesig_radio.set_active(true);
-                self.pubkey_entry.set_text(&key.details());
+                self.pubkey_entry.set_text(&key.to_string());
                 *self.key.borrow_mut() = Some(key);
             }
             DescriptorContent::MultiSig(threshold, keyset) => {
@@ -404,7 +404,7 @@ impl DescriptorDlg {
                 let doc = doc.borrow();
                 for key in keyset {
                     let tracking_account = doc
-                        .tracking_account_by_key(&key.details())
+                        .tracking_account_by_key(&key.to_string())
                         .unwrap_or(TrackingAccount {
                             name: s!("<Unrecognized key>"),
                             key: key.clone(),

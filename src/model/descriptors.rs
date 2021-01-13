@@ -15,13 +15,12 @@ use std::collections::HashMap;
 use std::str::FromStr;
 
 use lnpbp::bitcoin::{self, blockdata::script::Error as ScriptError, Script};
+use lnpbp::bp::bip32::DerivationComponentsCtx;
 use lnpbp::bp::descriptor;
 use lnpbp::hex::{self, FromHex};
 use lnpbp::miniscript::{
-    self, Descriptor, Miniscript, NullCtx, ScriptContext, Terminal,
+    self, Descriptor, Miniscript, NullCtx, ScriptContext, Terminal, ToPublicKey,
 };
-
-use super::TrackingKey;
 
 // TODO: Consider moving to LNP/BP Core Library
 
@@ -93,7 +92,7 @@ impl DescriptorGenerator {
                     threshold,
                     keyset
                         .iter()
-                        .map(TrackingKey::to_string)
+                        .map(descriptor::SingleSig::to_string)
                         .collect::<Vec<_>>()
                         .join(",")
                 )
@@ -178,8 +177,8 @@ impl DescriptorGenerator {
     StrictDecode,
 )]
 pub enum DescriptorContent {
-    SingleSig(TrackingKey),
-    MultiSig(u8, Vec<TrackingKey>),
+    SingleSig(descriptor::SingleSig),
+    MultiSig(u8, Vec<descriptor::SingleSig>),
     LockScript(SourceType, String),
 }
 
@@ -193,7 +192,9 @@ impl DescriptorContent {
 
     pub fn public_key(&self, index: u32) -> Option<bitcoin::PublicKey> {
         match self {
-            DescriptorContent::SingleSig(key) => Some(key.public_key(index)),
+            DescriptorContent::SingleSig(key) => Some(key.to_public_key(
+                DerivationComponentsCtx::new(&*lnpbp::SECP256K1, index.into()),
+            )),
             _ => None,
         }
     }
@@ -207,13 +208,21 @@ impl DescriptorContent {
     {
         Ok(match self {
             DescriptorContent::SingleSig(key) => {
-                let pk = key.public_key(index);
+                let pk = key.to_public_key(DerivationComponentsCtx::new(
+                    &*lnpbp::SECP256K1,
+                    index.into(),
+                ));
                 Miniscript::from_ast(Terminal::PkK(pk))?
             }
             DescriptorContent::MultiSig(thresh, keyset) => {
                 let ks = keyset
                     .into_iter()
-                    .map(|key| key.public_key(index))
+                    .map(|key| {
+                        key.to_public_key(DerivationComponentsCtx::new(
+                            &*lnpbp::SECP256K1,
+                            index.into(),
+                        ))
+                    })
                     .collect();
                 Miniscript::from_ast(Terminal::Multi(*thresh as usize, ks))?
             }

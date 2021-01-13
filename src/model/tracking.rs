@@ -14,66 +14,21 @@
 use lnpbp::bitcoin::util::base58;
 use lnpbp::bitcoin::util::bip32::{self, ExtendedPrivKey, ExtendedPubKey};
 use lnpbp::bp::bip32::Decode;
-use lnpbp::bp::DerivationComponents;
-use lnpbp::{bitcoin, secp256k1};
+use lnpbp::bp::descriptor;
 
 #[derive(Getters, Clone, PartialEq, Eq, Debug, StrictEncode, StrictDecode)]
 pub struct TrackingAccount {
     pub name: String,
-    pub key: TrackingKey,
+    pub key: descriptor::SingleSig,
 }
 
 impl TrackingAccount {
     pub fn details(&self) -> String {
-        self.key.details()
+        self.key.to_string()
     }
 
     pub fn count(&self) -> u32 {
         self.key.count()
-    }
-}
-
-#[derive(
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    Debug,
-    Display,
-    StrictEncode,
-    StrictDecode,
-)]
-#[display(TrackingKey::details)]
-pub enum TrackingKey {
-    SingleKey(secp256k1::PublicKey),
-    HdKeySet(DerivationComponents),
-}
-
-impl TrackingKey {
-    pub fn details(&self) -> String {
-        match self {
-            TrackingKey::SingleKey(ref pubkey) => pubkey.to_string(),
-            TrackingKey::HdKeySet(ref keyset) => keyset.to_string(),
-        }
-    }
-
-    pub fn count(&self) -> u32 {
-        match self {
-            TrackingKey::SingleKey(_) => 1,
-            TrackingKey::HdKeySet(ref keyset) => keyset.count(),
-        }
-    }
-
-    pub fn public_key(&self, index: u32) -> bitcoin::PublicKey {
-        match self {
-            TrackingKey::SingleKey(pk) => bitcoin::PublicKey {
-                compressed: true,
-                key: *pk,
-            },
-            TrackingKey::HdKeySet(keyset) => keyset.public_key(index),
-        }
     }
 }
 

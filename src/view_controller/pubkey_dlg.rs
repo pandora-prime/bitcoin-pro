@@ -20,12 +20,14 @@ use lnpbp::bitcoin::util::bip32::{
     self, ChildNumber, DerivationPath, ExtendedPrivKey, ExtendedPubKey,
 };
 use lnpbp::bitcoin::util::key;
+use lnpbp::bp::descriptor;
 use lnpbp::bp::{
     Chain, DerivationComponents, DerivationRange, HardenedNormalSplit,
 };
 use lnpbp::{bitcoin, secp256k1};
 
-use crate::model::{FromSlip32, Slip32Error, TrackingAccount, TrackingKey};
+use crate::model::{FromSlip32, Slip32Error, TrackingAccount};
+use lnpbp::miniscript::descriptor::DescriptorSinglePub;
 
 static UI: &'static str = include_str!("../view/pubkey.glade");
 
@@ -412,11 +414,12 @@ impl PubkeyDlg {
     pub fn apply_tracking_account(&self, tracking_account: TrackingAccount) {
         self.name_field.set_text(&tracking_account.name);
         match tracking_account.key {
-            TrackingKey::SingleKey(pubkey) => {
+            descriptor::SingleSig::Pubkey(_) => {
                 self.set_key_type(PkType::Single);
-                self.pubkey_field.set_text(&pubkey.to_string());
+                self.pubkey_field
+                    .set_text(&tracking_account.key.to_string());
             }
-            TrackingKey::HdKeySet(keyset) => {
+            descriptor::SingleSig::XPubDerivable(keyset) => {
                 self.set_key_type(PkType::Hd);
                 self.xpub_field.set_text(&keyset.master_xpub.to_string());
                 self.account_field.set_text(&keyset.branch_xpub.to_string());
@@ -433,16 +436,20 @@ impl PubkeyDlg {
                     .set_text(&keyset.derivation_path().to_string());
                 // }
             }
+            _ => unreachable!(),
         }
     }
 
     pub fn tracking_account(&self) -> Result<TrackingAccount, Error> {
         let key = if self.sk_radio.get_active() {
-            TrackingKey::SingleKey(secp256k1::PublicKey::from_str(
-                &self.pubkey_field.get_text(),
-            )?)
+            descriptor::SingleSig::Pubkey(DescriptorSinglePub {
+                origin: None,
+                key: bitcoin::PublicKey::from_str(
+                    &self.pubkey_field.get_text(),
+                )?,
+            })
         } else {
-            TrackingKey::HdKeySet(self.derivation_components()?)
+            descriptor::SingleSig::XPubDerivable(self.derivation_components()?)
         };
 
         Ok(TrackingAccount {
