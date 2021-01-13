@@ -21,13 +21,14 @@ use lnpbp::bitcoin::util::bip32::{
 };
 use lnpbp::bitcoin::util::key;
 use lnpbp::bp::descriptor;
+use lnpbp::bp::slip32::{self, FromSlip32};
 use lnpbp::bp::{
     Chain, DerivationComponents, DerivationRange, HardenedNormalSplit,
 };
+use lnpbp::miniscript::descriptor::DescriptorSinglePub;
 use lnpbp::{bitcoin, secp256k1};
 
-use crate::model::{FromSlip32, Slip32Error, TrackingAccount};
-use lnpbp::miniscript::descriptor::DescriptorSinglePub;
+use crate::model::TrackingAccount;
 
 static UI: &'static str = include_str!("../view/pubkey.glade");
 
@@ -53,7 +54,7 @@ pub enum Error {
     /// SLIP-32 specific error
     #[display("{0}")]
     #[from]
-    Slip32(Slip32Error),
+    Slip32(slip32::Error),
 
     /// Index range must not be empty
     RangeNotSpecified,

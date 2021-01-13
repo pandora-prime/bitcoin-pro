@@ -22,5 +22,5 @@ pub use descriptors::{
     SourceType,
 };
 pub use document::{Document, Error, Profile, ResolverError};
-pub use tracking::{Error as Slip32Error, FromSlip32, TrackingAccount};
+pub use tracking::TrackingAccount;
 pub use utxo::UtxoEntry;
