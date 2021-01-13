@@ -13,7 +13,7 @@
 
 use electrum_client::ListUnspentRes;
 use lnpbp::bitcoin::OutPoint;
-use lnpbp::bp::DescriptorCategory;
+use lnpbp::bp::descriptor;
 
 use super::{DescriptorContent, DescriptorGenerator};
 
@@ -35,7 +35,7 @@ pub struct UtxoEntry {
     pub height: u32,
     pub amount: u64,
     pub descriptor_content: DescriptorContent,
-    pub descriptor_type: DescriptorCategory,
+    pub descriptor_type: descriptor::Category,
     pub derivation_index: u32,
 }
 
@@ -43,7 +43,7 @@ impl UtxoEntry {
     pub fn with(
         res: &ListUnspentRes,
         descriptor_content: DescriptorContent,
-        descriptor_type: DescriptorCategory,
+        descriptor_type: descriptor::Category,
         derivation_index: u32,
     ) -> Self {
         UtxoEntry {

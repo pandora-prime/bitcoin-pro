@@ -15,7 +15,7 @@ use std::collections::HashMap;
 use std::str::FromStr;
 
 use lnpbp::bitcoin::{self, blockdata::script::Error as ScriptError, Script};
-use lnpbp::bp::DescriptorCategory;
+use lnpbp::bp::descriptor;
 use lnpbp::hex::{self, FromHex};
 use lnpbp::miniscript::{
     self, Descriptor, Miniscript, NullCtx, ScriptContext, Terminal,
@@ -114,7 +114,7 @@ impl DescriptorGenerator {
     pub fn pubkey_scripts(
         &self,
         index: u32,
-    ) -> Result<HashMap<DescriptorCategory, Script>, Error> {
+    ) -> Result<HashMap<descriptor::Category, Script>, Error> {
         let mut scripts = HashMap::with_capacity(5);
         let single = if let DescriptorContent::SingleSig(_) = self.content {
             Some(self.content.public_key(index).expect("Can't fail"))
@@ -127,7 +127,8 @@ impl DescriptorGenerator {
             } else {
                 Descriptor::Bare(self.content.miniscript(index)?)
             };
-            scripts.insert(DescriptorCategory::Bare, d.script_pubkey(NullCtx));
+            scripts
+                .insert(descriptor::Category::Bare, d.script_pubkey(NullCtx));
         }
         if self.types.hashed {
             let d = if let Some(pk) = single {
@@ -136,7 +137,7 @@ impl DescriptorGenerator {
                 Descriptor::Sh(self.content.miniscript(index)?)
             };
             scripts
-                .insert(DescriptorCategory::Hashed, d.script_pubkey(NullCtx));
+                .insert(descriptor::Category::Hashed, d.script_pubkey(NullCtx));
         }
         if self.types.nested {
             let d = if let Some(pk) = single {
@@ -145,7 +146,7 @@ impl DescriptorGenerator {
                 Descriptor::ShWsh(self.content.miniscript(index)?)
             };
             scripts
-                .insert(DescriptorCategory::Nested, d.script_pubkey(NullCtx));
+                .insert(descriptor::Category::Nested, d.script_pubkey(NullCtx));
         }
         if self.types.segwit {
             let d = if let Some(pk) = single {
@@ -154,7 +155,7 @@ impl DescriptorGenerator {
                 Descriptor::Wsh(self.content.miniscript(index)?)
             };
             scripts
-                .insert(DescriptorCategory::SegWit, d.script_pubkey(NullCtx));
+                .insert(descriptor::Category::SegWit, d.script_pubkey(NullCtx));
         }
         /* TODO: Enable once Taproot will go live
         if self.taproot {
@@ -177,13 +178,13 @@ pub struct DescriptorTypes {
 }
 
 impl DescriptorTypes {
-    pub fn has_match(&self, descriptor_type: DescriptorCategory) -> bool {
+    pub fn has_match(&self, descriptor_type: descriptor::Category) -> bool {
         match descriptor_type {
-            DescriptorCategory::Bare => self.bare,
-            DescriptorCategory::Hashed => self.hashed,
-            DescriptorCategory::Nested => self.nested,
-            DescriptorCategory::SegWit => self.segwit,
-            DescriptorCategory::Taproot => self.taproot,
+            descriptor::Category::Bare => self.bare,
+            descriptor::Category::Hashed => self.hashed,
+            descriptor::Category::Nested => self.nested,
+            descriptor::Category::SegWit => self.segwit,
+            descriptor::Category::Taproot => self.taproot,
             _ => false,
         }
     }

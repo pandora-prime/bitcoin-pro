@@ -21,7 +21,7 @@ use electrum_client::{
     Client as ElectrumClient, ElectrumApi, Error as ElectrumError,
 };
 use lnpbp::bitcoin::Script;
-use lnpbp::bp::DescriptorCategory;
+use lnpbp::bp::descriptor;
 
 use crate::model::{
     DescriptorContent, DescriptorError, DescriptorGenerator, UtxoEntry,
@@ -57,7 +57,7 @@ pub trait UtxoLookup {
     ) -> Result<usize, Error> {
         struct LookupItem<'a> {
             pub script_pubkey: Script,
-            pub descriptor_type: DescriptorCategory,
+            pub descriptor_type: descriptor::Category,
             pub descriptor_content: &'a DescriptorContent,
             pub derivation_index: u32,
         }

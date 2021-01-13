@@ -1,0 +1,12 @@
+[package]
+name = "bpro"
+description = "Library for professional bitcoin accounts & assets management"
+version = "0.1.0-beta.1"
+authors = ["Dr Maxim Orlovsky <orlovsky@pandoracore.com>"]
+edition = "2018"
+license = "AGPL-3.0-only"
+readme = "README.md"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
