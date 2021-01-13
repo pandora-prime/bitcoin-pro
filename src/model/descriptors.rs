@@ -51,7 +51,7 @@ impl From<miniscript::Error> for Error {
 pub struct DescriptorGenerator {
     pub name: String,
     pub content: DescriptorContent,
-    pub types: DescriptorTypes,
+    pub types: descriptor::Variants,
 }
 
 impl DescriptorGenerator {
@@ -163,30 +163,6 @@ impl DescriptorGenerator {
         }
          */
         Ok(scripts)
-    }
-}
-
-#[derive(
-    Clone, PartialEq, Eq, PartialOrd, Ord, Debug, StrictEncode, StrictDecode,
-)]
-pub struct DescriptorTypes {
-    pub bare: bool,
-    pub hashed: bool,
-    pub nested: bool,
-    pub segwit: bool,
-    pub taproot: bool,
-}
-
-impl DescriptorTypes {
-    pub fn has_match(&self, descriptor_type: descriptor::Category) -> bool {
-        match descriptor_type {
-            descriptor::Category::Bare => self.bare,
-            descriptor::Category::Hashed => self.hashed,
-            descriptor::Category::Nested => self.nested,
-            descriptor::Category::SegWit => self.segwit,
-            descriptor::Category::Taproot => self.taproot,
-            _ => false,
-        }
     }
 }
 

@@ -17,10 +17,12 @@ use std::collections::HashSet;
 use std::rc::Rc;
 use std::str::FromStr;
 
+use lnpbp::bp::descriptor;
+
 use crate::controller::utxo_lookup::{self, UtxoLookup};
 use crate::model::{
-    DescriptorContent, DescriptorGenerator, DescriptorTypes, Document,
-    ResolverError, SourceType, TrackingAccount, TrackingKey, UtxoEntry,
+    DescriptorContent, DescriptorGenerator, Document, ResolverError,
+    SourceType, TrackingAccount, TrackingKey, UtxoEntry,
 };
 use crate::util::resolver_mode::{self, ResolverModeType};
 use crate::view_controller::PubkeySelectDlg;
@@ -501,8 +503,8 @@ impl DescriptorDlg {
         Ok(content)
     }
 
-    pub fn descriptor_types(&self) -> DescriptorTypes {
-        DescriptorTypes {
+    pub fn descriptor_types(&self) -> descriptor::Variants {
+        descriptor::Variants {
             bare: self.bare_check.get_active(),
             hashed: self.hash_check.get_active(),
             nested: self.compat_check.get_active(),

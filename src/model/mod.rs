@@ -18,8 +18,8 @@ mod tracking;
 mod utxo;
 
 pub use descriptors::{
-    DescriptorContent, DescriptorGenerator, DescriptorTypes,
-    Error as DescriptorError, SourceType,
+    DescriptorContent, DescriptorGenerator, Error as DescriptorError,
+    SourceType,
 };
 pub use document::{Document, Error, Profile, ResolverError};
 pub use tracking::{
