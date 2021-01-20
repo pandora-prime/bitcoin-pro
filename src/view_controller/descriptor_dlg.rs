@@ -17,12 +17,11 @@ use std::collections::HashSet;
 use std::rc::Rc;
 use std::str::FromStr;
 
-use lnpbp::bp::descriptor;
+use lnpbp::bp::descriptor::{self, ScriptConstruction, ScriptSource, Template};
 
 use crate::controller::utxo_lookup::{self, UtxoLookup};
 use crate::model::{
-    DescriptorContent, DescriptorGenerator, Document, ResolverError,
-    SourceType, TrackingAccount, UtxoEntry,
+    DescriptorAccount, Document, ResolverError, TrackingAccount, UtxoEntry,
 };
 use crate::util::resolver_mode::{self, ResolverModeType};
 use crate::view_controller::PubkeySelectDlg;
@@ -261,8 +260,8 @@ impl DescriptorDlg {
     pub fn run(
         self: Rc<Self>,
         doc: Rc<RefCell<Document>>,
-        descriptor_generator: Option<DescriptorGenerator>,
-        on_save: impl Fn(DescriptorGenerator, HashSet<UtxoEntry>) + 'static,
+        descriptor_generator: Option<DescriptorAccount>,
+        on_save: impl Fn(DescriptorAccount, HashSet<UtxoEntry>) + 'static,
         on_cancel: impl Fn() + 'static,
     ) {
         let me = self.clone();
@@ -349,10 +348,10 @@ impl DescriptorDlg {
 
         me.lookup_btn.connect_clicked(clone!(@weak me, @strong doc => move |_| {
             match me.descriptor_generator() {
-                Ok(generator) => {
-                    if let DescriptorContent::LockScript(..) = generator.content {
+                Ok(descriptor_account) => {
+                    if let descriptor::Template::Scripted(..) = descriptor_account.generator.template {
                         me.display_error(Error::NotYetSupported("Custom script lookup"))
-                    } else if let Err(err) = me.lookup(doc.clone(), generator) {
+                    } else if let Err(err) = me.lookup(doc.clone(), descriptor_account) {
                         me.display_error(err);
                     }
                 },
@@ -390,19 +389,19 @@ impl DescriptorDlg {
     pub fn apply_descriptor_generator(
         &self,
         doc: Rc<RefCell<Document>>,
-        descriptor_generator: DescriptorGenerator,
+        account: DescriptorAccount,
     ) {
-        self.name_entry.set_text(&descriptor_generator.name);
-        match descriptor_generator.content {
-            DescriptorContent::SingleSig(key) => {
+        self.name_entry.set_text(&account.name);
+        match account.generator.template {
+            descriptor::Template::SingleSig(key) => {
                 self.singlesig_radio.set_active(true);
                 self.pubkey_entry.set_text(&key.to_string());
                 *self.key.borrow_mut() = Some(key);
             }
-            DescriptorContent::MultiSig(threshold, keyset) => {
-                self.threshold_spin.set_value(threshold as f64);
+            descriptor::Template::MultiSig(multisig) => {
+                self.threshold_spin.set_value(multisig.threshold() as f64);
                 let doc = doc.borrow();
-                for key in keyset {
+                for key in multisig.pubkeys {
                     let tracking_account = doc
                         .tracking_account_by_key(&key.to_string())
                         .unwrap_or(TrackingAccount {
@@ -421,31 +420,35 @@ impl DescriptorDlg {
                     self.keyset.borrow_mut().push(key);
                 }
             }
-            DescriptorContent::LockScript(script_source, script) => {
+            descriptor::Template::Scripted(script_source) => {
                 self.script_radio.set_active(true);
-                self.script_combo.set_active_id(Some(match script_source {
-                    SourceType::Binary => "hex",
-                    SourceType::Assembly => "asm",
-                    SourceType::Miniscript => "miniscript",
-                    SourceType::Policy => "policy",
-                }));
-                self.script_buffer.set_text(&script);
+                self.script_combo.set_active_id(Some(
+                    match script_source.script {
+                        ScriptConstruction::ScriptTemplate(_) => "asm",
+                        ScriptConstruction::Miniscript(_) => "miniscript",
+                        ScriptConstruction::MiniscriptPolicy(_) => "policy",
+                        _ => "asm",
+                    },
+                ));
+                self.script_buffer.set_text(&script_source.to_string());
             }
+            Template::MuSigBranched(_) => unimplemented!(),
+            _ => unimplemented!(),
         }
-        self.bare_check.set_active(descriptor_generator.types.bare);
+        self.bare_check.set_active(account.generator.variants.bare);
         self.hash_check
-            .set_active(descriptor_generator.types.hashed);
+            .set_active(account.generator.variants.hashed);
         self.compat_check
-            .set_active(descriptor_generator.types.nested);
+            .set_active(account.generator.variants.nested);
         self.segwit_check
-            .set_active(descriptor_generator.types.segwit);
+            .set_active(account.generator.variants.segwit);
         self.taproot_check
-            .set_active(descriptor_generator.types.taproot);
+            .set_active(account.generator.variants.taproot);
     }
 
-    pub fn descriptor_generator(&self) -> Result<DescriptorGenerator, Error> {
-        let content = self.descriptor_content()?;
-        let types = self.descriptor_types();
+    pub fn descriptor_generator(&self) -> Result<DescriptorAccount, Error> {
+        let template = self.descriptor_content()?;
+        let variants = self.descriptor_types();
 
         // TODO: Make sure that types are compatible with the content
 
@@ -453,39 +456,30 @@ impl DescriptorDlg {
         if name.is_empty() {
             Err(Error::EmptyName)?;
         }
-        Ok(DescriptorGenerator {
+        Ok(DescriptorAccount {
             name,
-            content,
-            types,
+            generator: descriptor::Generator { template, variants },
         })
     }
 
-    pub fn descriptor_content(&self) -> Result<DescriptorContent, Error> {
+    pub fn descriptor_content(&self) -> Result<descriptor::Template, Error> {
         let content = if self.singlesig_radio.get_active() {
             let key = self.key.borrow().clone().ok_or(Error::EmptyKey)?;
-            DescriptorContent::SingleSig(key)
+            descriptor::Template::SingleSig(key)
         } else if self.multisig_radio.get_active() {
-            let keyset = self.keyset.borrow().clone();
-            if keyset.len() < 2 {
+            let pubkeys = self.keyset.borrow().clone();
+            if pubkeys.len() < 2 {
                 Err(Error::EmptyKeyset)?
             }
-            let threshold = self.threshold_spin.get_value_as_int() as u8;
-            DescriptorContent::MultiSig(threshold, keyset)
+            let threshold = Some(self.threshold_spin.get_value_as_int() as u8);
+            descriptor::Template::MultiSig(descriptor::MultiSig {
+                threshold,
+                pubkeys,
+                // TODO: Support modification of this flag with a UI
+                reorder: true,
+            })
         } else {
-            let source_type = match self
-                .script_combo
-                .get_active_id()
-                .ok_or(Error::SourceTypeRequired)?
-                .as_str()
-            {
-                "asm" => SourceType::Assembly,
-                "hex" => SourceType::Binary,
-                "miniscript" => SourceType::Miniscript,
-                "policy" => SourceType::Policy,
-                _ => Err(Error::SourceTypeRequired)?,
-            };
-            // TODO: Validate script source
-            let script = self
+            let source = self
                 .script_buffer
                 .get_text(
                     &self.script_buffer.get_start_iter(),
@@ -494,10 +488,36 @@ impl DescriptorDlg {
                 )
                 .ok_or(Error::EmptyScript)?
                 .to_string();
-            if script.is_empty() {
+            if source.is_empty() {
                 Err(Error::EmptyScript)?
             }
-            DescriptorContent::LockScript(source_type, script)
+            // TODO: Implement script parsing
+            let script = match self
+                .script_combo
+                .get_active_id()
+                .ok_or(Error::SourceTypeRequired)?
+                .as_str()
+            {
+                "asm" => Err(Error::NotYetSupported(
+                    "Script parsing is not yet implemented",
+                ))?,
+                "hex" => Err(Error::NotYetSupported(
+                    "Script parsing is not yet implemented",
+                ))?,
+                "miniscript" => Err(Error::NotYetSupported(
+                    "Script parsing is not yet implemented",
+                ))?,
+                "policy" => Err(Error::NotYetSupported(
+                    "Script parsing is not yet implemented",
+                ))?,
+                _ => Err(Error::SourceTypeRequired)?,
+            };
+            descriptor::Template::Scripted(ScriptSource {
+                script,
+                source: Some(source),
+                // TODO: Present an option of selecting tweak target via UI
+                tweak_target: None,
+            })
         };
 
         Ok(content)
@@ -516,7 +536,7 @@ impl DescriptorDlg {
     pub fn lookup(
         &self,
         doc: Rc<RefCell<Document>>,
-        generator: DescriptorGenerator,
+        generator: DescriptorAccount,
     ) -> Result<(), Error> {
         self.utxo_lookup(
             doc.borrow().resolver()?,

@@ -24,16 +24,14 @@ use std::sync::Mutex;
 
 use electrum_client::{Client as ElectrumClient, Error as ElectrumError};
 use lnpbp::bitcoin::OutPoint;
-
 use lnpbp::bitcoin::Transaction;
-use lnpbp::bp::{Chain, Psbt};
+use lnpbp::bp::{descriptor, Chain, Psbt};
 use lnpbp::lnp::{NodeAddr, RemoteNodeAddr};
 use lnpbp::rgb::{Consignment, ContractId, Genesis, Schema, SchemaId};
 use lnpbp::strict_encoding::{self, StrictDecode, StrictEncode};
 use rgb::fungible::Asset;
 
-use super::{operation, DescriptorGenerator, TrackingAccount, UtxoEntry};
-use crate::model::DescriptorContent;
+use super::{operation, DescriptorAccount, TrackingAccount, UtxoEntry};
 
 /// Equals to first 4 bytes of SHA256("pandoracore:bpro")
 /// = dbe2b664ee4e81d3a55d53aeba1915c468927c79a03587ddfc5c3aec483028ab
@@ -284,7 +282,7 @@ impl Document {
     pub fn descriptor_by_generator(
         &self,
         generator_str: &str,
-    ) -> Option<DescriptorGenerator> {
+    ) -> Option<DescriptorAccount> {
         self.profile
             .descriptors
             .iter()
@@ -292,20 +290,20 @@ impl Document {
             .cloned()
     }
 
-    pub fn descriptor_by_content(
+    pub fn descriptor_by_template(
         &self,
-        content: &DescriptorContent,
-    ) -> Option<DescriptorGenerator> {
+        template: &descriptor::Template,
+    ) -> Option<DescriptorAccount> {
         self.profile
             .descriptors
             .iter()
-            .find(|g| &g.content == content)
+            .find(|acc| &acc.generator.template == template)
             .cloned()
     }
 
     pub fn add_descriptor(
         &mut self,
-        descriptor_generator: DescriptorGenerator,
+        descriptor_generator: DescriptorAccount,
     ) -> Result<bool, Error> {
         self.profile.descriptors.push(descriptor_generator);
         self.save()
@@ -313,8 +311,8 @@ impl Document {
 
     pub fn update_descriptor(
         &mut self,
-        descriptor_generator: &DescriptorGenerator,
-        new_descriptor_generator: DescriptorGenerator,
+        descriptor_generator: &DescriptorAccount,
+        new_descriptor_generator: DescriptorAccount,
     ) -> Result<bool, Error> {
         if let Some(descriptor) = self
             .profile
@@ -329,7 +327,7 @@ impl Document {
 
     pub fn remove_descriptor(
         &mut self,
-        descriptor_generator: DescriptorGenerator,
+        descriptor_generator: DescriptorAccount,
     ) -> Result<bool, Error> {
         self.profile
             .descriptors
@@ -342,7 +340,7 @@ impl Document {
     pub fn fill_utxo_store(
         &self,
         store: &gtk::ListStore,
-        filter_by: Option<&DescriptorGenerator>,
+        filter_by: Option<&DescriptorAccount>,
     ) {
         store.clear();
         self.profile.utxo_cache.iter().for_each(|utxo| {
@@ -387,7 +385,7 @@ impl Document {
 
     pub fn remove_utxo_by_descriptor(
         &mut self,
-        descriptor_generator: DescriptorGenerator,
+        descriptor_generator: DescriptorAccount,
     ) -> Result<bool, Error> {
         self.profile.utxo_cache = self
             .profile
@@ -487,7 +485,7 @@ pub struct Profile {
     pub version: u16,
     pub description: Option<String>,
     pub tracking: Vec<TrackingAccount>,
-    pub descriptors: Vec<DescriptorGenerator>,
+    pub descriptors: Vec<DescriptorAccount>,
     pub utxo_cache: HashSet<UtxoEntry>,
     pub tx_cache: Vec<Transaction>,
     pub psbts: Vec<Psbt>,

@@ -14,6 +14,7 @@
 use gtk::prelude::GtkListStoreExtManual;
 use std::cell::RefCell;
 use std::collections::HashSet;
+use std::convert::TryInto;
 use std::ops::DerefMut;
 use std::rc::Rc;
 
@@ -21,11 +22,10 @@ use electrum_client::{
     Client as ElectrumClient, ElectrumApi, Error as ElectrumError,
 };
 use lnpbp::bitcoin::Script;
+use lnpbp::bp::bip32::OutOfRangeError;
 use lnpbp::bp::descriptor;
 
-use crate::model::{
-    DescriptorContent, DescriptorError, DescriptorGenerator, UtxoEntry,
-};
+use crate::model::{DescriptorAccount, UtxoEntry};
 use crate::util::resolver_mode::ResolverModeType;
 
 #[derive(Clone, PartialEq, Eq, Debug, Display, From, Error)]
@@ -36,8 +36,13 @@ pub enum Error {
     #[from]
     Electrum(String),
 
+    #[from(OutOfRangeError)]
+    /// The actual value of the used index corresponds to a hardened index,
+    /// which can't be used in the current context
+    HardenedIndex,
+
     /// Unable to generate key with index {0} for descriptor {1}: {2}
-    Descriptor(u32, String, DescriptorError),
+    Descriptor(u32, String, descriptor::Error),
 }
 
 impl From<ElectrumError> for Error {
@@ -51,14 +56,14 @@ pub trait UtxoLookup {
         &self,
         resolver: ElectrumClient,
         lookup_type: ResolverModeType,
-        generator: DescriptorGenerator,
+        account: DescriptorAccount,
         utxo_set: Rc<RefCell<HashSet<UtxoEntry>>>,
         uxto_store: Option<&gtk::ListStore>,
     ) -> Result<usize, Error> {
         struct LookupItem<'a> {
             pub script_pubkey: Script,
             pub descriptor_type: descriptor::Category,
-            pub descriptor_content: &'a DescriptorContent,
+            pub descriptor_content: &'a descriptor::Template,
             pub derivation_index: u32,
         }
 
@@ -67,18 +72,19 @@ pub trait UtxoLookup {
         loop {
             let mut lookup: Vec<LookupItem> = Vec::with_capacity(
                 lookup_type.count() as usize
-                    * generator.pubkey_scripts_count() as usize,
+                    * account.pubkey_scripts_count() as usize,
             );
             for offset in lookup_iter.by_ref() {
-                let scripts =
-                    generator.pubkey_scripts(offset).map_err(|err| {
-                        Error::Descriptor(offset, generator.descriptor(), err)
+                let scripts = account
+                    .pubkey_scripts(offset.try_into()?)
+                    .map_err(|err| {
+                        Error::Descriptor(offset, account.descriptor(), err)
                     })?;
                 lookup.extend(scripts.into_iter().map(
                     |(descriptor_type, script_pubkey)| LookupItem {
                         script_pubkey,
                         descriptor_type,
-                        descriptor_content: &generator.content,
+                        descriptor_content: &account.generator.template,
                         derivation_index: offset,
                     },
                 ));

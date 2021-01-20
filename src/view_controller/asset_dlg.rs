@@ -23,7 +23,7 @@ use lnpbp::rgb::{AtomicValue, ContractId, Genesis, ToBech32};
 use rgb::fungible::processor as rgb20;
 use rgb::fungible::Asset;
 
-use crate::model::{DescriptorGenerator, Document, UtxoEntry};
+use crate::model::{DescriptorAccount, Document, UtxoEntry};
 use crate::view_controller::UtxoSelectDlg;
 
 static UI: &'static str = include_str!("../view/asset.glade");
@@ -420,7 +420,7 @@ impl AssetDlg {
                     clone!(@weak me, @strong doc => move |utxo| {
                         me.display_renomination_seal(
                             &utxo,
-                            doc.borrow().descriptor_by_content(&utxo.descriptor_content)
+                            doc.borrow().descriptor_by_template(&utxo.descriptor_template)
                         );
                         *me.renomination_utxo.borrow_mut() = Some(utxo);
                     }),
@@ -439,7 +439,7 @@ impl AssetDlg {
                     clone!(@weak me, @strong doc => move |utxo| {
                         me.display_epoch_seal(
                             &utxo,
-                            doc.borrow().descriptor_by_content(&utxo.descriptor_content)
+                            doc.borrow().descriptor_by_template(&utxo.descriptor_template)
                         );
                         *me.epoch_utxo.borrow_mut() = Some(utxo);
                     }),
@@ -458,7 +458,7 @@ impl AssetDlg {
                     clone!(@weak me, @strong doc => move |utxo| {
                         let dg = doc
                             .borrow()
-                            .descriptor_by_content(&utxo.descriptor_content);
+                            .descriptor_by_template(&utxo.descriptor_template);
                         me.allocation_store.insert_with_values(None, &[0, 1, 2, 3, 4], &[
                             &dg.as_ref().map(|g| g.descriptor()).unwrap_or(s!("-")),
                             &dg.as_ref().map(|g| g.name()).unwrap_or(s!("<unknown descriptor>")),
@@ -482,7 +482,7 @@ impl AssetDlg {
                     clone!(@weak me, @strong doc => move |utxo| {
                         let dg = doc
                             .borrow()
-                            .descriptor_by_content(&utxo.descriptor_content);
+                            .descriptor_by_template(&utxo.descriptor_template);
                         me.inflation_store.insert_with_values(None, &[0, 1, 2, 3, 4], &[
                             &dg.as_ref().map(|g| g.descriptor()).unwrap_or(s!("-")),
                             &dg.as_ref().map(|g| g.name()).unwrap_or(s!("<unknown descriptor>")),
@@ -779,7 +779,7 @@ impl AssetDlg {
     pub fn display_renomination_seal(
         &self,
         utxo: &UtxoEntry,
-        descriptor_generator: Option<DescriptorGenerator>,
+        descriptor_generator: Option<DescriptorAccount>,
     ) {
         let name = match descriptor_generator {
             Some(descriptor_generator) => {
@@ -801,7 +801,7 @@ impl AssetDlg {
     pub fn display_epoch_seal(
         &self,
         utxo: &UtxoEntry,
-        descriptor_generator: Option<DescriptorGenerator>,
+        descriptor_generator: Option<DescriptorAccount>,
     ) {
         let name = match descriptor_generator {
             Some(descriptor_generator) => {

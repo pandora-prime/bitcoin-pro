@@ -11,10 +11,12 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+use std::convert::TryInto;
 use std::num::ParseIntError;
 use std::ops::Range;
 use std::str::FromStr;
 
+use lnpbp::bp::bip32::{OutOfRangeError, UnhardenedIndex};
 use lnpbp::secp256k1::rand::{rngs::ThreadRng, thread_rng, RngCore};
 
 #[derive(Clone, PartialEq, Eq, Debug, Display, From, Error)]
@@ -23,6 +25,11 @@ pub enum ParseError {
     /// Unable to parse resolver mode directive: {0}
     #[from]
     InvalidInteger(ParseIntError),
+
+    #[from(OutOfRangeError)]
+    /// The actual value of the used index corresponds to a hardened index,
+    /// which can't be used in the current context
+    HardenedIndex,
 
     /// Unrecognized resolver mode name {0}
     UnrecognizedTypeName(String),
@@ -34,10 +41,10 @@ pub enum ResolverModeType {
     While,
 
     #[display("first{0}")]
-    First(u32),
+    First(UnhardenedIndex),
 
     #[display("random{0}")]
-    Random(u32),
+    Random(UnhardenedIndex),
 }
 
 impl FromStr for ResolverModeType {
@@ -46,15 +53,16 @@ impl FromStr for ResolverModeType {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(if let Some(s) = s.strip_prefix("first") {
             if s.is_empty() {
-                ResolverModeType::First(1)
+                // TODO: Replace with `UnhardenedIndex::one()`
+                ResolverModeType::First(1.try_into().expect("cant' fail"))
             } else {
-                ResolverModeType::First(s.parse()?)
+                ResolverModeType::First(u32::from_str(s)?.try_into()?)
             }
         } else if let Some(s) = s.strip_prefix("random") {
             if s.is_empty() {
-                ResolverModeType::Random(1)
+                ResolverModeType::Random(1.try_into().expect("cant' fail"))
             } else {
-                ResolverModeType::Random(s.parse()?)
+                ResolverModeType::Random(u32::from_str(s)?.try_into()?)
             }
         } else if s == "while" {
             ResolverModeType::While
@@ -68,8 +76,8 @@ impl ResolverModeType {
     pub fn count(self) -> usize {
         match self {
             ResolverModeType::While => 1usize,
-            ResolverModeType::First(count) => count as usize,
-            ResolverModeType::Random(count) => count as usize,
+            ResolverModeType::First(count) => count.into_u32() as usize,
+            ResolverModeType::Random(count) => count.into_u32() as usize,
         }
     }
 

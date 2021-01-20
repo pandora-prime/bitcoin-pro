@@ -15,7 +15,7 @@ use electrum_client::ListUnspentRes;
 use lnpbp::bitcoin::OutPoint;
 use lnpbp::bp::descriptor;
 
-use super::{DescriptorContent, DescriptorGenerator};
+use super::DescriptorAccount;
 
 #[derive(
     Clone,
@@ -29,21 +29,21 @@ use super::{DescriptorContent, DescriptorGenerator};
     StrictEncode,
     StrictDecode,
 )]
-#[display("{amount}@{outpoint} (descriptor_content)")]
+#[display("{amount}@{outpoint} {descriptor_category}({descriptor_template})")]
 pub struct UtxoEntry {
     pub outpoint: OutPoint,
     pub height: u32,
     pub amount: u64,
-    pub descriptor_content: DescriptorContent,
-    pub descriptor_type: descriptor::Category,
+    pub descriptor_template: descriptor::Template,
+    pub descriptor_category: descriptor::Category,
     pub derivation_index: u32,
 }
 
 impl UtxoEntry {
     pub fn with(
         res: &ListUnspentRes,
-        descriptor_content: DescriptorContent,
-        descriptor_type: descriptor::Category,
+        descriptor_template: descriptor::Template,
+        descriptor_category: descriptor::Category,
         derivation_index: u32,
     ) -> Self {
         UtxoEntry {
@@ -53,14 +53,17 @@ impl UtxoEntry {
             },
             height: res.height as u32,
             amount: res.value,
-            descriptor_content,
-            descriptor_type,
+            descriptor_template,
+            descriptor_category,
             derivation_index,
         }
     }
 
-    pub fn has_match(&self, generator: &DescriptorGenerator) -> bool {
-        generator.content == self.descriptor_content
-            && generator.types.has_match(self.descriptor_type)
+    pub fn has_match(&self, descriptor_account: &DescriptorAccount) -> bool {
+        descriptor_account.generator.template == self.descriptor_template
+            && descriptor_account
+                .generator
+                .variants
+                .has_match(self.descriptor_category)
     }
 }
