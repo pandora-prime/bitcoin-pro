@@ -18,12 +18,12 @@ use std::convert::TryInto;
 use std::ops::DerefMut;
 use std::rc::Rc;
 
+use bitcoin::Script;
 use electrum_client::{
     Client as ElectrumClient, ElectrumApi, Error as ElectrumError,
 };
-use lnpbp::bitcoin::Script;
-use lnpbp::bp::bip32::OutOfRangeError;
-use lnpbp::bp::descriptor;
+use wallet::bip32::IndexOverflowError;
+use wallet::descriptor;
 
 use crate::model::{DescriptorAccount, UtxoEntry};
 use crate::util::resolver_mode::ResolverModeType;
@@ -36,7 +36,7 @@ pub enum Error {
     #[from]
     Electrum(String),
 
-    #[from(OutOfRangeError)]
+    #[from(IndexOverflowError)]
     /// The actual value of the used index corresponds to a hardened index,
     /// which can't be used in the current context
     HardenedIndex,

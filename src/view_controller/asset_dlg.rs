@@ -17,11 +17,9 @@ use std::collections::{BTreeMap, HashMap};
 use std::rc::Rc;
 use std::str::FromStr;
 
-use lnpbp::bitcoin::OutPoint;
-use lnpbp::bp::Chain;
-use lnpbp::rgb::{AtomicValue, ContractId, Genesis, ToBech32};
-use rgb::fungible::processor as rgb20;
-use rgb::fungible::Asset;
+use bitcoin::OutPoint;
+use lnpbp::Chain;
+use rgb::{AtomicValue, ContractId, Genesis, ToBech32};
 
 use crate::model::{DescriptorAccount, Document, UtxoEntry};
 use crate::view_controller::UtxoSelectDlg;
@@ -35,7 +33,7 @@ pub enum Error {
     /// Error from RGB20 procedures
     #[from]
     #[display(inner)]
-    Rgb20(rgb::error::ServiceErrorDomain),
+    Rgb20(rgb20::Error),
 }
 
 pub struct AssetDlg {
@@ -397,7 +395,7 @@ impl AssetDlg {
         self: Rc<Self>,
         doc: Rc<RefCell<Document>>,
         contract_id: Option<ContractId>,
-        on_issue: impl Fn(Asset, Genesis) + 'static,
+        on_issue: impl Fn(rgb20::Asset, Genesis) + 'static,
         on_cancel: impl Fn() + 'static,
     ) {
         let me = self.clone();
@@ -539,7 +537,7 @@ impl AssetDlg {
         // TODO: Implement
     }
 
-    pub fn asset_genesis(&self) -> Result<(Asset, Genesis), Error> {
+    pub fn asset_genesis(&self) -> Result<(rgb20::Asset, Genesis), Error> {
         Ok(rgb20::issue(
             self.chain.borrow().clone(),
             self.asset_ticker().unwrap_or_default(),

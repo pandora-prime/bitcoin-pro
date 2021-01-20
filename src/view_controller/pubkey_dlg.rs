@@ -16,17 +16,18 @@ use std::ops::RangeInclusive;
 use std::rc::Rc;
 use std::str::FromStr;
 
-use lnpbp::bitcoin::util::bip32::{
+use bitcoin::secp256k1;
+use bitcoin::util::bip32::{
     self, ChildNumber, DerivationPath, ExtendedPrivKey, ExtendedPubKey,
 };
-use lnpbp::bitcoin::util::key;
-use lnpbp::bp::descriptor;
-use lnpbp::bp::slip32::{self, FromSlip32};
-use lnpbp::bp::{
-    Chain, DerivationComponents, DerivationRange, HardenedNormalSplit,
+use bitcoin::util::key;
+use lnpbp::Chain;
+use miniscript::descriptor::DescriptorSinglePub;
+use slip132::{self, FromSlip132};
+use wallet::bip32::{
+    DerivationComponents, DerivationRange, HardenedNormalSplit,
 };
-use lnpbp::miniscript::descriptor::DescriptorSinglePub;
-use lnpbp::{bitcoin, secp256k1};
+use wallet::descriptor;
 
 use crate::model::TrackingAccount;
 
@@ -54,7 +55,7 @@ pub enum Error {
     /// SLIP-32 specific error
     #[display("{0}")]
     #[from]
-    Slip32(slip32::Error),
+    Slip32(slip132::Error),
 
     /// Index range must not be empty
     RangeNotSpecified,
@@ -511,20 +512,20 @@ impl PubkeyDlg {
         let derivation = self.derivation_path(false)?;
         let (branch_path, terminal_path) = derivation.hardened_normal_split();
         let account_xpub =
-            ExtendedPubKey::from_slip32_str(&self.account_field.get_text());
+            ExtendedPubKey::from_slip132_str(&self.account_field.get_text());
         let master_xpub =
-            ExtendedPubKey::from_slip32_str(&self.xpub_field.get_text());
+            ExtendedPubKey::from_slip132_str(&self.xpub_field.get_text());
         let index_ranges = self.derivation_ranges()?;
 
         if let Ok(master_priv) =
-            ExtendedPrivKey::from_slip32_str(&self.xpub_field.get_text())
+            ExtendedPrivKey::from_slip132_str(&self.xpub_field.get_text())
         {
             let master_xpub =
-                ExtendedPubKey::from_private(&lnpbp::SECP256K1, &master_priv);
+                ExtendedPubKey::from_private(&wallet::SECP256K1, &master_priv);
             let branch_xpriv =
-                master_priv.derive_priv(&lnpbp::SECP256K1, &branch_path)?;
+                master_priv.derive_priv(&wallet::SECP256K1, &branch_path)?;
             let branch_xpub =
-                ExtendedPubKey::from_private(&lnpbp::SECP256K1, &branch_xpriv);
+                ExtendedPubKey::from_private(&wallet::SECP256K1, &branch_xpriv);
             Ok(DerivationComponents {
                 master_xpub,
                 branch_xpub,
@@ -747,25 +748,25 @@ impl PubkeyDlg {
                 .collect::<DerivationPath>();
 
             let (xpubkey, master) = if let Ok(master_priv) =
-                ExtendedPrivKey::from_slip32_str(&self.xpub_field.get_text())
+                ExtendedPrivKey::from_slip132_str(&self.xpub_field.get_text())
             {
                 let master = ExtendedPubKey::from_private(
-                    &lnpbp::SECP256K1,
+                    &wallet::SECP256K1,
                     &master_priv,
                 );
                 self.account_field.set_sensitive(false);
                 let prv =
-                    master_priv.derive_priv(&lnpbp::SECP256K1, &derivation)?;
+                    master_priv.derive_priv(&wallet::SECP256K1, &derivation)?;
                 (
-                    ExtendedPubKey::from_private(&lnpbp::SECP256K1, &prv),
+                    ExtendedPubKey::from_private(&wallet::SECP256K1, &prv),
                     master,
                 )
             } else {
-                let master = ExtendedPubKey::from_slip32_str(
+                let master = ExtendedPubKey::from_slip132_str(
                     &self.xpub_field.get_text(),
                 )?;
                 let pk = master
-                    .derive_pub(&lnpbp::SECP256K1, &derivation)
+                    .derive_pub(&wallet::SECP256K1, &derivation)
                     .map(|pk| {
                         self.account_field.set_sensitive(false);
                         pk
@@ -775,11 +776,11 @@ impl PubkeyDlg {
                         if !self.account_field.get_text().is_empty() {
                             self.offset_chk.set_sensitive(false);
                             self.offset_chk.set_active(false);
-                            let account = ExtendedPubKey::from_slip32_str(
+                            let account = ExtendedPubKey::from_slip132_str(
                                 &self.account_field.get_text(),
                             )?;
                             let pk = account.derive_pub(
-                                &lnpbp::SECP256K1,
+                                &wallet::SECP256K1,
                                 &terminal,
                             )?;
                             info_msg = Some(s!(

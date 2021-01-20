@@ -17,7 +17,7 @@ use std::collections::HashSet;
 use std::rc::Rc;
 use std::str::FromStr;
 
-use lnpbp::bp::descriptor::{self, ScriptConstruction, ScriptSource, Template};
+use wallet::descriptor::{self, ScriptConstruction, ScriptSource, Template};
 
 use crate::controller::utxo_lookup::{self, UtxoLookup};
 use crate::model::{

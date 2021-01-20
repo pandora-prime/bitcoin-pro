@@ -17,8 +17,8 @@ use std::path::PathBuf;
 use std::rc::Rc;
 use std::str::FromStr;
 
-use lnpbp::bitcoin::{OutPoint, Txid};
-use lnpbp::rgb::{Consignment, ContractId, ToBech32};
+use bitcoin::{OutPoint, Txid};
+use rgb::{Consignment, ContractId, ToBech32};
 
 use crate::model::Document;
 use crate::view_controller::{AssetDlg, DescriptorDlg, PubkeyDlg, SaveDlg};

@@ -13,11 +13,12 @@
 
 use std::collections::HashMap;
 
-use lnpbp::bitcoin::Script;
-use lnpbp::bp::bip32::UnhardenedIndex;
-use lnpbp::bp::descriptor;
+use bitcoin::Script;
+use wallet::bip32::UnhardenedIndex;
+use wallet::descriptor;
 
 #[derive(Clone, PartialEq, Eq, Debug, StrictEncode, StrictDecode)]
+#[strict_encoding_crate(lnpbp::strict_encoding)]
 pub struct DescriptorAccount {
     pub name: String,
     pub generator: descriptor::Generator,

@@ -16,8 +16,8 @@ use std::num::ParseIntError;
 use std::ops::Range;
 use std::str::FromStr;
 
-use lnpbp::bp::bip32::{OutOfRangeError, UnhardenedIndex};
-use lnpbp::secp256k1::rand::{rngs::ThreadRng, thread_rng, RngCore};
+use bitcoin::secp256k1::rand::{rngs::ThreadRng, thread_rng, RngCore};
+use wallet::bip32::{IndexOverflowError, UnhardenedIndex};
 
 #[derive(Clone, PartialEq, Eq, Debug, Display, From, Error)]
 #[display(doc_comments)]
@@ -26,7 +26,7 @@ pub enum ParseError {
     #[from]
     InvalidInteger(ParseIntError),
 
-    #[from(OutOfRangeError)]
+    #[from(IndexOverflowError)]
     /// The actual value of the used index corresponds to a hardened index,
     /// which can't be used in the current context
     HardenedIndex,
@@ -53,14 +53,13 @@ impl FromStr for ResolverModeType {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(if let Some(s) = s.strip_prefix("first") {
             if s.is_empty() {
-                // TODO: Replace with `UnhardenedIndex::one()`
-                ResolverModeType::First(1.try_into().expect("cant' fail"))
+                ResolverModeType::First(UnhardenedIndex::one())
             } else {
                 ResolverModeType::First(u32::from_str(s)?.try_into()?)
             }
         } else if let Some(s) = s.strip_prefix("random") {
             if s.is_empty() {
-                ResolverModeType::Random(1.try_into().expect("cant' fail"))
+                ResolverModeType::Random(UnhardenedIndex::one())
             } else {
                 ResolverModeType::Random(u32::from_str(s)?.try_into()?)
             }

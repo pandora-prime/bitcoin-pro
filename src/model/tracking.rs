@@ -11,9 +11,10 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-use lnpbp::bp::descriptor;
+use wallet::descriptor;
 
 #[derive(Getters, Clone, PartialEq, Eq, Debug, StrictEncode, StrictDecode)]
+#[strict_encoding_crate(lnpbp::strict_encoding)]
 pub struct TrackingAccount {
     pub name: String,
     pub key: descriptor::SingleSig,

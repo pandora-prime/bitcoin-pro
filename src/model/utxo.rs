@@ -11,9 +11,9 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+use bitcoin::OutPoint;
 use electrum_client::ListUnspentRes;
-use lnpbp::bitcoin::OutPoint;
-use lnpbp::bp::descriptor;
+use wallet::descriptor;
 
 use super::DescriptorAccount;
 
@@ -29,6 +29,7 @@ use super::DescriptorAccount;
     StrictEncode,
     StrictDecode,
 )]
+#[strict_encoding_crate(lnpbp::strict_encoding)]
 #[display("{amount}@{outpoint} {descriptor_category}({descriptor_template})")]
 pub struct UtxoEntry {
     pub outpoint: OutPoint,

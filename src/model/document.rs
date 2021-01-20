@@ -11,8 +11,8 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-use amplify::internet::InetSocketAddr;
 use gtk::prelude::*;
+use internet2::addr::InetSocketAddr;
 use std::collections::{BTreeMap, HashSet};
 use std::convert::TryFrom;
 use std::ffi::OsStr;
@@ -22,14 +22,14 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Mutex;
 
+use bitcoin::OutPoint;
+use bitcoin::Transaction;
 use electrum_client::{Client as ElectrumClient, Error as ElectrumError};
-use lnpbp::bitcoin::OutPoint;
-use lnpbp::bitcoin::Transaction;
-use lnpbp::bp::{descriptor, Chain, Psbt};
-use lnpbp::lnp::{NodeAddr, RemoteNodeAddr};
-use lnpbp::rgb::{Consignment, ContractId, Genesis, Schema, SchemaId};
+use internet2::{NodeAddr, RemoteNodeAddr};
 use lnpbp::strict_encoding::{self, StrictDecode, StrictEncode};
-use rgb::fungible::Asset;
+use lnpbp::Chain;
+use rgb::{Consignment, ContractId, Genesis, Schema, SchemaId};
+use wallet::{descriptor, Psbt};
 
 use super::{operation, DescriptorAccount, TrackingAccount, UtxoEntry};
 
@@ -442,9 +442,9 @@ impl Document {
     pub fn asset_by_id(
         &self,
         asset_id: ContractId,
-    ) -> Option<(Asset, &Genesis)> {
+    ) -> Option<(rgb20::Asset, &Genesis)> {
         self.profile.assets.get(&asset_id).and_then(|consignment| {
-            Asset::try_from(consignment.genesis.clone())
+            rgb20::Asset::try_from(consignment.genesis.clone())
                 .ok()
                 .map(|asset| (asset, &consignment.genesis))
         })
@@ -472,7 +472,7 @@ impl Document {
 
     pub fn resolver(&self) -> Result<ElectrumClient, ResolverError> {
         if let ChainResolver::Electrum(addr) = self.profile.settings.resolver {
-            Ok(ElectrumClient::new(&addr.to_string(), None)?)
+            Ok(ElectrumClient::new(&addr.to_string())?)
         } else {
             Err(ResolverError::ElectrumRequired)
         }

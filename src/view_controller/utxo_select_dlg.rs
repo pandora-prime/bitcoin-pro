@@ -17,7 +17,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use std::str::FromStr;
 
-use lnpbp::bitcoin::{OutPoint, Txid};
+use bitcoin::{OutPoint, Txid};
 
 use crate::model::{Document, UtxoEntry};
 
