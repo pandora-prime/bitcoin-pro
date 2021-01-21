@@ -11,17 +11,7 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-#[derive(
-    Clone,
-    PartialEq,
-    Eq,
-    Debug,
-    Display,
-    Serialize,
-    Deserialize,
-    StrictEncode,
-    StrictDecode,
-)]
+#[derive(Clone, PartialEq, Eq, Debug, Display, StrictEncode, StrictDecode)]
 #[display("")]
 #[strict_encoding_crate(lnpbp::strict_encoding)]
 pub struct LogEntry {}

@@ -25,8 +25,6 @@ extern crate lazy_static;
 extern crate glade;
 #[macro_use]
 extern crate glib;
-#[macro_use]
-extern crate serde_with;
 
 mod controller;
 mod model;
