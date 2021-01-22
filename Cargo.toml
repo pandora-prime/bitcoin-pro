@@ -17,18 +17,18 @@ amplify = { version = "3", features = ["serde"] }
 amplify_derive = "2.4.2"
 lnpbp = { version = "0.3", features = ["serde"] }
 descriptor-wallet = { version = "0.3", features = ["serde"] }
-slip132 = { version = "0.3.0-rc.1", features = ["serde"] }
-lnp-core = { version = "0.3.0-beta.3", features = ["serde"] }
-rgb-core = { version = "0.3.0-beta.3", features = ["serde"] }
-rgb20 = { version = "0.3.0-rc.2", features = ["serde"] }
-rgb21 = { version = "0.3.0-beta.3", features = [] }
-rgb22 = { version = "0.3.0-beta.3", features = [] }
-rgb23 = { version = "0.3.0-beta.3", features = [] }
-internet2 = { version = "0.3.4", default-features = false, features = ["derive", "descriptor-wallet", "bitcoin-ext", "serde", "url"] }
+slip132 = { version = "0.3", features = ["serde"] }
+lnp-core = { version = "0.3", features = ["serde"] }
+rgb-core = { version = "0.3", features = ["serde"] }
+rgb20 = { version = "0.3", features = ["serde"] }
+# rgb21 = { version = "0.3.0-beta.3", features = [] }
+# rgb22 = { version = "0.3.0-beta.3", features = [] }
+# rgb23 = { version = "0.3.0-beta.3", features = [] }
+internet2 = { version = "0.3.7", default-features = false, features = ["derive", "descriptor-wallet", "bitcoin-ext", "serde", "url"] }
 # Bitcoin
 bitcoin = { version = "0.26", features = ["use-serde"] }
 miniscript = { version = "5", features = ["use-serde", "compiler"] }
-electrum-client = { version = "0.5.0-beta.1", git = "https://github.com/LNP-BP/rust-electrum-client", branch = "bitcoin-0.26" }
+electrum-client = { version = "0.6" }
 # Rust language
 lazy_static = "1.4"
 # Serialization & parsing
