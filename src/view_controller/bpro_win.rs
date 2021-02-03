@@ -11,7 +11,9 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+use gdk_pixbuf::{InterpType, PixbufLoader, PixbufLoaderExt};
 use gtk::prelude::*;
+use qrcode_generator::QrCodeEcc;
 use std::cell::RefCell;
 use std::path::PathBuf;
 use std::rc::Rc;
@@ -68,6 +70,7 @@ pub struct BproWin {
     asset_issued_display: gtk::Entry,
     asset_total_display: gtk::Entry,
     asset_decimals_display: gtk::Entry,
+    asset_qr_image: gtk::Image,
 }
 
 impl BproWin {
@@ -117,6 +120,7 @@ impl BproWin {
         let asset_total_display = builder.get_object("assetTotalDisplay")?;
         let asset_decimals_display =
             builder.get_object("assetDecimalsDisplay")?;
+        let asset_qr_image = builder.get_object("assetQR")?;
 
         let chain_combo: gtk::ComboBox = builder.get_object("chainCombo")?;
         let electrum_radio: gtk::RadioButton =
@@ -164,6 +168,7 @@ impl BproWin {
             asset_issued_display,
             asset_total_display,
             asset_decimals_display,
+            asset_qr_image,
         }));
 
         chain_combo.connect_changed(
@@ -486,6 +491,7 @@ impl BproWin {
             clone!(@weak me, @strong doc => move |_| {
                 let me = me.borrow();
                 if let Some((id, _, _)) = me.asset_selection() {
+                    me.asset_remove_btn.set_sensitive(true);
                     if let Some((asset, genesis)) = doc.borrow().asset_by_id(id) {
                         me.asset_id_display.set_text(&id.to_bech32_string());
                         me.asset_genesis_display.set_text(&genesis.to_bech32_string());
@@ -493,8 +499,23 @@ impl BproWin {
                         me.asset_issued_display.set_text(&asset.accounting_supply(SupplyMeasure::KnownCirculating).to_string());
                         me.asset_total_display.set_text(&asset.accounting_supply(SupplyMeasure::IssueLimit).to_string());
                         me.asset_decimals_display.set_text(&asset.fractional_bits().to_string());
+
+                        let png = qrcode_generator::to_png_to_vec(
+                            genesis.to_bech32_string(),
+                            QrCodeEcc::Low,
+                            1024,
+                        )
+                        .ok();
+                        let pixbuf = png
+                            .and_then(|vec| {
+                                let loader = PixbufLoader::new();
+                                loader.write(&vec).ok()?;
+                                loader.get_pixbuf()
+                            }).and_then(|pixbuf| {
+                                pixbuf.scale_simple(250, 250, InterpType::Bilinear)
+                            });
+                        me.asset_qr_image.set_from_pixbuf(pixbuf.as_ref());
                     }
-                    me.asset_remove_btn.set_sensitive(true);
                 } else {
                     me.asset_remove_btn.set_sensitive(false);
                 }
