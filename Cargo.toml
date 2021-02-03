@@ -15,16 +15,16 @@ name = "bitcoin-pro"
 # LNP/BP crates
 amplify = { version = "3", features = ["serde"] }
 amplify_derive = "2.4.2"
-lnpbp = { version = "0.3", features = ["serde"] }
-descriptor-wallet = { version = "0.3", features = ["serde"] }
-slip132 = { version = "0.3", features = ["serde"] }
-lnp-core = { version = "0.3", features = ["serde"] }
-rgb-core = { version = "0.3", features = ["serde"] }
-rgb20 = { version = "0.3", features = ["serde"] }
+lnpbp = { git = "https://github.com/LNP-BP/rust-lnpbp", features = ["serde"] }
+descriptor-wallet = { git = "https://github.com/LNP-BP/descriptor-wallet", features = ["serde"] }
+slip132 = { git = "https://github.com/LNP-BP/descriptor-wallet", features = ["serde"] }
+lnp-core = { git = "https://github.com/LNP-BP/lnp-core", features = ["serde"] }
+rgb-core = { git = "https://github.com/rgb-org/rgb-core", features = ["serde"] }
+rgb20 = { git = "https://github.com/rgb-org/rgb-core", features = ["serde"] }
 # rgb21 = { version = "0.3.0-beta.3", features = [] }
 # rgb22 = { version = "0.3.0-beta.3", features = [] }
 # rgb23 = { version = "0.3.0-beta.3", features = [] }
-internet2 = { version = "0.3.7", default-features = false, features = ["derive", "descriptor-wallet", "bitcoin-ext", "serde", "url"] }
+internet2 = { git = "https://github.com/internet2-org/rust-internet2", default-features = false, features = ["derive", "serde", "url"] }
 # Bitcoin
 bitcoin = { version = "0.26", features = ["use-serde"] }
 miniscript = { version = "5", features = ["use-serde", "compiler"] }

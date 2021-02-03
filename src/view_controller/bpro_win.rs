@@ -19,6 +19,7 @@ use std::str::FromStr;
 
 use bitcoin::{OutPoint, Txid};
 use rgb::{Consignment, ContractId, ToBech32};
+use rgb20::SupplyMeasure;
 
 use crate::model::Document;
 use crate::view_controller::{AssetDlg, DescriptorDlg, PubkeyDlg, SaveDlg};
@@ -489,8 +490,8 @@ impl BproWin {
                         me.asset_id_display.set_text(&id.to_bech32_string());
                         me.asset_genesis_display.set_text(&genesis.to_bech32_string());
                         me.asset_contract_display.set_text(&asset.description().clone().unwrap_or_default());
-                        me.asset_issued_display.set_text(&asset.supply().known_circulating().accounting_value().to_string());
-                        me.asset_total_display.set_text(&asset.supply().max_cap().accounting_value().to_string());
+                        me.asset_issued_display.set_text(&asset.accounting_supply(SupplyMeasure::KnownCirculating).to_string());
+                        me.asset_total_display.set_text(&asset.accounting_supply(SupplyMeasure::IssueLimit).to_string());
                         me.asset_decimals_display.set_text(&asset.fractional_bits().to_string());
                     }
                     me.asset_remove_btn.set_sensitive(true);
@@ -508,24 +509,16 @@ impl BproWin {
                     let contract_id = genesis.contract_id();
                     let consignment = Consignment::with(genesis, none!(), none!(), none!());
                     let me = me.borrow();
-                    let divisor = 10_u64.pow(*asset.fractional_bits() as u32) as f64;
                     me.asset_store.insert_with_values(
                         None,
                         &[0, 1, 2, 3, 4, 5, 6, 7],
                         &[
                             &asset.ticker(),
                             &asset.name(),
-                            &asset.known_allocations()
-                                .iter()
-                                .filter(|(outpoint, _)| {
-                                    doc.borrow().is_outpoint_known(**outpoint)
-                                })
-                                .map(|(_, allocations)| allocations)
-                                .flatten()
-                                .fold(0f64, |sum, allocation| {
-                                    sum + allocation.value().value as f64 / divisor
-                                }),
-                            &asset.supply().known_circulating().accounting_value(),
+                            &asset.known_filtered_accounting_value(|allocation| {
+                                doc.borrow().is_outpoint_known(*allocation.outpoint())
+                            }),
+                            &asset.accounting_supply(SupplyMeasure::KnownCirculating),
                             &1,
                             &(asset.known_inflation().len() > 0),
                             &0,

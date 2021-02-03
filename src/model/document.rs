@@ -409,26 +409,18 @@ impl Document {
         store.clear();
         self.profile.assets.iter().for_each(|(contract_id, _)| {
             self.asset_by_id(*contract_id).map(|(asset, _)| {
-                let divisor =
-                    10_u64.pow(*asset.fractional_bits() as u32) as f64;
                 store.insert_with_values(
                     None,
                     &[0, 1, 2, 3, 4, 5, 6, 7],
                     &[
                         &asset.ticker(),
                         &asset.name(),
-                        &asset
-                            .known_allocations()
-                            .iter()
-                            .filter(|(outpoint, _)| {
-                                self.is_outpoint_known(**outpoint)
-                            })
-                            .map(|(_, allocations)| allocations)
-                            .flatten()
-                            .fold(0f64, |sum, allocation| {
-                                sum + allocation.value().value as f64 / divisor
-                            }),
-                        &asset.supply().known_circulating().accounting_value(),
+                        &asset.known_filtered_accounting_value(|allocation| {
+                            self.is_outpoint_known(*allocation.outpoint())
+                        }),
+                        &asset.accounting_supply(
+                            rgb20::SupplyMeasure::KnownCirculating,
+                        ),
                         &1,
                         &(asset.known_inflation().len() > 0),
                         &0,
