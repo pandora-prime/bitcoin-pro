@@ -14,7 +14,6 @@
 use gtk::prelude::GtkListStoreExtManual;
 use std::cell::RefCell;
 use std::collections::HashSet;
-use std::convert::TryInto;
 use std::ops::DerefMut;
 use std::rc::Rc;
 
@@ -22,7 +21,7 @@ use bitcoin::Script;
 use electrum_client::{
     Client as ElectrumClient, ElectrumApi, Error as ElectrumError,
 };
-use wallet::bip32::IndexOverflowError;
+use wallet::bip32::{ChildIndex, UnhardenedIndex};
 use wallet::descriptor;
 
 use crate::model::{DescriptorAccount, UtxoEntry};
@@ -36,7 +35,6 @@ pub enum Error {
     #[from]
     Electrum(String),
 
-    #[from(IndexOverflowError)]
     /// The actual value of the used index corresponds to a hardened index,
     /// which can't be used in the current context
     HardenedIndex,
@@ -76,7 +74,10 @@ pub trait UtxoLookup {
             );
             for offset in lookup_iter.by_ref() {
                 let scripts = account
-                    .pubkey_scripts(offset.try_into()?)
+                    .pubkey_scripts(
+                        UnhardenedIndex::from_index(offset)
+                            .map_err(|_| Error::HardenedIndex)?,
+                    )
                     .map_err(|err| {
                         Error::Descriptor(offset, account.descriptor(), err)
                     })?;

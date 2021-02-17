@@ -11,13 +11,12 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-use std::convert::TryInto;
 use std::num::ParseIntError;
 use std::ops::Range;
 use std::str::FromStr;
 
 use bitcoin::secp256k1::rand::{rngs::ThreadRng, thread_rng, RngCore};
-use wallet::bip32::{IndexOverflowError, UnhardenedIndex};
+use wallet::bip32::{ChildIndex, UnhardenedIndex};
 
 #[derive(Clone, PartialEq, Eq, Debug, Display, From, Error)]
 #[display(doc_comments)]
@@ -26,7 +25,6 @@ pub enum ParseError {
     #[from]
     InvalidInteger(ParseIntError),
 
-    #[from(IndexOverflowError)]
     /// The actual value of the used index corresponds to a hardened index,
     /// which can't be used in the current context
     HardenedIndex,
@@ -55,13 +53,19 @@ impl FromStr for ResolverModeType {
             if s.is_empty() {
                 ResolverModeType::First(UnhardenedIndex::one())
             } else {
-                ResolverModeType::First(u32::from_str(s)?.try_into()?)
+                ResolverModeType::First(
+                    UnhardenedIndex::from_index(u32::from_str(s)?)
+                        .map_err(|_| ParseError::HardenedIndex)?,
+                )
             }
         } else if let Some(s) = s.strip_prefix("random") {
             if s.is_empty() {
                 ResolverModeType::Random(UnhardenedIndex::one())
             } else {
-                ResolverModeType::Random(u32::from_str(s)?.try_into()?)
+                ResolverModeType::Random(
+                    UnhardenedIndex::from_index(u32::from_str(s)?)
+                        .map_err(|_| ParseError::HardenedIndex)?,
+                )
             }
         } else if s == "while" {
             ResolverModeType::While
@@ -75,8 +79,8 @@ impl ResolverModeType {
     pub fn count(self) -> usize {
         match self {
             ResolverModeType::While => 1usize,
-            ResolverModeType::First(count) => count.into_u32() as usize,
-            ResolverModeType::Random(count) => count.into_u32() as usize,
+            ResolverModeType::First(count) => u32::from(count) as usize,
+            ResolverModeType::Random(count) => u32::from(count) as usize,
         }
     }
 

@@ -25,11 +25,12 @@ use lnpbp::Chain;
 use miniscript::descriptor::DescriptorSinglePub;
 use slip132::{self, FromSlip132};
 use wallet::bip32::{
-    DerivationComponents, DerivationRange, HardenedNormalSplit,
+    DerivationComponents, DerivationRangeVec, HardenedNormalSplit,
 };
 use wallet::descriptor;
 
 use crate::model::TrackingAccount;
+use std::convert::TryFrom;
 
 static UI: &'static str = include_str!("../view/pubkey.glade");
 
@@ -556,7 +557,7 @@ impl PubkeyDlg {
 
     pub fn derivation_ranges(
         &self,
-    ) -> Result<Option<Vec<DerivationRange>>, Error> {
+    ) -> Result<Option<DerivationRangeVec>, Error> {
         if !self.range_chk.get_active() {
             return Ok(None);
         }
@@ -586,11 +587,9 @@ impl PubkeyDlg {
             };
             index_ranges.push(range);
         }
-        if index_ranges.is_empty() {
-            Err(Error::RangeNotSpecified)
-        } else {
-            Ok(Some(index_ranges))
-        }
+        DerivationRangeVec::try_from(index_ranges)
+            .map(Option::Some)
+            .map_err(|_| Error::RangeNotSpecified)
     }
 
     pub fn display_info(&self, msg: impl ToString) {
@@ -817,17 +816,12 @@ impl PubkeyDlg {
             self.xpub_display.set_text(&xpubkey.to_string());
 
             if self.range_chk.get_active() {
-                let mut lower = u32::MAX;
-                let mut upper = 0;
-                if let Some(ranges) = self.derivation_ranges()? {
-                    ranges.into_iter().for_each(|range| {
-                        lower = lower.min(range.start());
-                        upper = upper.max(range.end());
-                    });
-                } else {
-                    lower = 0;
-                    upper = u32::MAX;
-                }
+                let (lower, upper) =
+                    if let Some(ranges) = self.derivation_ranges()? {
+                        (ranges.first_index(), ranges.last_index())
+                    } else {
+                        (0, wallet::bip32::HARDENED_INDEX_BOUNDARY)
+                    };
                 self.offset_adj.set_lower(lower as f64);
                 self.offset_adj.set_upper(upper as f64);
 
