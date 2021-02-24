@@ -14,7 +14,7 @@ name = "bitcoin-pro"
 [dependencies]
 # LNP/BP crates
 amplify = { version = "3", features = ["serde"] }
-amplify_derive = "2.4.2"
+amplify_derive = "2.4.4"
 lnpbp = { git = "https://github.com/LNP-BP/rust-lnpbp", features = ["serde"] }
 descriptor-wallet = { git = "https://github.com/LNP-BP/descriptor-wallet", features = ["serde"] }
 slip132 = { git = "https://github.com/LNP-BP/descriptor-wallet", features = ["serde"] }
