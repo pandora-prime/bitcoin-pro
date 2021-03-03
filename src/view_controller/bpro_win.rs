@@ -498,7 +498,7 @@ impl BproWin {
                         me.asset_contract_display.set_text(&asset.description().clone().unwrap_or_default());
                         me.asset_issued_display.set_text(&asset.accounting_supply(SupplyMeasure::KnownCirculating).to_string());
                         me.asset_total_display.set_text(&asset.accounting_supply(SupplyMeasure::IssueLimit).to_string());
-                        me.asset_decimals_display.set_text(&asset.fractional_bits().to_string());
+                        me.asset_decimals_display.set_text(&asset.decimal_precision().to_string());
 
                         let png = qrcode_generator::to_png_to_vec(
                             genesis.to_bech32_string(),
