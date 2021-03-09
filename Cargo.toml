@@ -1,7 +1,7 @@
 [package]
 name = "bitcoin-pro"
 description = "Professional bitcoin accounts & assets management"
-version = "0.1.0-beta.2"
+version = "0.1.0-beta.3"
 authors = ["Dr Maxim Orlovsky <orlovsky@pandoracore.com>"]
 edition = "2018"
 license = "AGPL-3.0-only"
@@ -15,9 +15,9 @@ name = "bitcoin-pro"
 # LNP/BP crates
 amplify = { version = "3", features = ["serde"] }
 amplify_derive = "2.4.4"
-lnpbp = { git = "https://github.com/LNP-BP/rust-lnpbp", features = ["serde"] }
-descriptor-wallet = { git = "https://github.com/LNP-BP/descriptor-wallet", features = ["serde"] }
-slip132 = { git = "https://github.com/LNP-BP/descriptor-wallet", features = ["serde"] }
+lnpbp = { version = "0.4", features = ["serde"] }
+descriptor-wallet = { version = "0.4", features = ["serde"] }
+slip132 = { version = "0.3.3", features = ["serde"] }
 lnp-core = { git = "https://github.com/LNP-BP/lnp-core", features = ["serde"] }
 rgb-core = { git = "https://github.com/rgb-org/rgb-core", features = ["serde"] }
 rgb20 = { git = "https://github.com/rgb-org/rgb-core", features = ["serde"] }
