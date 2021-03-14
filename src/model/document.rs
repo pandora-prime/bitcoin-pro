@@ -12,7 +12,6 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 use gtk::prelude::*;
-use internet2::addr::InetSocketAddr;
 use std::collections::{BTreeMap, HashSet};
 use std::convert::TryFrom;
 use std::ffi::OsStr;
@@ -25,13 +24,13 @@ use std::sync::Mutex;
 use bitcoin::OutPoint;
 use bitcoin::Transaction;
 use electrum_client::{Client as ElectrumClient, Error as ElectrumError};
-use internet2::{NodeAddr, RemoteNodeAddr};
 use lnpbp::strict_encoding::{self, StrictDecode, StrictEncode};
 use lnpbp::Chain;
 use rgb::{Consignment, ContractId, Genesis, Schema, SchemaId};
 use wallet::{descriptor, Psbt};
 
 use super::{operation, DescriptorAccount, TrackingAccount, UtxoEntry};
+use std::net::SocketAddr;
 
 /// Equals to first 4 bytes of SHA256("pandoracore:bpro")
 /// = dbe2b664ee4e81d3a55d53aeba1915c468927c79a03587ddfc5c3aec483028ab
@@ -162,10 +161,7 @@ impl Document {
         }
     }
 
-    pub fn set_electrum(
-        &mut self,
-        addr: InetSocketAddr,
-    ) -> Result<bool, Error> {
+    pub fn set_electrum(&mut self, addr: SocketAddr) -> Result<bool, Error> {
         self.profile.settings.resolver = ChainResolver::Electrum(addr);
         self.save()
     }
@@ -535,26 +531,36 @@ impl From<ElectrumError> for ResolverError {
 #[derive(Clone, PartialEq, Eq, Debug, Display, StrictEncode, StrictDecode)]
 pub enum ChainResolver {
     #[display("bitcoinCore({0})")]
-    BitcoinCore(InetSocketAddr),
+    BitcoinCore(SocketAddr),
     #[display("electrum({0})")]
-    Electrum(InetSocketAddr),
+    Electrum(SocketAddr),
     #[display("bpNode({0})")]
-    BpNode(NodeAddr),
+    BpNode(SocketAddr),
 }
 
 impl Default for ChainResolver {
     fn default() -> Self {
         ChainResolver::Electrum(
-            "31.14.40.18:60601"
+            "31.14.40.18:60001"
                 .parse()
                 .expect("Predefined address always parses"),
         )
     }
 }
 
-#[derive(Clone, PartialEq, Eq, Debug, Default, StrictEncode, StrictDecode)]
+#[derive(Clone, PartialEq, Eq, Debug, StrictEncode, StrictDecode)]
 pub struct Settings {
     pub chain: Chain,
     pub resolver: ChainResolver,
-    pub bifrost: Option<RemoteNodeAddr>,
+    pub bifrost: Option<SocketAddr>,
+}
+
+impl Default for Settings {
+    fn default() -> Self {
+        Settings {
+            chain: Chain::Testnet3,
+            resolver: Default::default(),
+            bifrost: None,
+        }
+    }
 }

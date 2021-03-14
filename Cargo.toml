@@ -14,17 +14,15 @@ name = "bitcoin-pro"
 [dependencies]
 # LNP/BP crates
 amplify = { version = "3", features = ["serde"] }
-amplify_derive = "2.4.4"
+amplify_derive = "2"
 lnpbp = { version = "0.4", features = ["serde"] }
 descriptor-wallet = { version = "0.4", features = ["serde"] }
 slip132 = { version = "0.3.3", features = ["serde"] }
-lnp-core = { git = "https://github.com/LNP-BP/lnp-core", features = ["serde"] }
-rgb-core = { git = "https://github.com/rgb-org/rgb-core", features = ["serde"] }
-rgb20 = { git = "https://github.com/rgb-org/rgb-core", features = ["serde"] }
+rgb-core = { version = "0.4", features = ["serde"] }
+rgb20 = { version = "0.4", features = ["serde"] }
 # rgb21 = { version = "0.3.0-beta.3", features = [] }
 # rgb22 = { version = "0.3.0-beta.3", features = [] }
 # rgb23 = { version = "0.3.0-beta.3", features = [] }
-internet2 = { git = "https://github.com/internet2-org/rust-internet2", default-features = false, features = ["derive", "serde", "url"] }
 # Bitcoin
 bitcoin = { version = "0.26", features = ["use-serde"] }
 miniscript = { version = "5", features = ["use-serde", "compiler"] }
@@ -46,7 +44,7 @@ gdk = { version = "0.13.2", features = ["v3_24"] }
 gdk-pixbuf = "0.9.0"
 gio =  { version = "0.9.1", features = ["v2_64"] }
 glib = { version = "0.10.3", features = ["v2_64"] }
-glade = "0.1.0-alpha.3"
+glade = "0.1.0-alpha.4"
 qrcode-generator = "4.0.4"
 
 [workspace]
