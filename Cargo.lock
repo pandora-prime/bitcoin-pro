@@ -164,7 +164,7 @@ dependencies = [
 
 [[package]]
 name = "bitcoin-pro"
-version = "0.1.0-beta.3"
+version = "0.1.0"
 dependencies = [
  "amplify",
  "amplify_derive",
