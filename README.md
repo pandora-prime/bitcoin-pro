@@ -49,6 +49,37 @@ $ cargo install bitcoin-pro
 $ bitcoin-pro
 ```
 
+### Installation on Debian
+
+If you try to build bitcoin-pro on current Debian Stable using instructions above you might encounter the following errors:  
+`Requested 'gtk+-3.0 >= 3.24.9' but version of GTK+ is 3.24.5`  
+or  
+`Requested 'glib-2.0 >= 2.64' but version of GLib is 2.58.3`
+
+This is because bitcoin-pro requirement for those packages version is superior to the version currently shipped with Debian Stable. One way to solve this is to modify the `/etc/apt/sources.list` file by appending the following lines:
+```
+# Testing repository - main, contrib and non-free branches
+deb http://deb.debian.org/debian testing main non-free contrib
+```
+
+To prevent unwanted package upgrades to testing version, you must modify `/etc/apt/preferences` or `/etc/apt/preferences.d/preferences` (or create one if none of those files exist):
+```
+Package: *
+Pin: release a=stable
+Pin-Priority: 700
+
+Package: *
+Pin: release a=testing
+Pin-Priority: 650
+```
+
+Then you can install testing version of the packages:  
+`sudo apt install -t testing glib-2.0 gtk+-3.0`
+
+...and resume the installation process.
+
+Be warned that adding unstable packages to your system can, well, make your system less stable, so be careful with that. 
+
 ## Using
 
 ### Main interface
