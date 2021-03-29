@@ -87,8 +87,8 @@ Be warned that adding unstable packages to your system can, well, make your syst
 # Install rust language
 $ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
-# Install the dependency package gtk+3 through homebrew
-$ brew install gtk+3 git
+# Install the dependency package gtk+3 & adwaita-icon-theme through homebrew
+$ brew install gtk+3 git adwaita-icon-theme
 
 # clone bitcoin-pro
 $ git clone https://github.com/pandoracore/bitcoin-pro.git
