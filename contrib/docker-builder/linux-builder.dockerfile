@@ -1,11 +1,12 @@
 FROM ubuntu:focal as builder
+# We label the intermediate images in order to be able to delete them
+LABEL stage=builder
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG BPRO_VERSION
 
 RUN apt update && apt upgrade -yqq && apt install -yqq \
     curl \
-    cargo \
     libssl-dev \
     libzmq3-dev \
     pkg-config \
@@ -20,10 +21,9 @@ RUN . $HOME/.cargo/env && rustup default nightly
 
 RUN . $HOME/.cargo/env && cargo install bitcoin-pro
 
-FROM alpine:latest
+# we copy the bin file at root directory because of permissions issue, but there must be a better way
+RUN cp /root/.cargo/bin/bitcoin-pro /
 
 WORKDIR /
-COPY --from=builder /root/.cargo/bin/bitcoin-pro .
 
-# TODO: enable running the bin directly inside a container 
-# ENTRYPOINT [ "bitcoin-pro" ]
+ENTRYPOINT [ "./bitcoin-pro" ]
