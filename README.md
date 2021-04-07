@@ -12,7 +12,7 @@ form of PSBTs (partially-signed bitcoin transactions) and for their completion
 must be signed and published to bitcoin network outside of the application.
 
 Bitcoin Pro is written exclusively in Rust language with GTK framework and 
-natively compiles/works on Linux ~~, MacOS (GTK is not supported on Big Sur yet~~; 
+natively compiles/works on Linux, MacOS (~~GTK is not supported on Big Sur yet~~; 
 but previous versions should work fine) and (probably) Windows 10.
 
 NB: This is an ultra-early alpha version; use it at your own risk!
