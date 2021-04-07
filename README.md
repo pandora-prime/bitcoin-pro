@@ -17,7 +17,8 @@ but previous versions should work fine) and (probably) Windows 10.
 
 NB: This is an ultra-early alpha version; use it at your own risk!
 
-Demo video: [Bitcoin Pro demo. Part I](https://youtu.be/RkUHmgMUVrI), [Bitcoin Pro demo. Part II](https://youtu.be/iWJBikv0mbI)
+Demo video: [Bitcoin Pro demo. Part I](https://youtu.be/RkUHmgMUVrI), 
+[Bitcoin Pro demo. Part II](https://youtu.be/iWJBikv0mbI)
 
 ## Features
 
