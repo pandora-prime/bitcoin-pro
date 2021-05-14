@@ -12,10 +12,13 @@ form of PSBTs (partially-signed bitcoin transactions) and for their completion
 must be signed and published to bitcoin network outside of the application.
 
 Bitcoin Pro is written exclusively in Rust language with GTK framework and 
-natively compiles/works on Linux, MacOS (GTK is not supported on Big Sur yet; 
+natively compiles/works on Linux, MacOS (~~GTK is not supported on Big Sur yet~~; 
 but previous versions should work fine) and (probably) Windows 10.
 
 NB: This is an ultra-early alpha version; use it at your own risk!
+
+Demo video: [Bitcoin Pro demo. Part I](https://youtu.be/RkUHmgMUVrI), 
+[Bitcoin Pro demo. Part II](https://youtu.be/iWJBikv0mbI)
 
 ## Features
 
@@ -79,6 +82,25 @@ Then you can install testing version of the packages:
 ...and resume the installation process.
 
 Be warned that adding unstable packages to your system can, well, make your system less stable, so be careful with that. 
+
+### Installation on MacOS Big Sur
+```
+# Install rust language
+$ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# Install the dependency package gtk+3 & adwaita-icon-theme through homebrew
+$ brew install gtk+3 git adwaita-icon-theme
+
+# clone bitcoin-pro
+$ git clone https://github.com/pandoracore/bitcoin-pro.git
+
+# Enter bitcoin-pro folder
+$ cd bitcoin-pro
+
+$ rustup default nightly
+$ cargo install bitcoin-pro
+$ bitcoin-pro
+```
 
 ## Using
 
