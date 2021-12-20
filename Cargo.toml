@@ -44,9 +44,8 @@ gdk = { version = "0.13.2", features = ["v3_24"] }
 gdk-pixbuf = "0.9.0"
 gio =  { version = "0.9.1", features = ["v2_64"] }
 glib = { version = "0.10.3", features = ["v2_64"] }
-glade = "0.1.0-alpha.4"
 qrcode-generator = "4.0.4"
 
 [workspace]
-members = [".", "bpro"]
-default-members = [".", "bpro"]
+members = ["."]
+default-members = ["."]

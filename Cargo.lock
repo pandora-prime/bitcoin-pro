@@ -177,7 +177,6 @@ dependencies = [
  "gdk",
  "gdk-pixbuf",
  "gio",
- "glade",
  "glib",
  "gtk",
  "lazy_static",
@@ -217,10 +216,6 @@ checksum = "4152116fd6e9dadb291ae18fc1ec3575ed6d84c29642d97890f4b4a3417297e4"
 dependencies = [
  "generic-array",
 ]
-
-[[package]]
-name = "bpro"
-version = "0.1.0-beta.1"
 
 [[package]]
 name = "bumpalo"
@@ -797,16 +792,6 @@ dependencies = [
  "libc",
  "system-deps",
  "winapi 0.3.9",
-]
-
-[[package]]
-name = "glade"
-version = "0.1.0-alpha.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c07fa3a89b1fec7d1b11dc7398a359a5c7743d2f37f90d530b15f3c1d1d019b"
-dependencies = [
- "amplify",
- "amplify_derive",
 ]
 
 [[package]]

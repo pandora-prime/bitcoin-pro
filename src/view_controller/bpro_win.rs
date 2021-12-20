@@ -33,7 +33,7 @@ static UI: &'static str = include_str!("../view/bpro.glade");
 pub enum Error {
     /// Glade error: {0}
     #[from]
-    GladeError(glade::Error),
+    GladeError(crate::Error),
 
     /// Document-based error
     #[from]
@@ -74,9 +74,7 @@ pub struct BproWin {
 }
 
 impl BproWin {
-    fn load_glade(
-        doc: Option<Document>,
-    ) -> Result<Rc<RefCell<Self>>, glade::Error> {
+    fn load_glade(doc: Option<Document>) -> Option<Rc<RefCell<Self>>> {
         let mut needs_save = true;
         let doc = Rc::new(RefCell::new(if let Some(doc) = doc {
             needs_save = false;
@@ -140,7 +138,7 @@ impl BproWin {
         electrum_field.set_text(&doc.borrow().electrum().unwrap_or_default());
 
         let me = Rc::new(RefCell::new(Self {
-            window: glade_load!(builder, "appWindow")?,
+            window: glade_load!(builder, "appWindow").ok()?,
             pubkey_tree,
             pubkey_store,
             descriptor_tree,
@@ -222,7 +220,7 @@ impl BproWin {
         );
 
         me.borrow().pubkey_tree.get_selection().connect_changed(
-            clone!(@weak me, @strong doc => move |_| {
+            clone!(@weak me => move |_| {
                 let me = me.borrow();
                 if let Some(_) = me.pubkey_selection() {
                     me.pubkey_edit_btn.set_sensitive(true);
@@ -395,7 +393,7 @@ impl BproWin {
         }));
 
         me.borrow().utxo_descr_tree.get_selection().connect_changed(
-            clone!(@weak me, @strong doc => move |_| {
+            clone!(@weak me => move |_| {
                 let me = me.borrow();
                 me.utxo_descr_remove_btn.set_sensitive(me.utxo_descr_tree.get_selection().get_selected().is_some());
             }),
@@ -449,7 +447,7 @@ impl BproWin {
         }));
 
         me.borrow().utxo_tree.get_selection().connect_changed(
-            clone!(@weak me, @strong doc => move |_| {
+            clone!(@weak me => move |_| {
                 let me = me.borrow();
                 me.utxo_remove_btn.set_sensitive(me.utxo_tree.get_selection().get_selected().is_some());
             }),
@@ -583,13 +581,11 @@ impl BproWin {
             &me.borrow().asset_total_display,
             &me.borrow().asset_decimals_display,
         ] {
-            ctl.connect_icon_press(
-                clone!(@weak ctl, @weak me => move |_, _, _| {
-                    let val = ctl.get_text();
-                    gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD)
-                        .set_text(&val);
-                }),
-            );
+            ctl.connect_icon_press(clone!(@weak ctl => move |_, _, _| {
+                let val = ctl.get_text();
+                gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD)
+                    .set_text(&val);
+            }));
         }
 
         let tb: gtk::Button = builder.get_object("save")?;
@@ -607,19 +603,19 @@ impl BproWin {
             }), || {})
         }));
 
-        Ok(me)
+        Some(me)
     }
 }
 
 impl BproWin {
-    pub fn new(path: Option<PathBuf>) -> Result<Rc<RefCell<Self>>, Error> {
+    pub fn new(path: Option<PathBuf>) -> Option<Rc<RefCell<Self>>> {
         let doc = if let Some(path) = path {
-            Some(Document::load(path)?)
+            Some(Document::load(path).ok()?)
         } else {
             None
         };
         let me = Self::load_glade(doc)?;
-        Ok(me)
+        Some(me)
     }
 
     pub fn run(

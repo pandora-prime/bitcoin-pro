@@ -118,7 +118,7 @@ pub struct DescriptorDlg {
 }
 
 impl DescriptorDlg {
-    pub fn load_glade() -> Result<Rc<Self>, glade::Error> {
+    pub fn load_glade() -> Option<Rc<Self>> {
         let builder = gtk::Builder::from_string(UI);
 
         let save_btn = builder.get_object("save")?;
@@ -164,7 +164,7 @@ impl DescriptorDlg {
         let utxo_store = builder.get_object("utxoStore")?;
 
         let me = Rc::new(Self {
-            dialog: glade_load!(builder, "descriptorDlg")?,
+            dialog: glade_load!(builder, "descriptorDlg").ok()?,
 
             key: none!(),
             keyset: empty!(),
@@ -252,7 +252,7 @@ impl DescriptorDlg {
                 me.update_ui()
             }));
 
-        Ok(me)
+        Some(me)
     }
 }
 
@@ -294,7 +294,7 @@ impl DescriptorDlg {
                 let pubkey_dlg = PubkeySelectDlg::load_glade().expect("Must load");
                 pubkey_dlg.run(
                     doc.clone(),
-                    clone!(@weak me, @strong doc => move |tracking_account| {
+                    clone!(@weak me => move |tracking_account| {
                         me.pubkey_store.insert_with_values(None, &[0, 1, 2], &[
                             &tracking_account.name(),
                             &tracking_account.details(),

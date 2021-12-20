@@ -158,7 +158,7 @@ pub struct PubkeyDlg {
 }
 
 impl PubkeyDlg {
-    pub fn load_glade() -> Result<Rc<Self>, glade::Error> {
+    pub fn load_glade() -> Option<Rc<Self>> {
         let builder = gtk::Builder::from_string(UI);
 
         let save_btn = builder.get_object("save")?;
@@ -217,7 +217,7 @@ impl PubkeyDlg {
         let taproot_display = builder.get_object("taprootDisplay")?;
 
         let me = Rc::new(Self {
-            dialog: glade_load!(builder, "pubkeyDlg")?,
+            dialog: glade_load!(builder, "pubkeyDlg").ok()?,
             save_btn,
             cancel_btn,
             msg_box,
@@ -369,7 +369,7 @@ impl PubkeyDlg {
             }));
         }
 
-        Ok(me)
+        Some(me)
     }
 }
 

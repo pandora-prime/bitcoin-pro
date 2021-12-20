@@ -42,7 +42,7 @@ pub struct UtxoSelectDlg {
 }
 
 impl UtxoSelectDlg {
-    pub fn load_glade() -> Result<Rc<Self>, glade::Error> {
+    pub fn load_glade() -> Option<Rc<Self>> {
         let builder = gtk::Builder::from_string(UI);
 
         let descriptor_store = builder.get_object("locatorStore")?;
@@ -54,7 +54,7 @@ impl UtxoSelectDlg {
         let cancel_btn = builder.get_object("cancel")?;
 
         let me = Rc::new(Self {
-            dialog: glade_load!(builder, "utxoDlg")?,
+            dialog: glade_load!(builder, "utxoDlg").ok()?,
             descriptor_store,
             descriptor_selection,
             utxo_store,
@@ -63,7 +63,7 @@ impl UtxoSelectDlg {
             cancel_btn,
         });
 
-        Ok(me)
+        Some(me)
     }
 }
 

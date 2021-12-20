@@ -38,7 +38,7 @@ pub struct PubkeySelectDlg {
 }
 
 impl PubkeySelectDlg {
-    pub fn load_glade() -> Result<Rc<Self>, glade::Error> {
+    pub fn load_glade() -> Option<Rc<Self>> {
         let builder = gtk::Builder::from_string(UI);
 
         let pubkey_store = builder.get_object("pubkeyStore")?;
@@ -48,14 +48,14 @@ impl PubkeySelectDlg {
         let cancel_btn = builder.get_object("cancel")?;
 
         let me = Rc::new(Self {
-            dialog: glade_load!(builder, "pubkeyDlg")?,
+            dialog: glade_load!(builder, "pubkeyDlg").ok()?,
             pubkey_store,
             pubkey_selection,
             select_btn,
             cancel_btn,
         });
 
-        Ok(me)
+        Some(me)
     }
 }
 

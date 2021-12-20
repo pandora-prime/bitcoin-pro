@@ -24,14 +24,14 @@ pub struct OpenDlg {
 }
 
 impl OpenDlg {
-    pub fn load_glade() -> Result<Rc<Self>, glade::Error> {
+    pub fn load_glade() -> Option<Rc<Self>> {
         let builder = gtk::Builder::from_string(UI);
 
         let open_btn = builder.get_object("open")?;
         let cancel_btn = builder.get_object("cancel")?;
         let dialog = builder.get_object("openDlg")?;
 
-        Ok(Rc::new(OpenDlg {
+        Some(Rc::new(OpenDlg {
             dialog,
             open_btn,
             cancel_btn,

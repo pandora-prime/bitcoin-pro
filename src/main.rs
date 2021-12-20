@@ -22,9 +22,31 @@ extern crate lnpbp;
 #[macro_use]
 extern crate lazy_static;
 #[macro_use]
-extern crate glade;
-#[macro_use]
 extern crate glib;
+
+#[macro_export]
+macro_rules! glade_load {
+    ($builder:ident, $file:literal) => {
+        $builder.get_object($file).ok_or($crate::Error::ParseFailed)
+    };
+}
+
+#[derive(Clone, PartialEq, Eq, Debug, Display, From, Error)]
+#[display(doc_comments)]
+pub enum Error {
+    /// Failed to parse glade file
+    ParseFailed,
+
+    /// The specified widget is not found
+    WidgetNotFound,
+}
+
+pub trait View
+where
+    Self: Sized,
+{
+    fn load_glade() -> Result<Rc<RefCell<Self>>, Error>;
+}
 
 mod controller;
 mod model;
@@ -32,7 +54,9 @@ mod util;
 mod view_controller;
 
 use gio::prelude::*;
+use std::cell::RefCell;
 use std::path::PathBuf;
+use std::rc::Rc;
 
 use crate::view_controller::OpenDlg;
 
@@ -43,7 +67,7 @@ fn main() {
 
     application.connect_activate(|_| {
         fn new_app(path: Option<PathBuf>) {
-            if let Ok(app_window) = view_controller::BproWin::new(path) {
+            if let Some(app_window) = view_controller::BproWin::new(path) {
                 let app_window = app_window.borrow();
                 app_window.run(
                     || {

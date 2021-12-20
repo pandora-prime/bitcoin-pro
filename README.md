@@ -47,8 +47,9 @@ Install rust language and run
 ```constole
 $ sudo apt update
 $ sudo apt install -y cargo libssl-dev libzmq3-dev pkg-config g++ cmake libgtk-3-dev libsqlite3-dev
+$ rustup update nightly
 $ rustup default nightly
-$ cargo install bitcoin-pro
+$ cargo install bitcoin-pro --locked
 $ bitcoin-pro
 ```
 

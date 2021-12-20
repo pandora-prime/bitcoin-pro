@@ -24,14 +24,14 @@ pub struct SaveDlg {
 }
 
 impl SaveDlg {
-    pub fn load_glade() -> Result<Rc<Self>, glade::Error> {
+    pub fn load_glade() -> Option<Rc<Self>> {
         let builder = gtk::Builder::from_string(UI);
 
         let save_btn = builder.get_object("save")?;
         let cancel_btn = builder.get_object("cancel")?;
         let dialog = builder.get_object("saveDlg")?;
 
-        Ok(Rc::new(SaveDlg {
+        Some(Rc::new(SaveDlg {
             dialog,
             save_btn,
             cancel_btn,

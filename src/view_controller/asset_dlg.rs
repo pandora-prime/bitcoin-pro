@@ -103,7 +103,7 @@ pub struct AssetDlg {
 }
 
 impl AssetDlg {
-    pub fn load_glade() -> Result<Rc<Self>, glade::Error> {
+    pub fn load_glade() -> Option<Rc<Self>> {
         let builder = gtk::Builder::from_string(UI);
 
         let create_btn = builder.get_object("create")?;
@@ -161,7 +161,7 @@ impl AssetDlg {
         let ticker4_label = builder.get_object("ticker4Label")?;
 
         let me = Rc::new(Self {
-            dialog: glade_load!(builder, "assetDlg")?,
+            dialog: glade_load!(builder, "assetDlg").ok()?,
 
             chain: RefCell::new(Chain::default()),
             inflation_cap_saved: RefCell::new(100000000_f64),
@@ -386,7 +386,7 @@ impl AssetDlg {
                 me.update_ui();
             }));
 
-        Ok(me)
+        Some(me)
     }
 }
 
