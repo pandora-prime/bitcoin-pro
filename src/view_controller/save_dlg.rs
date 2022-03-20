@@ -15,7 +15,7 @@ use gtk::prelude::*;
 use std::path::PathBuf;
 use std::rc::Rc;
 
-static UI: &'static str = include_str!("../view/file_save.glade");
+static UI: &str = include_str!("../view/file_save.glade");
 
 pub struct SaveDlg {
     dialog: gtk::FileChooserDialog,
@@ -58,7 +58,7 @@ impl SaveDlg {
             .connect_clicked(clone!(@weak self as me, @strong name => move |_| {
                 if let Some(mut path) = me.dialog.get_current_folder() {
                     me.dialog.hide();
-                    path.push(me.dialog.get_current_name().unwrap_or(name.clone().into()).as_str());
+                    path.push(me.dialog.get_current_name().unwrap_or_else(|| name.clone().into()).as_str());
                     on_save(path);
                 }
             }));

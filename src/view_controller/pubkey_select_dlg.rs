@@ -19,7 +19,7 @@ use gtk::ResponseType;
 
 use crate::model::{Document, TrackingAccount};
 
-static UI: &'static str = include_str!("../view/pubkey_select.glade");
+static UI: &str = include_str!("../view/pubkey_select.glade");
 
 #[derive(Debug, Display, From, Error)]
 #[display(doc_comments)]
@@ -82,7 +82,7 @@ impl PubkeySelectDlg {
 
         self.select_btn
             .connect_clicked(clone!(@weak self as me => move |_| {
-                match me.clone()
+                match me
                         .selected_pubkey()
                         .and_then(|k| doc.borrow().tracking_account_by_key(&k)) {
                     Some(tracking_account) => {

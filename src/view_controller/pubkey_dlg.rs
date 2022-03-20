@@ -11,6 +11,8 @@
 // along with this software.
 // If not, see <https://opensource.org/licenses/MIT>.
 
+#![allow(clippy::needless_borrow)] // TODO: Remove unce bug in amplify_derive is fixed
+
 use gtk::prelude::*;
 use std::ops::RangeInclusive;
 use std::rc::Rc;
@@ -32,7 +34,7 @@ use wallet::descriptor;
 use crate::model::TrackingAccount;
 use std::convert::TryFrom;
 
-static UI: &'static str = include_str!("../view/pubkey.glade");
+static UI: &str = include_str!("../view/pubkey.glade");
 
 #[derive(Debug, Display, From, Error)]
 #[display(doc_comments)]
@@ -551,7 +553,7 @@ impl PubkeyDlg {
                 index_ranges,
             })
         } else {
-            Err(Error::AccountXpubNeeded)?
+            Err(Error::AccountXpubNeeded)
         }
     }
 
@@ -728,8 +730,8 @@ impl PubkeyDlg {
             Some(0) => bitcoin::Network::Bitcoin,
             Some(1) => bitcoin::Network::Testnet,
             Some(2) => bitcoin::Network::Testnet,
-            None => Err(Error::UnspecifiedBlockchain)?,
-            _ => Err(Error::UnsupportedBlockchain)?,
+            None => return Err(Error::UnspecifiedBlockchain),
+            _ => return Err(Error::UnsupportedBlockchain),
         };
 
         let pk = if self.sk_radio.get_active() {
@@ -789,7 +791,7 @@ impl PubkeyDlg {
                             ));
                             Ok(pk)
                         } else {
-                            Err(Error::AccountXpubNeeded)?
+                            Err(Error::AccountXpubNeeded)
                         }
                     })?;
                 (pk, master)
@@ -810,7 +812,7 @@ impl PubkeyDlg {
                 master.fingerprint(),
                 derivation
                     .to_string()
-                    .strip_prefix("m")
+                    .strip_prefix('m')
                     .unwrap_or(&derivation.to_string())
             ));
             self.xpub_display.set_text(&xpubkey.to_string());
@@ -875,7 +877,7 @@ impl PubkeyDlg {
                 gtk::EntryIconPosition::Secondary,
                 Some(&err.to_string()),
             );
-            Err(err)?;
+            return Err(err);
         } else {
             self.name_field.set_icon_from_icon_name(
                 gtk::EntryIconPosition::Secondary,

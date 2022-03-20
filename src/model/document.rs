@@ -36,7 +36,7 @@ use std::net::SocketAddr;
 /// = dbe2b664ee4e81d3a55d53aeba1915c468927c79a03587ddfc5c3aec483028ab
 /// Check with `echo -n "pandoracore:bpro" | shasum -a 256`
 const DOC_MAGIC: u32 = 0xdbe2b664;
-const DOC_NAME: &'static str = "Untitled";
+const DOC_NAME: &str = "Untitled";
 lazy_static! {
     static ref DOC_NO: Mutex<u32> = Mutex::new(0);
 }
@@ -102,7 +102,6 @@ impl Document {
                     format!("{}{}", DOC_NAME, *DOC_NO.lock().unwrap())
                 }),
             profile,
-            ..Default::default()
         })
     }
 
@@ -397,14 +396,13 @@ impl Document {
         self.profile
             .utxo_cache
             .iter()
-            .find(|utxo| utxo.outpoint == outpoint)
-            .is_some()
+            .any(|utxo| utxo.outpoint == outpoint)
     }
 
     pub fn fill_asset_store(&self, store: &gtk::ListStore) {
         store.clear();
         self.profile.assets.iter().for_each(|(contract_id, _)| {
-            self.asset_by_id(*contract_id).map(|(asset, _)| {
+            if let Some((asset, _)) = self.asset_by_id(*contract_id) {
                 store.insert_with_values(
                     None,
                     &[0, 1, 2, 3, 4, 5, 6, 7],
@@ -418,12 +416,12 @@ impl Document {
                             rgb20::SupplyMeasure::KnownCirculating,
                         ),
                         &1,
-                        &(asset.known_inflation().len() > 0),
+                        &(!asset.known_inflation().is_empty()),
                         &0,
                         &contract_id.to_string(),
                     ],
                 );
-            });
+            };
         });
     }
 
@@ -444,7 +442,7 @@ impl Document {
     ) -> Result<bool, Error> {
         let contract_id = consignment.genesis.contract_id();
         if self.profile.assets.contains_key(&contract_id) {
-            Err(Error::DuplicatedContract(contract_id))?
+            return Err(Error::DuplicatedContract(contract_id));
         }
         self.profile.assets.insert(contract_id, consignment);
         self.save()

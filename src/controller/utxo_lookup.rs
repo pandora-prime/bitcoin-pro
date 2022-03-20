@@ -99,10 +99,8 @@ pub trait UtxoLookup {
             let response =
                 resolver.batch_script_list_unspent(request.iter())?;
             println!("Response:\n{:#?}", response);
-            for utxo in response
-                .into_iter()
-                .zip(lookup)
-                .map(|(list, item)| {
+            for utxo in
+                response.into_iter().zip(lookup).flat_map(|(list, item)| {
                     list.into_iter().map(move |res| {
                         UtxoEntry::with(
                             &res,
@@ -112,7 +110,6 @@ pub trait UtxoLookup {
                         )
                     })
                 })
-                .flatten()
             {
                 found += 1;
                 if utxo_set.borrow_mut().deref_mut().insert(utxo.clone()) {

@@ -15,7 +15,7 @@ use gtk::prelude::*;
 use std::path::PathBuf;
 use std::rc::Rc;
 
-static UI: &'static str = include_str!("../view/file_open.glade");
+static UI: &str = include_str!("../view/file_open.glade");
 
 pub struct OpenDlg {
     dialog: gtk::FileChooserDialog,

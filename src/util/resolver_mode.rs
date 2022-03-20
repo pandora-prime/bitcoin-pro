@@ -70,7 +70,7 @@ impl FromStr for ResolverModeType {
         } else if s == "while" {
             ResolverModeType::While
         } else {
-            Err(ParseError::UnrecognizedTypeName(s.to_owned()))?
+            return Err(ParseError::UnrecognizedTypeName(s.to_owned()));
         })
     }
 }
@@ -92,11 +92,7 @@ impl ResolverModeType {
         self == ResolverModeType::While
     }
     pub fn is_random(self) -> bool {
-        if let ResolverModeType::Random(_) = self {
-            true
-        } else {
-            false
-        }
+        matches!(self, ResolverModeType::Random(_))
     }
 }
 

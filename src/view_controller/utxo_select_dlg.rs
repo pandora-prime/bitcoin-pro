@@ -21,7 +21,7 @@ use bitcoin::{OutPoint, Txid};
 
 use crate::model::{Document, UtxoEntry};
 
-static UI: &'static str = include_str!("../view/utxo_select.glade");
+static UI: &str = include_str!("../view/utxo_select.glade");
 
 #[derive(Debug, Display, From, Error)]
 #[display(doc_comments)]
@@ -104,7 +104,7 @@ impl UtxoSelectDlg {
 
         self.select_btn
             .connect_clicked(clone!(@weak self as me => move |_| {
-                match me.clone()
+                match me
                         .selected_outpoint()
                         .and_then(|outpoint| {
                             doc.borrow().utxo_by_outpoint(outpoint)
@@ -148,7 +148,7 @@ impl UtxoSelectDlg {
     pub fn selected_outpoint(&self) -> Option<OutPoint> {
         self.utxo_selection
             .get_selected()
-            .map(|(model, iter)| {
+            .and_then(|(model, iter)| {
                 let txid = model
                     .get_value(&iter, 0)
                     .get::<String>()
@@ -162,6 +162,5 @@ impl UtxoSelectDlg {
                     model.get_value(&iter, 1).get::<u32>().ok().flatten();
                 vout.and_then(|vout| txid.map(|txid| OutPoint { txid, vout }))
             })
-            .flatten()
     }
 }

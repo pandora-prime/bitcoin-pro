@@ -24,7 +24,7 @@ use rgb::{AtomicValue, ContractId, Genesis, ToBech32};
 use crate::model::{DescriptorAccount, Document, UtxoEntry};
 use crate::view_controller::UtxoSelectDlg;
 
-static UI: &'static str = include_str!("../view/asset.glade");
+static UI: &str = include_str!("../view/asset.glade");
 
 #[derive(Debug, Display, From, Error)]
 #[display(doc_comments)]
@@ -286,11 +286,11 @@ impl AssetDlg {
         me.amount_spin.connect_value_changed(clone!(@weak me => move |_| {
             if let Some((outpoint, _, iter)) = me.selected_allocation_model() {
                 let value = me.amount_spin.get_value();
-                me.allocation
+                if let Some((_, amount)) = me.allocation
                     .borrow_mut()
                     .iter_mut()
                     .find(|(utxo, _)| utxo.outpoint == outpoint)
-                    .map(|(_, amount)| *amount = value);
+                    { *amount = value }
                 me.allocation_store.set_value(&iter, 4, &value.to_value());
             }
             me.update_ui();
@@ -323,11 +323,11 @@ impl AssetDlg {
 
         me.equal_radio.connect_toggled(clone!(@weak me => move |_| {
             if let Some((outpoint, _, iter)) = me.selected_inflation_model() {
-                me.inflation
+                if let Some((_, amount)) = me.inflation
                     .borrow_mut()
                     .iter_mut()
                     .find(|(utxo, _)| utxo.outpoint == outpoint)
-                    .map(|(_, amount)| *amount = None);
+                    { *amount = None }
                 me.inflation_store.set_value(&iter, 4, &"<equal part>".to_value());
                 me.custom_spin.set_value(me.equal_inflation_cap());
             }
@@ -346,7 +346,7 @@ impl AssetDlg {
                             }
                             *amount
                         });
-                    value.map(|value| me.custom_spin.set_value(value));
+                    if let Some(value) = value { me.custom_spin.set_value(value) }
                 }
             }));
 
@@ -458,8 +458,8 @@ impl AssetDlg {
                             .borrow()
                             .descriptor_by_template(&utxo.descriptor_template);
                         me.allocation_store.insert_with_values(None, &[0, 1, 2, 3, 4], &[
-                            &dg.as_ref().map(|g| g.descriptor()).unwrap_or(s!("-")),
-                            &dg.as_ref().map(|g| g.name()).unwrap_or(s!("<unknown descriptor>")),
+                            &dg.as_ref().map(|g| g.descriptor()).unwrap_or_else(|| s!("-")),
+                            &dg.as_ref().map(|g| g.name()).unwrap_or_else(|| s!("<unknown descriptor>")),
                             &utxo.amount,
                             &utxo.outpoint.to_string(),
                             &0,
@@ -482,8 +482,8 @@ impl AssetDlg {
                             .borrow()
                             .descriptor_by_template(&utxo.descriptor_template);
                         me.inflation_store.insert_with_values(None, &[0, 1, 2, 3, 4], &[
-                            &dg.as_ref().map(|g| g.descriptor()).unwrap_or(s!("-")),
-                            &dg.as_ref().map(|g| g.name()).unwrap_or(s!("<unknown descriptor>")),
+                            &dg.as_ref().map(|g| g.descriptor()).unwrap_or_else(|| s!("-")),
+                            &dg.as_ref().map(|g| g.name()).unwrap_or_else(|| s!("<unknown descriptor>")),
                             &utxo.amount,
                             &utxo.outpoint.to_string(),
                             &"<equal part>",
@@ -825,7 +825,7 @@ impl AssetDlg {
                 self.ticker_field.set_text(&ticker);
                 ticker
             })
-            .unwrap_or(s!("???"));
+            .unwrap_or_else(|| s!("???"));
         self.ticker1_label.set_text(&ticker);
         self.ticker2_label.set_text(&ticker);
         self.ticker3_label.set_text(&ticker);

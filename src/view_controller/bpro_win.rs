@@ -26,7 +26,7 @@ use rgb20::SupplyMeasure;
 use crate::model::Document;
 use crate::view_controller::{AssetDlg, DescriptorDlg, PubkeyDlg, SaveDlg};
 
-static UI: &'static str = include_str!("../view/bpro.glade");
+static UI: &str = include_str!("../view/bpro.glade");
 
 #[derive(Debug, Display, Error, From)]
 #[display(doc_comments)]
@@ -222,7 +222,7 @@ impl BproWin {
         me.borrow().pubkey_tree.get_selection().connect_changed(
             clone!(@weak me => move |_| {
                 let me = me.borrow();
-                if let Some(_) = me.pubkey_selection() {
+                if me.pubkey_selection().is_some() {
                     me.pubkey_edit_btn.set_sensitive(true);
                     me.pubkey_remove_btn.set_sensitive(true);
                 } else {
@@ -539,7 +539,7 @@ impl BproWin {
                             }),
                             &asset.accounting_supply(SupplyMeasure::KnownCirculating),
                             &1,
-                            &(asset.known_inflation().len() > 0),
+                            &(!asset.known_inflation().is_empty()),
                             &0,
                             &contract_id.to_string()
                         ],
@@ -596,10 +596,9 @@ impl BproWin {
             save_dlg.run(name, clone!(@strong doc, @weak tb => move |path| {
                 let mut path = path;
                 path.set_extension("bpro");
-                let _ = doc.borrow_mut().save_as(path).and_then(|_| {
+                if doc.borrow_mut().save_as(path).is_ok() {
                     tb.set_sensitive(false);
-                    Ok(())
-                });
+                }
             }), || {})
         }));
 
@@ -669,7 +668,7 @@ impl BproWin {
         utxo_tree
             .get_selection()
             .get_selected()
-            .map(|(model, iter)| {
+            .and_then(|(model, iter)| {
                 let txid = model
                     .get_value(&iter, 0)
                     .get::<String>()
@@ -681,12 +680,10 @@ impl BproWin {
                     .flatten();
                 let vout =
                     model.get_value(&iter, 1).get::<u32>().ok().flatten();
-                vout.map(|vout| {
+                vout.and_then(|vout| {
                     txid.map(|txid| (OutPoint { txid, vout }, model, iter))
                 })
-                .flatten()
             })
-            .flatten()
     }
 
     pub fn asset_selection(

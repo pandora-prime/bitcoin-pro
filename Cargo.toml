@@ -3,10 +3,11 @@ name = "bitcoin-pro"
 description = "Professional bitcoin accounts & assets management"
 version = "0.1.2"
 authors = ["Dr Maxim Orlovsky <orlovsky@pandoracore.com>"]
-edition = "2018"
+edition = "2021"
 license = "MIT"
 readme = "README.md"
 exclude = ["examples"]
+rust-version = "1.56.0"
 
 [[bin]]
 name = "bitcoin-pro"

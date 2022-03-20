@@ -12,6 +12,8 @@
 // If not, see <https://opensource.org/licenses/MIT>.
 
 #![allow(dead_code)]
+// TODO: Remove once bugs in amplify_derive and strict_encode are fixed
+#![allow(clippy::if_same_then_else, clippy::init_numbered_fields)]
 
 #[macro_use]
 extern crate amplify;

@@ -26,7 +26,7 @@ use crate::model::{
 use crate::util::resolver_mode::{self, ResolverModeType};
 use crate::view_controller::PubkeySelectDlg;
 
-static UI: &'static str = include_str!("../view/descriptor.glade");
+static UI: &str = include_str!("../view/descriptor.glade");
 
 #[derive(Debug, Display, From, Error)]
 #[display(doc_comments)]
@@ -454,7 +454,7 @@ impl DescriptorDlg {
 
         let name = self.name_entry.get_text().to_string();
         if name.is_empty() {
-            Err(Error::EmptyName)?;
+            return Err(Error::EmptyName);
         }
         Ok(DescriptorAccount {
             name,
@@ -469,7 +469,7 @@ impl DescriptorDlg {
         } else if self.multisig_radio.get_active() {
             let pubkeys = self.keyset.borrow().clone();
             if pubkeys.len() < 2 {
-                Err(Error::EmptyKeyset)?
+                return Err(Error::EmptyKeyset);
             }
             let threshold = Some(self.threshold_spin.get_value_as_int() as u8);
             descriptor::Template::MultiSig(descriptor::MultiSig {
@@ -489,29 +489,39 @@ impl DescriptorDlg {
                 .ok_or(Error::EmptyScript)?
                 .to_string();
             if source.is_empty() {
-                Err(Error::EmptyScript)?
+                return Err(Error::EmptyScript);
             }
             // TODO: Implement script parsing
+            #[allow(unused_variables)]
             let script = match self
                 .script_combo
                 .get_active_id()
                 .ok_or(Error::SourceTypeRequired)?
                 .as_str()
             {
-                "asm" => Err(Error::NotYetSupported(
-                    "Script parsing is not yet implemented",
-                ))?,
-                "hex" => Err(Error::NotYetSupported(
-                    "Script parsing is not yet implemented",
-                ))?,
-                "miniscript" => Err(Error::NotYetSupported(
-                    "Script parsing is not yet implemented",
-                ))?,
-                "policy" => Err(Error::NotYetSupported(
-                    "Script parsing is not yet implemented",
-                ))?,
-                _ => Err(Error::SourceTypeRequired)?,
+                "asm" => {
+                    return Err(Error::NotYetSupported(
+                        "Script parsing is not yet implemented",
+                    ))
+                }
+                "hex" => {
+                    return Err(Error::NotYetSupported(
+                        "Script parsing is not yet implemented",
+                    ))
+                }
+                "miniscript" => {
+                    return Err(Error::NotYetSupported(
+                        "Script parsing is not yet implemented",
+                    ))
+                }
+                "policy" => {
+                    return Err(Error::NotYetSupported(
+                        "Script parsing is not yet implemented",
+                    ))
+                }
+                _ => return Err(Error::SourceTypeRequired),
             };
+            #[allow(unreachable_code)]
             descriptor::Template::Scripted(ScriptSource {
                 script,
                 source: Some(source),
