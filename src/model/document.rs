@@ -16,11 +16,13 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use gtk::prelude::*;
+use once_cell::sync::Lazy;
 use std::collections::{BTreeMap, HashSet};
 use std::convert::TryFrom;
 use std::ffi::OsStr;
 use std::fs::{File, OpenOptions};
 use std::io::{self, Seek, SeekFrom};
+use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Mutex;
@@ -34,16 +36,13 @@ use rgb::{Consignment, ContractId, Genesis, Schema, SchemaId};
 use wallet::{descriptor, Psbt};
 
 use super::{operation, DescriptorAccount, TrackingAccount, UtxoEntry};
-use std::net::SocketAddr;
 
 /// Equals to first 4 bytes of SHA256("pandoracore:bpro")
 /// = dbe2b664ee4e81d3a55d53aeba1915c468927c79a03587ddfc5c3aec483028ab
 /// Check with `echo -n "pandoracore:bpro" | shasum -a 256`
 const DOC_MAGIC: u32 = 0xdbe2b664;
 const DOC_NAME: &str = "Untitled";
-lazy_static! {
-    static ref DOC_NO: Mutex<u32> = Mutex::new(0);
-}
+static DOC_NO: Lazy<Mutex<u32>> = Lazy::new(|| Mutex::new(0));
 
 #[derive(Clone, PartialEq, Eq, Debug, Display, From, Error)]
 #[display(doc_comments)]

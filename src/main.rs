@@ -26,8 +26,6 @@ extern crate amplify_derive;
 #[macro_use]
 extern crate lnpbp;
 #[macro_use]
-extern crate lazy_static;
-#[macro_use]
 extern crate glib;
 
 #[macro_export]
