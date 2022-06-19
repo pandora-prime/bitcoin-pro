@@ -25,8 +25,8 @@ use bitcoin::Script;
 use electrum_client::{
     Client as ElectrumClient, ElectrumApi, Error as ElectrumError,
 };
-use wallet::bip32::{ChildIndex, UnhardenedIndex};
-use wallet::descriptor;
+use wallet::descriptors;
+use wallet::hd::{SegmentIndexes, UnhardenedIndex};
 
 use crate::model::{DescriptorAccount, UtxoEntry};
 use crate::util::resolver_mode::ResolverModeType;
@@ -44,7 +44,7 @@ pub enum Error {
     HardenedIndex,
 
     /// Unable to generate key with index {0} for descriptor {1}: {2}
-    Descriptor(u32, String, descriptor::Error),
+    Descriptor(u32, String, descriptors::Error),
 }
 
 impl From<ElectrumError> for Error {
@@ -64,8 +64,8 @@ pub trait UtxoLookup {
     ) -> Result<usize, Error> {
         struct LookupItem<'a> {
             pub script_pubkey: Script,
-            pub descriptor_type: descriptor::Category,
-            pub descriptor_content: &'a descriptor::Template,
+            pub descriptor_type: descriptors::Category,
+            pub descriptor_content: &'a descriptors::Template,
             pub derivation_index: u32,
         }
 

@@ -18,14 +18,13 @@
 use std::collections::HashMap;
 
 use bitcoin::Script;
-use wallet::bip32::UnhardenedIndex;
-use wallet::descriptor;
+use wallet::descriptors;
+use wallet::hd::UnhardenedIndex;
 
 #[derive(Clone, PartialEq, Eq, Debug, StrictEncode, StrictDecode)]
-#[strict_encoding_crate(lnpbp::strict_encoding)]
 pub struct DescriptorAccount {
     pub name: String,
-    pub generator: descriptor::Generator,
+    pub generator: descriptors::Generator,
 }
 
 impl DescriptorAccount {
@@ -35,10 +34,10 @@ impl DescriptorAccount {
 
     pub fn type_name(&self) -> String {
         match self.generator.template {
-            descriptor::Template::SingleSig(_) => s!("Single-sig."),
-            descriptor::Template::MultiSig(_) => s!("Multi-sig."),
-            descriptor::Template::Scripted(_) => s!("Custom script"),
-            descriptor::Template::MuSigBranched(_) => s!("Tapscript"),
+            descriptors::Template::SingleSig(_) => s!("Single-sig."),
+            descriptors::Template::MultiSig(_) => s!("Multi-sig."),
+            descriptors::Template::Scripted(_) => s!("Custom script"),
+            descriptors::Template::MuSigBranched(_) => s!("Tapscript"),
             _ => s!("Unsupported"),
         }
     }
@@ -54,7 +53,8 @@ impl DescriptorAccount {
     pub fn pubkey_scripts(
         &self,
         index: UnhardenedIndex,
-    ) -> Result<HashMap<descriptor::Category, Script>, descriptor::Error> {
+    ) -> Result<HashMap<descriptors::Category, Script>, descriptors::Error>
+    {
         self.generator.pubkey_scripts(index)
     }
 }

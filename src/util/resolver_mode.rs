@@ -20,7 +20,7 @@ use std::ops::Range;
 use std::str::FromStr;
 
 use bitcoin::secp256k1::rand::{rngs::ThreadRng, thread_rng, RngCore};
-use wallet::bip32::{ChildIndex, UnhardenedIndex};
+use wallet::hd::{SegmentIndexes, UnhardenedIndex};
 
 #[derive(Clone, PartialEq, Eq, Debug, Display, From, Error)]
 #[display(doc_comments)]
@@ -83,8 +83,8 @@ impl ResolverModeType {
     pub fn count(self) -> usize {
         match self {
             ResolverModeType::While => 1usize,
-            ResolverModeType::First(count) => u32::from(count) as usize,
-            ResolverModeType::Random(count) => u32::from(count) as usize,
+            ResolverModeType::First(count) => count.first_index() as usize,
+            ResolverModeType::Random(count) => count.first_index() as usize,
         }
     }
 

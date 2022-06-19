@@ -30,10 +30,10 @@ use std::sync::Mutex;
 use bitcoin::OutPoint;
 use bitcoin::Transaction;
 use electrum_client::{Client as ElectrumClient, Error as ElectrumError};
-use lnpbp::strict_encoding::{self, StrictDecode, StrictEncode};
-use lnpbp::Chain;
+use lnpbp::chain::Chain;
 use rgb::{Consignment, ContractId, Genesis, Schema, SchemaId};
-use wallet::{descriptor, Psbt};
+use strict_encoding::{self, StrictDecode, StrictEncode};
+use wallet::psbt::Psbt;
 
 use super::{operation, DescriptorAccount, TrackingAccount, UtxoEntry};
 
@@ -410,19 +410,19 @@ impl Document {
                         (1, &asset.name()),
                         (
                             2,
-                            &asset.known_filtered_accounting_value(
-                                |allocation| {
-                                    self.is_outpoint_known(
-                                        *allocation.outpoint(),
-                                    )
-                                },
-                            ),
+                            &asset.known_filtered_value(|allocation| {
+                                self.is_outpoint_known(*allocation.outpoint())
+                            }),
                         ),
                         (
                             3,
-                            &asset.accounting_supply(
-                                rgb20::SupplyMeasure::KnownCirculating,
-                            ),
+                            &asset
+                                .precise_supply(
+                                    rgb20::SupplyMeasure::KnownCirculating,
+                                )
+                                .as_ref()
+                                .map(u64::to_string)
+                                .unwrap_or(s!("?")),
                         ),
                         (4, &1),
                         (5, &(!asset.known_inflation().is_empty())),

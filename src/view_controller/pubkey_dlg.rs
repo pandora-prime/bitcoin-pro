@@ -28,13 +28,10 @@ use bitcoin::util::bip32::{
 };
 use bitcoin::util::key;
 use gtk::gdk;
-use lnpbp::Chain;
+use lnpbp::chain::Chain;
 use miniscript::descriptor::DescriptorSinglePub;
-use slip132::{self, FromSlip132};
-use wallet::bip32::{
-    DerivationComponents, DerivationRangeVec, HardenedNormalSplit,
-};
-use wallet::descriptor;
+use wallet::hd::{HardenedNormalSplit, SegmentIndexes};
+use wallet::slip132::{self, FromSlip132};
 
 use crate::model::TrackingAccount;
 
@@ -522,11 +519,11 @@ impl PubkeyDlg {
             ExtendedPrivKey::from_slip132_str(&self.xpub_field.text())
         {
             let master_xpub =
-                ExtendedPubKey::from_private(&wallet::SECP256K1, &master_priv);
-            let branch_xpriv =
-                master_priv.derive_priv(&wallet::SECP256K1, &branch_path)?;
+                ExtendedPubKey::from_priv(&secp256k1::SECP256K1, &master_priv);
+            let branch_xpriv = master_priv
+                .derive_priv(&secp256k1::SECP256K1, branch_path.as_ref())?;
             let branch_xpub =
-                ExtendedPubKey::from_private(&wallet::SECP256K1, &branch_xpriv);
+                ExtendedPubKey::from_priv(&secp256k1::SECP256K1, &branch_xpriv);
             Ok(DerivationComponents {
                 master_xpub,
                 branch_xpub,
@@ -743,28 +740,30 @@ impl PubkeyDlg {
                 .hardened_normal_split()
                 .1
                 .into_iter()
-                .map(|index| ChildNumber::Normal { index })
+                .map(|index| ChildNumber::Normal {
+                    index: index.first_index(),
+                })
                 .collect::<DerivationPath>();
 
             let (xpubkey, master) = if let Ok(master_priv) =
                 ExtendedPrivKey::from_slip132_str(&self.xpub_field.text())
             {
-                let master = ExtendedPubKey::from_private(
-                    &wallet::SECP256K1,
+                let master = ExtendedPubKey::from_priv(
+                    &secp256k1::SECP256K1,
                     &master_priv,
                 );
                 self.account_field.set_sensitive(false);
-                let prv =
-                    master_priv.derive_priv(&wallet::SECP256K1, &derivation)?;
+                let prv = master_priv
+                    .derive_priv(&secp256k1::SECP256K1, &derivation)?;
                 (
-                    ExtendedPubKey::from_private(&wallet::SECP256K1, &prv),
+                    ExtendedPubKey::from_priv(&secp256k1::SECP256K1, &prv),
                     master,
                 )
             } else {
                 let master =
                     ExtendedPubKey::from_slip132_str(&self.xpub_field.text())?;
                 let pk = master
-                    .derive_pub(&wallet::SECP256K1, &derivation)
+                    .derive_pub(&secp256k1::SECP256K1, &derivation)
                     .map(|pk| {
                         self.account_field.set_sensitive(false);
                         pk
@@ -778,7 +777,7 @@ impl PubkeyDlg {
                                 &self.account_field.text(),
                             )?;
                             let pk = account.derive_pub(
-                                &wallet::SECP256K1,
+                                &secp256k1::SECP256K1,
                                 &terminal,
                             )?;
                             info_msg = Some(s!(
@@ -819,7 +818,7 @@ impl PubkeyDlg {
                     if let Some(ranges) = self.derivation_ranges()? {
                         (ranges.first_index(), ranges.last_index())
                     } else {
-                        (0, wallet::bip32::HARDENED_INDEX_BOUNDARY)
+                        (0, wallet::hd::HARDENED_INDEX_BOUNDARY)
                     };
                 self.offset_adj.set_lower(lower as f64);
                 self.offset_adj.set_upper(upper as f64);
@@ -838,14 +837,14 @@ impl PubkeyDlg {
         self.uncompressed_display.set_text(
             &bitcoin::PublicKey {
                 compressed: false,
-                key: pk.key,
+                inner: pk.key,
             }
             .to_string(),
         );
 
         let pkc = bitcoin::PublicKey {
             compressed: true,
-            key: pk.key,
+            inner: pk.key,
         };
         self.compressed_display.set_text(&pkc.to_string());
         self.xcoordonly_display.set_text("Not yet supported");

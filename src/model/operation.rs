@@ -17,5 +17,4 @@
 
 #[derive(Clone, PartialEq, Eq, Debug, Display, StrictEncode, StrictDecode)]
 #[display("")]
-#[strict_encoding_crate(lnpbp::strict_encoding)]
 pub struct LogEntry {}

@@ -14,20 +14,19 @@ name = "bitcoin-pro"
 
 [dependencies]
 # LNP/BP crates
-amplify = { version = "3", features = ["serde"] }
-amplify_derive = "2"
-lnpbp = { version = "0.4", features = ["serde"] }
-descriptor-wallet = { version = "0.4", features = ["serde"] }
-slip132 = { version = "0.3.3", features = ["serde"] }
-rgb-core = { version = "0.4.4", features = ["serde"] }
-rgb20 = { version = "0.4", features = ["serde"] }
+amplify = { version = "3.12.0", features = ["serde"] }
+strict_encoding = "1.8.8"
+lnpbp = { version = "0.7.0", features = ["serde"] }
+descriptor-wallet = { version = "0.7.1", features = ["serde"] }
+rgb-core = { version = "0.7.1", features = ["serde"] }
+rgb20 = { version = "0.7.0", features = ["serde"] }
 # rgb21 = { version = "0.3.0-beta.3", features = [] }
 # rgb22 = { version = "0.3.0-beta.3", features = [] }
 # rgb23 = { version = "0.3.0-beta.3", features = [] }
 # Bitcoin
-bitcoin = { version = "0.26", features = ["use-serde"] }
-miniscript = { version = "5", features = ["use-serde", "compiler"] }
-electrum-client = { version = "0.6" }
+bitcoin = { version = "0.28.1", features = ["use-serde"] }
+miniscript = { version = "7.0.0", features = ["use-serde", "compiler"] }
+electrum-client = { version = "0.10.1" }
 # Rust language
 once_cell = "1.12.0"
 # Serialization & parsing
@@ -36,9 +35,9 @@ serde_with = { version = "1.5", features = ["hex"] }
 serde_json = { version = "1" }
 serde_yaml = { version = "0.8" }
 toml = { version = "0.5" }
-bech32 = { version = "0.7" }
-base58 = { version = "0.1" }
-base64 = { version = "0.12" }
+bech32 = { version = "0.9" }
+base58 = { version = "0.2" }
+base64 = { version = "0.13" }
 # GTK+
 gtk = "0.15.5"
 glib = "0.15.11"

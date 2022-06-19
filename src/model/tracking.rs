@@ -15,13 +15,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use wallet::descriptor;
+use wallet::descriptors;
 
 #[derive(Getters, Clone, PartialEq, Eq, Debug, StrictEncode, StrictDecode)]
-#[strict_encoding_crate(lnpbp::strict_encoding)]
 pub struct TrackingAccount {
     pub name: String,
-    pub key: descriptor::SingleSig,
+    pub key: descriptors::SingleSig,
 }
 
 impl TrackingAccount {

@@ -22,7 +22,7 @@ use std::rc::Rc;
 use std::str::FromStr;
 
 use bitcoin::OutPoint;
-use lnpbp::Chain;
+use lnpbp::chain::Chain;
 use rgb::{AtomicValue, ContractId, Genesis, ToBech32};
 
 use crate::model::{DescriptorAccount, Document, UtxoEntry};

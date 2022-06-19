@@ -17,7 +17,7 @@
 
 use bitcoin::OutPoint;
 use electrum_client::ListUnspentRes;
-use wallet::descriptor;
+use wallet::descriptors;
 
 use super::DescriptorAccount;
 
@@ -33,22 +33,21 @@ use super::DescriptorAccount;
     StrictEncode,
     StrictDecode,
 )]
-#[strict_encoding_crate(lnpbp::strict_encoding)]
 #[display("{amount}@{outpoint} {descriptor_category}({descriptor_template})")]
 pub struct UtxoEntry {
     pub outpoint: OutPoint,
     pub height: u32,
     pub amount: u64,
-    pub descriptor_template: descriptor::Template,
-    pub descriptor_category: descriptor::Category,
+    pub descriptor_template: descriptors::Template,
+    pub descriptor_category: descriptors::Category,
     pub derivation_index: u32,
 }
 
 impl UtxoEntry {
     pub fn with(
         res: &ListUnspentRes,
-        descriptor_template: descriptor::Template,
-        descriptor_category: descriptor::Category,
+        descriptor_template: descriptors::Template,
+        descriptor_category: descriptors::Category,
         derivation_index: u32,
     ) -> Self {
         UtxoEntry {
