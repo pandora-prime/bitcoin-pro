@@ -27,6 +27,7 @@ use bitcoin::util::bip32::{
     self, ChildNumber, DerivationPath, ExtendedPrivKey, ExtendedPubKey,
 };
 use bitcoin::util::key;
+use gtk::gdk;
 use lnpbp::Chain;
 use miniscript::descriptor::DescriptorSinglePub;
 use slip132::{self, FromSlip132};
@@ -36,7 +37,6 @@ use wallet::bip32::{
 use wallet::descriptor;
 
 use crate::model::TrackingAccount;
-use std::convert::TryFrom;
 
 static UI: &str = include_str!("../view/pubkey.glade");
 
@@ -167,60 +167,60 @@ impl PubkeyDlg {
     pub fn load_glade() -> Option<Rc<Self>> {
         let builder = gtk::Builder::from_string(UI);
 
-        let save_btn = builder.get_object("save")?;
-        let cancel_btn = builder.get_object("cancel")?;
+        let save_btn = builder.object("save")?;
+        let cancel_btn = builder.object("cancel")?;
 
-        let msg_box = builder.get_object("messageBox")?;
-        let msg_image = builder.get_object("messageImage")?;
-        let msg_label = builder.get_object("messageLabel")?;
+        let msg_box = builder.object("messageBox")?;
+        let msg_image = builder.object("messageImage")?;
+        let msg_label = builder.object("messageLabel")?;
 
-        let name_field = builder.get_object("nameField")?;
-        let pubkey_field = builder.get_object("pubkeyField")?;
-        let xpub_field = builder.get_object("xpubField")?;
-        let account_field = builder.get_object("accountField")?;
-        let sk_radio = builder.get_object("singleKey")?;
-        let hd_radio = builder.get_object("hdKey")?;
-        let bip44_radio = builder.get_object("deriveBip44")?;
-        let custom_radio = builder.get_object("deriveCustom")?;
+        let name_field = builder.object("nameField")?;
+        let pubkey_field = builder.object("pubkeyField")?;
+        let xpub_field = builder.object("xpubField")?;
+        let account_field = builder.object("accountField")?;
+        let sk_radio = builder.object("singleKey")?;
+        let hd_radio = builder.object("hdKey")?;
+        let bip44_radio = builder.object("deriveBip44")?;
+        let custom_radio = builder.object("deriveCustom")?;
 
-        let purpose_combo = builder.get_object("purposeCombo")?;
-        let purpose_index = builder.get_object("purposeCounter")?;
-        let purpose_chk = builder.get_object("purposeCheck")?;
+        let purpose_combo = builder.object("purposeCombo")?;
+        let purpose_index = builder.object("purposeCounter")?;
+        let purpose_chk = builder.object("purposeCheck")?;
 
-        let asset_combo = builder.get_object("assetCombo")?;
-        let asset_index = builder.get_object("assetCounter")?;
-        let asset_chk = builder.get_object("assetCheck")?;
+        let asset_combo = builder.object("assetCombo")?;
+        let asset_index = builder.object("assetCounter")?;
+        let asset_chk = builder.object("assetCheck")?;
 
-        let account_index = builder.get_object("accountCounter")?;
-        let account_chk = builder.get_object("accountCheck")?;
+        let account_index = builder.object("accountCounter")?;
+        let account_chk = builder.object("accountCheck")?;
 
-        let change_combo = builder.get_object("changeCombo")?;
-        let change_index = builder.get_object("changeCounter")?;
-        let change_chk = builder.get_object("changeCheck")?;
+        let change_combo = builder.object("changeCombo")?;
+        let change_index = builder.object("changeCounter")?;
+        let change_chk = builder.object("changeCheck")?;
 
-        let range_chk = builder.get_object("rangeCheck")?;
-        let range_field = builder.get_object("rangeField")?;
-        let derivation_field = builder.get_object("derivationField")?;
+        let range_chk = builder.object("rangeCheck")?;
+        let range_field = builder.object("rangeField")?;
+        let derivation_field = builder.object("derivationField")?;
 
-        let network_combo = builder.get_object("blockchainCombo")?;
-        let offset_index = builder.get_object("exportIndex")?;
-        let offset_chk = builder.get_object("exportHCheck")?;
-        let offset_adj = builder.get_object("adjExport")?;
+        let network_combo = builder.object("blockchainCombo")?;
+        let offset_index = builder.object("exportIndex")?;
+        let offset_chk = builder.object("exportHCheck")?;
+        let offset_adj = builder.object("adjExport")?;
 
-        let xpubid_display = builder.get_object("xpubidDisplay")?;
-        let fingerprint_display = builder.get_object("fingerprintDisplay")?;
-        let derivation_display = builder.get_object("derivationDisplay")?;
-        let descriptor_display = builder.get_object("descriptorDisplay")?;
-        let xpub_display = builder.get_object("xpubDisplay")?;
+        let xpubid_display = builder.object("xpubidDisplay")?;
+        let fingerprint_display = builder.object("fingerprintDisplay")?;
+        let derivation_display = builder.object("derivationDisplay")?;
+        let descriptor_display = builder.object("descriptorDisplay")?;
+        let xpub_display = builder.object("xpubDisplay")?;
 
-        let uncompressed_display = builder.get_object("uncompressedDisplay")?;
-        let compressed_display = builder.get_object("compressedDisplay")?;
-        let xcoordonly_display = builder.get_object("xonlyDisplay")?;
+        let uncompressed_display = builder.object("uncompressedDisplay")?;
+        let compressed_display = builder.object("compressedDisplay")?;
+        let xcoordonly_display = builder.object("xonlyDisplay")?;
 
-        let pkh_display = builder.get_object("pkhDisplay")?;
-        let wpkh_display = builder.get_object("wpkhDisplay")?;
-        let wpkh_sh_display = builder.get_object("wpkhShDisplay")?;
-        let taproot_display = builder.get_object("taprootDisplay")?;
+        let pkh_display = builder.object("pkhDisplay")?;
+        let wpkh_display = builder.object("wpkhDisplay")?;
+        let wpkh_sh_display = builder.object("wpkhShDisplay")?;
+        let taproot_display = builder.object("taprootDisplay")?;
 
         let me = Rc::new(Self {
             dialog: glade_load!(builder, "pubkeyDlg").ok()?,
@@ -283,7 +283,7 @@ impl PubkeyDlg {
         }));
 
         me.range_chk.connect_toggled(clone!(@weak me => move |_| {
-            if me.range_chk.get_active() && me.range_field.get_text().is_empty() {
+            if me.range_chk.is_active() && me.range_field.text().is_empty() {
                 me.range_field.set_text(&format!("0-{}", u32::MAX));
             }
             me.set_key_type(PkType::Hd)
@@ -368,7 +368,7 @@ impl PubkeyDlg {
             &me.taproot_display,
         ] {
             ctl.connect_icon_press(clone!(@weak ctl, @weak me => move |_, _, _| {
-                let val = ctl.get_text();
+                let val = ctl.text();
                 gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD)
                     .set_text(&val);
                 me.display_info(format!("Value {} copied to clipboard", val));
@@ -450,19 +450,17 @@ impl PubkeyDlg {
     }
 
     pub fn tracking_account(&self) -> Result<TrackingAccount, Error> {
-        let key = if self.sk_radio.get_active() {
+        let key = if self.sk_radio.is_active() {
             descriptor::SingleSig::Pubkey(DescriptorSinglePub {
                 origin: None,
-                key: bitcoin::PublicKey::from_str(
-                    &self.pubkey_field.get_text(),
-                )?,
+                key: bitcoin::PublicKey::from_str(&self.pubkey_field.text())?,
             })
         } else {
             descriptor::SingleSig::XPubDerivable(self.derivation_components()?)
         };
 
         Ok(TrackingAccount {
-            name: self.name_field.get_text().to_string(),
+            name: self.name_field.text().to_string(),
             key,
         })
     }
@@ -471,32 +469,28 @@ impl PubkeyDlg {
         &self,
         extended: bool,
     ) -> Result<DerivationPath, Error> {
-        let mut derivation = if self.bip44_radio.get_active() {
+        let mut derivation = if self.bip44_radio.is_active() {
             DerivationPath::from_str(&format!(
                 "m/{}{}/{}{}/{}{}/{}{}",
-                self.purpose_index.get_value() as u32,
-                if self.purpose_chk.get_active() {
+                self.purpose_index.value() as u32,
+                if self.purpose_chk.is_active() {
                     "'"
                 } else {
                     ""
                 },
-                self.asset_index.get_value() as u32,
-                if self.asset_chk.get_active() { "'" } else { "" },
-                self.account_index.get_value() as u32,
-                if self.account_chk.get_active() {
+                self.asset_index.value() as u32,
+                if self.asset_chk.is_active() { "'" } else { "" },
+                self.account_index.value() as u32,
+                if self.account_chk.is_active() {
                     "'"
                 } else {
                     ""
                 },
-                self.change_index.get_value() as u32,
-                if self.change_chk.get_active() {
-                    "'"
-                } else {
-                    ""
-                }
+                self.change_index.value() as u32,
+                if self.change_chk.is_active() { "'" } else { "" }
             ))?
         } else {
-            DerivationPath::from_str(&self.derivation_field.get_text())?
+            DerivationPath::from_str(&self.derivation_field.text())?
         };
 
         if extended {
@@ -507,8 +501,8 @@ impl PubkeyDlg {
     }
 
     pub fn derivation_export_offset(&self) -> ChildNumber {
-        let index = self.offset_index.get_value() as u32;
-        if self.offset_chk.get_active() {
+        let index = self.offset_index.value() as u32;
+        if self.offset_chk.is_active() {
             ChildNumber::Hardened { index }
         } else {
             ChildNumber::Normal { index }
@@ -519,13 +513,13 @@ impl PubkeyDlg {
         let derivation = self.derivation_path(false)?;
         let (branch_path, terminal_path) = derivation.hardened_normal_split();
         let account_xpub =
-            ExtendedPubKey::from_slip132_str(&self.account_field.get_text());
+            ExtendedPubKey::from_slip132_str(&self.account_field.text());
         let master_xpub =
-            ExtendedPubKey::from_slip132_str(&self.xpub_field.get_text());
+            ExtendedPubKey::from_slip132_str(&self.xpub_field.text());
         let index_ranges = self.derivation_ranges()?;
 
         if let Ok(master_priv) =
-            ExtendedPrivKey::from_slip132_str(&self.xpub_field.get_text())
+            ExtendedPrivKey::from_slip132_str(&self.xpub_field.text())
         {
             let master_xpub =
                 ExtendedPubKey::from_private(&wallet::SECP256K1, &master_priv);
@@ -548,7 +542,7 @@ impl PubkeyDlg {
                 terminal_path,
                 index_ranges,
             })
-        } else if !self.account_field.get_text().is_empty() {
+        } else if !self.account_field.text().is_empty() {
             Ok(DerivationComponents {
                 master_xpub: master_xpub?,
                 branch_path,
@@ -564,12 +558,12 @@ impl PubkeyDlg {
     pub fn derivation_ranges(
         &self,
     ) -> Result<Option<DerivationRangeVec>, Error> {
-        if !self.range_chk.get_active() {
+        if !self.range_chk.is_active() {
             return Ok(None);
         }
         let mut index_ranges = vec![];
         for (pos, elem) in
-            self.range_field.get_text().as_str().split(',').enumerate()
+            self.range_field.text().as_str().split(',').enumerate()
         {
             let mut split = elem.trim().split('-');
             let range = match (split.next(), split.next(), split.next()) {
@@ -631,25 +625,25 @@ impl PubkeyDlg {
     }
 
     pub fn update_ui(&self) {
-        self.pubkey_field.set_sensitive(self.sk_radio.get_active());
-        self.xpub_field.set_sensitive(self.hd_radio.get_active());
-        self.account_field.set_sensitive(self.hd_radio.get_active());
+        self.pubkey_field.set_sensitive(self.sk_radio.is_active());
+        self.xpub_field.set_sensitive(self.hd_radio.is_active());
+        self.account_field.set_sensitive(self.hd_radio.is_active());
         self.derivation_field
-            .set_sensitive(self.custom_radio.get_active());
-        self.range_field.set_sensitive(self.range_chk.get_active());
-        self.range_chk.set_sensitive(self.hd_radio.get_active());
+            .set_sensitive(self.custom_radio.is_active());
+        self.range_field.set_sensitive(self.range_chk.is_active());
+        self.range_chk.set_sensitive(self.hd_radio.is_active());
 
-        self.offset_index.set_sensitive(self.hd_radio.get_active());
-        self.offset_chk.set_sensitive(self.hd_radio.get_active());
+        self.offset_index.set_sensitive(self.hd_radio.is_active());
+        self.offset_chk.set_sensitive(self.hd_radio.is_active());
 
         for ctl in &[&self.bip44_radio, &self.custom_radio] {
-            ctl.set_sensitive(self.hd_radio.get_active());
+            ctl.set_sensitive(self.hd_radio.is_active());
         }
 
         for ctl in &[&self.purpose_combo, &self.asset_combo, &self.change_combo]
         {
             ctl.set_sensitive(
-                self.hd_radio.get_active() && self.bip44_radio.get_active(),
+                self.hd_radio.is_active() && self.bip44_radio.is_active(),
             );
         }
 
@@ -660,7 +654,7 @@ impl PubkeyDlg {
             &self.change_index,
         ] {
             ctl.set_sensitive(
-                self.hd_radio.get_active() && self.bip44_radio.get_active(),
+                self.hd_radio.is_active() && self.bip44_radio.is_active(),
             );
         }
 
@@ -671,40 +665,40 @@ impl PubkeyDlg {
             &self.change_chk,
         ] {
             ctl.set_sensitive(
-                self.hd_radio.get_active() && self.bip44_radio.get_active(),
+                self.hd_radio.is_active() && self.bip44_radio.is_active(),
             );
         }
 
-        if self.purpose_combo.get_active() != Some(4) {
+        if self.purpose_combo.active() != Some(4) {
             self.purpose_index.set_sensitive(false);
             self.purpose_chk.set_sensitive(false);
             self.purpose_index.set_value(
                 self.purpose_combo
-                    .get_active_id()
+                    .active_id()
                     .map(|s| f64::from_str(&s).unwrap_or_default())
                     .unwrap_or_default(),
             );
             self.purpose_chk.set_active(true);
         }
 
-        if self.asset_combo.get_active() != Some(4) {
+        if self.asset_combo.active() != Some(4) {
             self.asset_index.set_sensitive(false);
             self.asset_chk.set_sensitive(false);
             self.asset_index.set_value(
                 self.asset_combo
-                    .get_active_id()
+                    .active_id()
                     .map(|s| f64::from_str(&s).unwrap_or_default())
                     .unwrap_or_default(),
             );
             self.asset_chk.set_active(true);
         }
 
-        if self.change_combo.get_active() != Some(2) {
+        if self.change_combo.active() != Some(2) {
             self.change_index.set_sensitive(false);
             self.change_chk.set_sensitive(false);
             self.change_index.set_value(
                 self.change_combo
-                    .get_active_id()
+                    .active_id()
                     .map(|s| f64::from_str(&s).unwrap_or_default())
                     .unwrap_or_default(),
             );
@@ -730,7 +724,7 @@ impl PubkeyDlg {
     pub fn update_ui_internal(&self) -> Result<Option<String>, Error> {
         let mut info_msg = None;
 
-        let network = match self.network_combo.get_active() {
+        let network = match self.network_combo.active() {
             Some(0) => bitcoin::Network::Bitcoin,
             Some(1) => bitcoin::Network::Testnet,
             Some(2) => bitcoin::Network::Testnet,
@@ -738,8 +732,8 @@ impl PubkeyDlg {
             _ => return Err(Error::UnsupportedBlockchain),
         };
 
-        let pk = if self.sk_radio.get_active() {
-            let pk_str = self.pubkey_field.get_text();
+        let pk = if self.sk_radio.is_active() {
+            let pk_str = self.pubkey_field.text();
             bitcoin::PublicKey::from_str(&pk_str)?
         } else {
             self.offset_chk.set_sensitive(true);
@@ -753,7 +747,7 @@ impl PubkeyDlg {
                 .collect::<DerivationPath>();
 
             let (xpubkey, master) = if let Ok(master_priv) =
-                ExtendedPrivKey::from_slip132_str(&self.xpub_field.get_text())
+                ExtendedPrivKey::from_slip132_str(&self.xpub_field.text())
             {
                 let master = ExtendedPubKey::from_private(
                     &wallet::SECP256K1,
@@ -767,9 +761,8 @@ impl PubkeyDlg {
                     master,
                 )
             } else {
-                let master = ExtendedPubKey::from_slip132_str(
-                    &self.xpub_field.get_text(),
-                )?;
+                let master =
+                    ExtendedPubKey::from_slip132_str(&self.xpub_field.text())?;
                 let pk = master
                     .derive_pub(&wallet::SECP256K1, &derivation)
                     .map(|pk| {
@@ -778,11 +771,11 @@ impl PubkeyDlg {
                     })
                     .or_else(|_| -> Result<ExtendedPubKey, Error> {
                         self.account_field.set_sensitive(true);
-                        if !self.account_field.get_text().is_empty() {
+                        if !self.account_field.text().is_empty() {
                             self.offset_chk.set_sensitive(false);
                             self.offset_chk.set_active(false);
                             let account = ExtendedPubKey::from_slip132_str(
-                                &self.account_field.get_text(),
+                                &self.account_field.text(),
                             )?;
                             let pk = account.derive_pub(
                                 &wallet::SECP256K1,
@@ -821,7 +814,7 @@ impl PubkeyDlg {
             ));
             self.xpub_display.set_text(&xpubkey.to_string());
 
-            if self.range_chk.get_active() {
+            if self.range_chk.is_active() {
                 let (lower, upper) =
                     if let Some(ranges) = self.derivation_ranges()? {
                         (ranges.first_index(), ranges.last_index())
@@ -831,10 +824,10 @@ impl PubkeyDlg {
                 self.offset_adj.set_lower(lower as f64);
                 self.offset_adj.set_upper(upper as f64);
 
-                if lower > self.offset_index.get_value_as_int() as u32 {
+                if lower > self.offset_index.value_as_int() as u32 {
                     self.offset_index.set_value(lower as f64);
                 }
-                if upper < self.offset_index.get_value_as_int() as u32 {
+                if upper < self.offset_index.value_as_int() as u32 {
                     self.offset_index.set_value(upper as f64);
                 }
             }
@@ -871,7 +864,7 @@ impl PubkeyDlg {
         );
         self.taproot_display.set_text("Not yet supported");
 
-        if self.name_field.get_text().is_empty() {
+        if self.name_field.text().is_empty() {
             let err = Error::EmptyName;
             self.name_field.set_icon_from_icon_name(
                 gtk::EntryIconPosition::Secondary,

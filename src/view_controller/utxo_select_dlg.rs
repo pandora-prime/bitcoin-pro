@@ -49,13 +49,13 @@ impl UtxoSelectDlg {
     pub fn load_glade() -> Option<Rc<Self>> {
         let builder = gtk::Builder::from_string(UI);
 
-        let descriptor_store = builder.get_object("locatorStore")?;
-        let descriptor_selection = builder.get_object("locatorSelection")?;
-        let utxo_store = builder.get_object("utxoStore")?;
-        let utxo_selection = builder.get_object("utxoSelection")?;
+        let descriptor_store = builder.object("locatorStore")?;
+        let descriptor_selection = builder.object("locatorSelection")?;
+        let utxo_store = builder.object("utxoStore")?;
+        let utxo_selection = builder.object("utxoSelection")?;
 
-        let select_btn = builder.get_object("select")?;
-        let cancel_btn = builder.get_object("cancel")?;
+        let select_btn = builder.object("select")?;
+        let cancel_btn = builder.object("cancel")?;
 
         let me = Rc::new(Self {
             dialog: glade_load!(builder, "utxoDlg").ok()?,
@@ -131,40 +131,35 @@ impl UtxoSelectDlg {
 
     pub fn update_ui(&self) {
         self.select_btn
-            .set_sensitive(self.utxo_selection.get_selected().is_some());
+            .set_sensitive(self.utxo_selection.selected().is_some());
     }
 
     pub fn descriptor_selection(
         &self,
     ) -> Option<(String, gtk::TreeModel, gtk::TreeIter)> {
         self.descriptor_selection
-            .get_selected()
+            .selected()
             .and_then(|(model, iter)| {
                 model
-                    .get_value(&iter, 2)
+                    .value(&iter, 2)
                     .get::<String>()
                     .ok()
-                    .flatten()
                     .map(|name| (name, model, iter))
             })
     }
 
     pub fn selected_outpoint(&self) -> Option<OutPoint> {
-        self.utxo_selection
-            .get_selected()
-            .and_then(|(model, iter)| {
-                let txid = model
-                    .get_value(&iter, 0)
-                    .get::<String>()
-                    .ok()
-                    .flatten()
-                    .map(|txid| Txid::from_str(&txid))
-                    .transpose()
-                    .ok()
-                    .flatten();
-                let vout =
-                    model.get_value(&iter, 1).get::<u32>().ok().flatten();
-                vout.and_then(|vout| txid.map(|txid| OutPoint { txid, vout }))
-            })
+        self.utxo_selection.selected().and_then(|(model, iter)| {
+            let txid = model
+                .value(&iter, 0)
+                .get::<String>()
+                .ok()
+                .map(|txid| Txid::from_str(&txid))
+                .transpose()
+                .ok()
+                .flatten();
+            let vout = model.value(&iter, 1).get::<u32>().ok();
+            vout.and_then(|vout| txid.map(|txid| OutPoint { txid, vout }))
+        })
     }
 }

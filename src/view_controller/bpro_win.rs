@@ -15,7 +15,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use gdk_pixbuf::{InterpType, PixbufLoader, PixbufLoaderExt};
+use gtk::gdk;
+use gtk::gdk_pixbuf::{InterpType, PixbufLoader};
 use gtk::prelude::*;
 use qrcode_generator::QrCodeEcc;
 use std::cell::RefCell;
@@ -89,46 +90,42 @@ impl BproWin {
 
         let builder = gtk::Builder::from_string(UI);
 
-        let new_btn: gtk::Button = builder.get_object("new")?;
-        let open_btn: gtk::Button = builder.get_object("open")?;
-        let header_bar: gtk::HeaderBar = builder.get_object("headerBar")?;
+        let new_btn: gtk::Button = builder.object("new")?;
+        let open_btn: gtk::Button = builder.object("open")?;
+        let header_bar: gtk::HeaderBar = builder.object("headerBar")?;
 
-        let pubkey_edit_btn = builder.get_object("pubkeyEdit")?;
-        let pubkey_remove_btn = builder.get_object("pubkeyRemove")?;
-        let descriptor_edit_btn = builder.get_object("descriptorEdit")?;
-        let descriptor_remove_btn = builder.get_object("descriptorRemove")?;
-        let utxo_descr_remove_btn = builder.get_object("utxoDescrRemove")?;
-        let utxo_descr_clear_btn = builder.get_object("utxoDescrClear")?;
-        let utxo_remove_btn = builder.get_object("utxoRemove")?;
-        let asset_remove_btn = builder.get_object("assetRemove")?;
+        let pubkey_edit_btn = builder.object("pubkeyEdit")?;
+        let pubkey_remove_btn = builder.object("pubkeyRemove")?;
+        let descriptor_edit_btn = builder.object("descriptorEdit")?;
+        let descriptor_remove_btn = builder.object("descriptorRemove")?;
+        let utxo_descr_remove_btn = builder.object("utxoDescrRemove")?;
+        let utxo_descr_clear_btn = builder.object("utxoDescrClear")?;
+        let utxo_remove_btn = builder.object("utxoRemove")?;
+        let asset_remove_btn = builder.object("assetRemove")?;
 
-        let pubkey_tree = builder.get_object("pubkeyTree")?;
-        let pubkey_store = builder.get_object("pubkeyStore")?;
-        let descriptor_tree = builder.get_object("locatorTree")?;
-        let descriptor_store = builder.get_object("locatorStore")?;
-        let utxo_descr_tree = builder.get_object("utxoDescrTree")?;
-        let utxo_descr_store = builder.get_object("utxoDescrStore")?;
-        let utxo_tree = builder.get_object("utxoTree")?;
-        let utxo_store = builder.get_object("utxoStore")?;
-        let asset_tree = builder.get_object("assetTree")?;
-        let asset_store = builder.get_object("assetStore")?;
+        let pubkey_tree = builder.object("pubkeyTree")?;
+        let pubkey_store = builder.object("pubkeyStore")?;
+        let descriptor_tree = builder.object("locatorTree")?;
+        let descriptor_store = builder.object("locatorStore")?;
+        let utxo_descr_tree = builder.object("utxoDescrTree")?;
+        let utxo_descr_store = builder.object("utxoDescrStore")?;
+        let utxo_tree = builder.object("utxoTree")?;
+        let utxo_store = builder.object("utxoStore")?;
+        let asset_tree = builder.object("assetTree")?;
+        let asset_store = builder.object("assetStore")?;
 
-        let asset_id_display = builder.get_object("assetIdDisplay")?;
-        let asset_genesis_display =
-            builder.get_object("assetGenesisDisplay")?;
-        let asset_contract_display =
-            builder.get_object("assetContractDisplay")?;
-        let asset_issued_display = builder.get_object("assetIssuedDisplay")?;
-        let asset_total_display = builder.get_object("assetTotalDisplay")?;
-        let asset_decimals_display =
-            builder.get_object("assetDecimalsDisplay")?;
-        let asset_qr_image = builder.get_object("assetQR")?;
+        let asset_id_display = builder.object("assetIdDisplay")?;
+        let asset_genesis_display = builder.object("assetGenesisDisplay")?;
+        let asset_contract_display = builder.object("assetContractDisplay")?;
+        let asset_issued_display = builder.object("assetIssuedDisplay")?;
+        let asset_total_display = builder.object("assetTotalDisplay")?;
+        let asset_decimals_display = builder.object("assetDecimalsDisplay")?;
+        let asset_qr_image = builder.object("assetQR")?;
 
-        let chain_combo: gtk::ComboBox = builder.get_object("chainCombo")?;
-        let electrum_radio: gtk::RadioButton =
-            builder.get_object("electrum")?;
-        let electrum_field: gtk::Entry = builder.get_object("electrumField")?;
-        let electrum_btn: gtk::Button = builder.get_object("electrumBtn")?;
+        let chain_combo: gtk::ComboBox = builder.object("chainCombo")?;
+        let electrum_radio: gtk::RadioButton = builder.object("electrum")?;
+        let electrum_field: gtk::Entry = builder.object("electrumField")?;
+        let electrum_btn: gtk::Button = builder.object("electrumBtn")?;
 
         doc.borrow().fill_tracking_store(&pubkey_store);
         doc.borrow().fill_descriptor_store(&descriptor_store);
@@ -175,7 +172,7 @@ impl BproWin {
 
         chain_combo.connect_changed(
             clone!(@weak chain_combo, @strong doc => move |_| {
-                if let Some(chain_name) = chain_combo.get_active_id() {
+                if let Some(chain_name) = chain_combo.active_id() {
                     let _ = doc.borrow_mut().set_chain(&chain_name);
                 }
             }),
@@ -183,19 +180,19 @@ impl BproWin {
 
         electrum_field.connect_changed(
             clone!(@strong doc, @weak electrum_field => move |_| {
-                match electrum_field.get_text().to_string().parse() {
+                match electrum_field.text().to_string().parse() {
                     Ok(addr) => {
-                        electrum_field.set_property_secondary_icon_name(None);
-                        electrum_field.set_property_secondary_icon_tooltip_text(
+                        electrum_field.set_secondary_icon_name(None);
+                        electrum_field.set_secondary_icon_tooltip_text(
                             Some("")
                         );
                         let _ = doc.borrow_mut().set_electrum(addr);
                     }
                     Err(err) => {
-                        electrum_field.set_property_secondary_icon_name(
+                        electrum_field.set_secondary_icon_name(
                             Some("dialog-error")
                         );
-                        electrum_field.set_property_secondary_icon_tooltip_text(
+                        electrum_field.set_secondary_icon_tooltip_text(
                             Some(&err.to_string())
                         );
                     }
@@ -206,24 +203,24 @@ impl BproWin {
         electrum_btn.connect_clicked(
             clone!(@strong doc, @weak electrum_field => move |_| {
                 if let Err(err) = doc.borrow().resolver() {
-                    electrum_field.set_property_secondary_icon_name(
+                    electrum_field.set_secondary_icon_name(
                         Some("dialog-error")
                     );
-                    electrum_field.set_property_secondary_icon_tooltip_text(
+                    electrum_field.set_secondary_icon_tooltip_text(
                         Some(&err.to_string())
                     );
                 } else {
-                    electrum_field.set_property_secondary_icon_name(
+                    electrum_field.set_secondary_icon_name(
                         Some("dialog-ok")
                     );
-                    electrum_field.set_property_secondary_icon_tooltip_text(
+                    electrum_field.set_secondary_icon_tooltip_text(
                         Some("")
                     );
                 }
             }),
         );
 
-        me.borrow().pubkey_tree.get_selection().connect_changed(
+        me.borrow().pubkey_tree.selection().connect_changed(
             clone!(@weak me => move |_| {
                 let me = me.borrow();
                 if me.pubkey_selection().is_some() {
@@ -236,7 +233,7 @@ impl BproWin {
             }),
         );
 
-        let tb: gtk::ToolButton = builder.get_object("pubkeyAdd")?;
+        let tb: gtk::ToolButton = builder.object("pubkeyAdd")?;
         tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
             let pubkey_dlg = PubkeyDlg::load_glade().expect("Must load");
             let chain = doc.borrow().chain().clone();
@@ -245,12 +242,7 @@ impl BproWin {
                     let me = me.borrow();
                     me.pubkey_store.insert_with_values(
                         None,
-                        &[0, 1, 2],
-                        &[
-                            &tracking_account.name(),
-                            &tracking_account.details(),
-                            &tracking_account.count(),
-                        ],
+                        &[(0, &tracking_account.name()), (1, &tracking_account.details()), (2, &tracking_account.count())]
                     );
                     let _ = doc.borrow_mut().add_tracking_account(tracking_account);
                 }),
@@ -305,7 +297,7 @@ impl BproWin {
             }
         }));
 
-        me.borrow().descriptor_tree.get_selection().connect_changed(
+        me.borrow().descriptor_tree.selection().connect_changed(
             clone!(@weak me, @strong doc => move |_| {
                 let me = me.borrow();
                 me.utxo_descr_store.clear();
@@ -319,11 +311,11 @@ impl BproWin {
                     me.descriptor_edit_btn.set_sensitive(false);
                     me.descriptor_remove_btn.set_sensitive(false);
                 }
-                me.utxo_descr_clear_btn.set_sensitive(me.utxo_descr_store.get_iter_first().is_some());
+                me.utxo_descr_clear_btn.set_sensitive(me.utxo_descr_store.iter_first().is_some());
             }),
         );
 
-        let tb: gtk::ToolButton = builder.get_object("descriptorAdd")?;
+        let tb: gtk::ToolButton = builder.object("descriptorAdd")?;
         tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
             let descriptor_dlg = DescriptorDlg::load_glade().expect("Must load");
             descriptor_dlg.run(doc.clone(), None, clone!(@weak me, @strong doc =>
@@ -331,11 +323,10 @@ impl BproWin {
                     let me = me.borrow();
                     me.descriptor_store.insert_with_values(
                         None,
-                        &[0, 1, 2],
                         &[
-                            &descriptor_generator.name(),
-                            &descriptor_generator.type_name(),
-                            &descriptor_generator.descriptor(),
+                            (0, &descriptor_generator.name()),
+                            (1, &descriptor_generator.type_name()),
+                            (2, &descriptor_generator.descriptor()),
                         ],
                     );
                     let _ = doc.borrow_mut().add_descriptor(descriptor_generator);
@@ -396,10 +387,10 @@ impl BproWin {
             }
         }));
 
-        me.borrow().utxo_descr_tree.get_selection().connect_changed(
+        me.borrow().utxo_descr_tree.selection().connect_changed(
             clone!(@weak me => move |_| {
                 let me = me.borrow();
-                me.utxo_descr_remove_btn.set_sensitive(me.utxo_descr_tree.get_selection().get_selected().is_some());
+                me.utxo_descr_remove_btn.set_sensitive(me.utxo_descr_tree.selection().selected().is_some());
             }),
         );
 
@@ -450,10 +441,10 @@ impl BproWin {
             }
         }));
 
-        me.borrow().utxo_tree.get_selection().connect_changed(
+        me.borrow().utxo_tree.selection().connect_changed(
             clone!(@weak me => move |_| {
                 let me = me.borrow();
-                me.utxo_remove_btn.set_sensitive(me.utxo_tree.get_selection().get_selected().is_some());
+                me.utxo_remove_btn.set_sensitive(me.utxo_tree.selection().selected().is_some());
             }),
         );
 
@@ -483,13 +474,13 @@ impl BproWin {
                     } else {
                         me.utxo_descr_store.clear();
                     }
-                    me.utxo_descr_clear_btn.set_sensitive(me.utxo_descr_store.get_iter_first().is_some());
+                    me.utxo_descr_clear_btn.set_sensitive(me.utxo_descr_store.iter_first().is_some());
                 }
                 dlg.hide();
             }
         }));
 
-        me.borrow().asset_tree.get_selection().connect_changed(
+        me.borrow().asset_tree.selection().connect_changed(
             clone!(@weak me, @strong doc => move |_| {
                 let me = me.borrow();
                 if let Some((id, _, _)) = me.asset_selection() {
@@ -512,7 +503,7 @@ impl BproWin {
                             .and_then(|vec| {
                                 let loader = PixbufLoader::new();
                                 loader.write(&vec).ok()?;
-                                loader.get_pixbuf()
+                                loader.pixbuf()
                             }).and_then(|pixbuf| {
                                 pixbuf.scale_simple(250, 250, InterpType::Bilinear)
                             });
@@ -524,7 +515,7 @@ impl BproWin {
             }),
         );
 
-        let tb: gtk::ToolButton = builder.get_object("assetCreate")?;
+        let tb: gtk::ToolButton = builder.object("assetCreate")?;
         tb.connect_clicked(clone!(@weak me, @strong doc => move |_| {
             let issue_dlg = AssetDlg::load_glade().expect("Must load");
             issue_dlg.run(doc.clone(), None, clone!(@weak me, @strong doc =>
@@ -534,18 +525,17 @@ impl BproWin {
                     let me = me.borrow();
                     me.asset_store.insert_with_values(
                         None,
-                        &[0, 1, 2, 3, 4, 5, 6, 7],
                         &[
-                            &asset.ticker(),
-                            &asset.name(),
-                            &asset.known_filtered_accounting_value(|allocation| {
+                            (0, &asset.ticker()),
+                            (1, &asset.name()),
+                            (2, &asset.known_filtered_accounting_value(|allocation| {
                                 doc.borrow().is_outpoint_known(*allocation.outpoint())
-                            }),
-                            &asset.accounting_supply(SupplyMeasure::KnownCirculating),
-                            &1,
-                            &(!asset.known_inflation().is_empty()),
-                            &0,
-                            &contract_id.to_string()
+                            })),
+                            (3, &asset.accounting_supply(SupplyMeasure::KnownCirculating)),
+                            (4, &1),
+                            (5, &(!asset.known_inflation().is_empty())),
+                            (6, &0),
+                            (7, &contract_id.to_string())
                         ],
                     );
                     let _ = doc.borrow_mut().add_asset(consignment);
@@ -586,13 +576,13 @@ impl BproWin {
             &me.borrow().asset_decimals_display,
         ] {
             ctl.connect_icon_press(clone!(@weak ctl => move |_, _, _| {
-                let val = ctl.get_text();
+                let val = ctl.text();
                 gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD)
                     .set_text(&val);
             }));
         }
 
-        let tb: gtk::Button = builder.get_object("save")?;
+        let tb: gtk::Button = builder.object("save")?;
         tb.set_sensitive(needs_save);
         tb.connect_clicked(clone!(@strong doc, @weak tb => move |_| {
             let save_dlg = SaveDlg::load_glade().expect("Must load");
@@ -638,30 +628,29 @@ impl BproWin {
     pub fn pubkey_selection(
         &self,
     ) -> Option<(String, gtk::TreeModel, gtk::TreeIter)> {
-        self.pubkey_tree.get_selection().get_selected().and_then(
-            |(model, iter)| {
+        self.pubkey_tree
+            .selection()
+            .selected()
+            .and_then(|(model, iter)| {
                 model
-                    .get_value(&iter, 1)
+                    .value(&iter, 1)
                     .get::<String>()
                     .ok()
-                    .flatten()
                     .map(|keyname| (keyname, model, iter))
-            },
-        )
+            })
     }
 
     pub fn descriptor_selection(
         &self,
     ) -> Option<(String, gtk::TreeModel, gtk::TreeIter)> {
         self.descriptor_tree
-            .get_selection()
-            .get_selected()
+            .selection()
+            .selected()
             .and_then(|(model, iter)| {
                 model
-                    .get_value(&iter, 2)
+                    .value(&iter, 2)
                     .get::<String>()
                     .ok()
-                    .flatten()
                     .map(|name| (name, model, iter))
             })
     }
@@ -669,41 +658,36 @@ impl BproWin {
     pub fn utxo_selection(
         utxo_tree: &gtk::TreeView,
     ) -> Option<(OutPoint, gtk::TreeModel, gtk::TreeIter)> {
-        utxo_tree
-            .get_selection()
-            .get_selected()
-            .and_then(|(model, iter)| {
-                let txid = model
-                    .get_value(&iter, 0)
-                    .get::<String>()
-                    .ok()
-                    .flatten()
-                    .map(|txid| Txid::from_str(&txid))
-                    .transpose()
-                    .ok()
-                    .flatten();
-                let vout =
-                    model.get_value(&iter, 1).get::<u32>().ok().flatten();
-                vout.and_then(|vout| {
-                    txid.map(|txid| (OutPoint { txid, vout }, model, iter))
-                })
+        utxo_tree.selection().selected().and_then(|(model, iter)| {
+            let txid = model
+                .value(&iter, 0)
+                .get::<String>()
+                .ok()
+                .map(|txid| Txid::from_str(&txid))
+                .transpose()
+                .ok()
+                .flatten();
+            let vout = model.value(&iter, 1).get::<u32>().ok();
+            vout.and_then(|vout| {
+                txid.map(|txid| (OutPoint { txid, vout }, model, iter))
             })
+        })
     }
 
     pub fn asset_selection(
         &self,
     ) -> Option<(ContractId, gtk::TreeModel, gtk::TreeIter)> {
-        self.asset_tree.get_selection().get_selected().and_then(
-            |(model, iter)| {
+        self.asset_tree
+            .selection()
+            .selected()
+            .and_then(|(model, iter)| {
                 model
-                    .get_value(&iter, 7)
+                    .value(&iter, 7)
                     .get::<String>()
                     .ok()
-                    .flatten()
                     .and_then(|s| s.parse().ok())
                     .map(|id| (id, model, iter))
-            },
-        )
+            })
     }
 
     pub fn update_ui(&self) {}

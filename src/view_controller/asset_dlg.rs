@@ -110,59 +110,59 @@ impl AssetDlg {
     pub fn load_glade() -> Option<Rc<Self>> {
         let builder = gtk::Builder::from_string(UI);
 
-        let create_btn = builder.get_object("create")?;
-        let cancel_btn = builder.get_object("cancel")?;
+        let create_btn = builder.object("create")?;
+        let cancel_btn = builder.object("cancel")?;
 
-        let msg_box = builder.get_object("messageBox")?;
-        let msg_image = builder.get_object("messageImage")?;
-        let msg_label = builder.get_object("messageLabel")?;
+        let msg_box = builder.object("messageBox")?;
+        let msg_image = builder.object("messageImage")?;
+        let msg_label = builder.object("messageLabel")?;
 
-        let id_field = builder.get_object("idField")?;
-        let chain_combo = builder.get_object("chainCombo")?;
-        let ticker_field = builder.get_object("tickerField")?;
-        let title_field = builder.get_object("titleField")?;
-        let fract_spin = builder.get_object("fractSpin")?;
-        let fract_adj = builder.get_object("fractAdj")?;
-        let renomen_check = builder.get_object("renomenCheck")?;
-        let renomen_btn = builder.get_object("renomenBtn")?;
-        let renomen_field = builder.get_object("renomenEntry")?;
-        let epoch_check = builder.get_object("epochCheck")?;
-        let epoch_btn = builder.get_object("epochBtn")?;
-        let epoch_field = builder.get_object("epochEntry")?;
-        let inflation_check = builder.get_object("inflationCheck")?;
-        let inflation_combo = builder.get_object("inflationCombo")?;
-        let inflation_spin = builder.get_object("inflationSpin")?;
-        let inflation_adj = builder.get_object("inflationAdj")?;
-        let contract_check = builder.get_object("contractCheck")?;
-        let contract_text = builder.get_object("contractText")?;
-        let contract_buffer = builder.get_object("contractBuffer")?;
+        let id_field = builder.object("idField")?;
+        let chain_combo = builder.object("chainCombo")?;
+        let ticker_field = builder.object("tickerField")?;
+        let title_field = builder.object("titleField")?;
+        let fract_spin = builder.object("fractSpin")?;
+        let fract_adj = builder.object("fractAdj")?;
+        let renomen_check = builder.object("renomenCheck")?;
+        let renomen_btn = builder.object("renomenBtn")?;
+        let renomen_field = builder.object("renomenEntry")?;
+        let epoch_check = builder.object("epochCheck")?;
+        let epoch_btn = builder.object("epochBtn")?;
+        let epoch_field = builder.object("epochEntry")?;
+        let inflation_check = builder.object("inflationCheck")?;
+        let inflation_combo = builder.object("inflationCombo")?;
+        let inflation_spin = builder.object("inflationSpin")?;
+        let inflation_adj = builder.object("inflationAdj")?;
+        let contract_check = builder.object("contractCheck")?;
+        let contract_text = builder.object("contractText")?;
+        let contract_buffer = builder.object("contractBuffer")?;
 
-        let allocation_tree = builder.get_object("allocationTree")?;
-        let allocation_store = builder.get_object("allocationStore")?;
-        let inflation_tree = builder.get_object("inflationTree")?;
-        let inflation_store = builder.get_object("inflationStore")?;
+        let allocation_tree = builder.object("allocationTree")?;
+        let allocation_store = builder.object("allocationStore")?;
+        let inflation_tree = builder.object("inflationTree")?;
+        let inflation_store = builder.object("inflationStore")?;
 
-        let allocation_add_btn = builder.get_object("allocationAdd")?;
-        let allocation_remove_btn = builder.get_object("allocationRemove")?;
-        let inflation_add_btn = builder.get_object("inflationAdd")?;
-        let inflation_remove_btn = builder.get_object("inflationRemove")?;
-        let amount_spin = builder.get_object("amountSpin")?;
-        let amount_adj = builder.get_object("amountAdj")?;
-        let equal_radio = builder.get_object("equalRadio")?;
-        let custom_radio = builder.get_object("customRadio")?;
-        let custom_spin = builder.get_object("customSpin")?;
-        let custom_adj = builder.get_object("customAdj")?;
+        let allocation_add_btn = builder.object("allocationAdd")?;
+        let allocation_remove_btn = builder.object("allocationRemove")?;
+        let inflation_add_btn = builder.object("inflationAdd")?;
+        let inflation_remove_btn = builder.object("inflationRemove")?;
+        let amount_spin = builder.object("amountSpin")?;
+        let amount_adj = builder.object("amountAdj")?;
+        let equal_radio = builder.object("equalRadio")?;
+        let custom_radio = builder.object("customRadio")?;
+        let custom_spin = builder.object("customSpin")?;
+        let custom_adj = builder.object("customAdj")?;
 
-        let issue_cap_display = builder.get_object("issueAcc")?;
-        let inflation_cap_display = builder.get_object("inflationAcc")?;
-        let total_cap_display = builder.get_object("totalAcc")?;
-        let issue_amount_display = builder.get_object("issueAtomic")?;
-        let inflation_amount_display = builder.get_object("inflationAtomic")?;
-        let total_amount_display = builder.get_object("totalAtomic")?;
-        let ticker1_label = builder.get_object("ticker1Label")?;
-        let ticker2_label = builder.get_object("ticker2Label")?;
-        let ticker3_label = builder.get_object("ticker3Label")?;
-        let ticker4_label = builder.get_object("ticker4Label")?;
+        let issue_cap_display = builder.object("issueAcc")?;
+        let inflation_cap_display = builder.object("inflationAcc")?;
+        let total_cap_display = builder.object("totalAcc")?;
+        let issue_amount_display = builder.object("issueAtomic")?;
+        let inflation_amount_display = builder.object("inflationAtomic")?;
+        let total_amount_display = builder.object("totalAtomic")?;
+        let ticker1_label = builder.object("ticker1Label")?;
+        let ticker2_label = builder.object("ticker2Label")?;
+        let ticker3_label = builder.object("ticker3Label")?;
+        let ticker4_label = builder.object("ticker4Label")?;
 
         let me = Rc::new(Self {
             dialog: glade_load!(builder, "assetDlg").ok()?,
@@ -264,8 +264,8 @@ impl AssetDlg {
             }));
 
         for ctl in &[
-            &me.allocation_tree.get_selection(),
-            &me.inflation_tree.get_selection(),
+            &me.allocation_tree.selection(),
+            &me.inflation_tree.selection(),
         ] {
             ctl.connect_changed(clone!(@weak me => move |_| {
                 if let Some((_, amount)) = me.selected_allocation() {
@@ -289,7 +289,7 @@ impl AssetDlg {
 
         me.amount_spin.connect_value_changed(clone!(@weak me => move |_| {
             if let Some((outpoint, _, iter)) = me.selected_allocation_model() {
-                let value = me.amount_spin.get_value();
+                let value = me.amount_spin.value();
                 if let Some((_, amount)) = me.allocation
                     .borrow_mut()
                     .iter_mut()
@@ -302,7 +302,7 @@ impl AssetDlg {
 
         me.custom_spin.connect_value_changed(clone!(@weak me => move |_| {
             if let Some((outpoint, _, iter)) = me.selected_inflation_model() {
-                let value = me.custom_spin.get_value();
+                let value = me.custom_spin.value();
                     let value = me.inflation
                     .borrow_mut()
                     .iter_mut()
@@ -461,12 +461,12 @@ impl AssetDlg {
                         let dg = doc
                             .borrow()
                             .descriptor_by_template(&utxo.descriptor_template);
-                        me.allocation_store.insert_with_values(None, &[0, 1, 2, 3, 4], &[
-                            &dg.as_ref().map(|g| g.descriptor()).unwrap_or_else(|| s!("-")),
-                            &dg.as_ref().map(|g| g.name()).unwrap_or_else(|| s!("<unknown descriptor>")),
-                            &utxo.amount,
-                            &utxo.outpoint.to_string(),
-                            &0,
+                        me.allocation_store.insert_with_values(None, &[
+                            (0, &dg.as_ref().map(|g| g.descriptor()).unwrap_or_else(|| s!("-"))),
+                            (1, &dg.as_ref().map(|g| g.name()).unwrap_or_else(|| s!("<unknown descriptor>"))),
+                            (2, &utxo.amount),
+                            (3, &utxo.outpoint.to_string()),
+                            (4, &0)
                         ]);
                         me.allocation.borrow_mut().insert(utxo, 0.0);
                     }),
@@ -485,12 +485,12 @@ impl AssetDlg {
                         let dg = doc
                             .borrow()
                             .descriptor_by_template(&utxo.descriptor_template);
-                        me.inflation_store.insert_with_values(None, &[0, 1, 2, 3, 4], &[
-                            &dg.as_ref().map(|g| g.descriptor()).unwrap_or_else(|| s!("-")),
-                            &dg.as_ref().map(|g| g.name()).unwrap_or_else(|| s!("<unknown descriptor>")),
-                            &utxo.amount,
-                            &utxo.outpoint.to_string(),
-                            &"<equal part>",
+                        me.inflation_store.insert_with_values(None, &[
+                            (0, &dg.as_ref().map(|g| g.descriptor()).unwrap_or_else(|| s!("-"))),
+                            (1, &dg.as_ref().map(|g| g.name()).unwrap_or_else(|| s!("<unknown descriptor>"))),
+                            (2, &utxo.amount),
+                            (3, &utxo.outpoint.to_string()),
+                            (4, &"<equal part>")
                         ]);
                         me.inflation.borrow_mut().insert(utxo, None);
                         me.custom_spin.set_value(me.equal_inflation_cap());
@@ -556,7 +556,7 @@ impl AssetDlg {
     }
 
     pub fn asset_ticker(&self) -> Option<String> {
-        let ticker = self.ticker_field.get_text().to_string();
+        let ticker = self.ticker_field.text().to_string();
         if ticker.is_empty() {
             None
         } else {
@@ -565,7 +565,7 @@ impl AssetDlg {
     }
 
     pub fn asset_title(&self) -> Option<String> {
-        let title = self.title_field.get_text().to_string();
+        let title = self.title_field.text().to_string();
         if title.is_empty() {
             None
         } else {
@@ -574,11 +574,11 @@ impl AssetDlg {
     }
 
     pub fn asset_contract(&self) -> Option<String> {
-        if self.contract_check.get_active() {
+        if self.contract_check.is_active() {
             self.contract_buffer
-                .get_text(
-                    &self.contract_buffer.get_start_iter(),
-                    &self.contract_buffer.get_end_iter(),
+                .text(
+                    &self.contract_buffer.start_iter(),
+                    &self.contract_buffer.end_iter(),
                     false,
                 )
                 .and_then(|text| {
@@ -595,7 +595,7 @@ impl AssetDlg {
     }
 
     pub fn asset_fractionals(&self) -> u8 {
-        self.fract_spin.get_value_as_int() as u8
+        self.fract_spin.value_as_int() as u8
     }
 
     pub fn asset_allocation(&self) -> Vec<(OutPoint, AtomicValue)> {
@@ -609,7 +609,7 @@ impl AssetDlg {
     }
 
     pub fn asset_inflation(&self) -> BTreeMap<OutPoint, AtomicValue> {
-        if self.inflation_check.get_active() {
+        if self.inflation_check.is_active() {
             self.inflation
                 .borrow()
                 .iter()
@@ -639,11 +639,11 @@ impl AssetDlg {
     }
 
     pub fn is_capped(&self) -> bool {
-        if !self.inflation_check.get_active() {
+        if !self.inflation_check.is_active() {
             false
         } else {
             self.inflation_combo
-                .get_active_id()
+                .active_id()
                 .map(|id| &*id == "limited")
                 .unwrap_or(false)
         }
@@ -658,10 +658,10 @@ impl AssetDlg {
     }
 
     pub fn inflation_cap(&self) -> f64 {
-        if !self.inflation_check.get_active() {
+        if !self.inflation_check.is_active() {
             0.0
         } else if self.is_capped() {
-            self.inflation_spin.get_value()
+            self.inflation_spin.value()
         } else {
             self.max_cap() - self.assigned_cap() - 1.0 // TODO: Fix this
         }
@@ -707,14 +707,13 @@ impl AssetDlg {
         &self,
     ) -> Option<(OutPoint, gtk::TreeModel, gtk::TreeIter)> {
         self.allocation_tree
-            .get_selection()
-            .get_selected()
+            .selection()
+            .selected()
             .and_then(|(model, iter)| {
                 model
-                    .get_value(&iter, 3)
+                    .value(&iter, 3)
                     .get::<String>()
                     .ok()
-                    .flatten()
                     .and_then(|s| OutPoint::from_str(&s).ok())
                     .map(|outpoint| (outpoint, model, iter))
             })
@@ -723,17 +722,17 @@ impl AssetDlg {
     fn selected_inflation_model(
         &self,
     ) -> Option<(OutPoint, gtk::TreeModel, gtk::TreeIter)> {
-        self.inflation_tree.get_selection().get_selected().and_then(
-            |(model, iter)| {
+        self.inflation_tree
+            .selection()
+            .selected()
+            .and_then(|(model, iter)| {
                 model
-                    .get_value(&iter, 3)
+                    .value(&iter, 3)
                     .get::<String>()
                     .ok()
-                    .flatten()
                     .and_then(|s| OutPoint::from_str(&s).ok())
                     .map(|outpoint| (outpoint, model, iter))
-            },
-        )
+            })
     }
 
     pub fn selected_allocation(&self) -> Option<(UtxoEntry, f64)> {
@@ -836,11 +835,11 @@ impl AssetDlg {
         self.ticker4_label.set_text(&ticker);
 
         self.renomen_btn
-            .set_sensitive(self.renomen_check.get_active());
-        self.epoch_btn.set_sensitive(self.epoch_check.get_active());
+            .set_sensitive(self.renomen_check.is_active());
+        self.epoch_btn.set_sensitive(self.epoch_check.is_active());
 
         self.inflation_combo
-            .set_sensitive(self.inflation_check.get_active());
+            .set_sensitive(self.inflation_check.is_active());
         self.inflation_adj.set_upper(self.max_cap());
         self.inflation_spin.set_sensitive(self.is_capped());
         if !self.is_capped() {
@@ -848,23 +847,23 @@ impl AssetDlg {
         }
 
         self.contract_text
-            .set_sensitive(self.contract_check.get_active());
+            .set_sensitive(self.contract_check.is_active());
 
         let allocation = self.selected_allocation();
         let inflation = self.selected_inflation();
-        if !self.inflation_check.get_active() {
-            self.inflation_tree.get_selection().unselect_all()
+        if !self.inflation_check.is_active() {
+            self.inflation_tree.selection().unselect_all()
         }
         self.allocation_remove_btn
             .set_sensitive(allocation.is_some());
         self.inflation_tree
-            .set_sensitive(self.inflation_check.get_active());
+            .set_sensitive(self.inflation_check.is_active());
         self.inflation_add_btn
-            .set_sensitive(self.inflation_check.get_active());
+            .set_sensitive(self.inflation_check.is_active());
         self.inflation_remove_btn.set_sensitive(inflation.is_some());
         self.amount_spin.set_sensitive(allocation.is_some());
         self.custom_spin.set_sensitive(
-            inflation.is_some() && self.custom_radio.get_active(),
+            inflation.is_some() && self.custom_radio.is_active(),
         );
         self.equal_radio.set_sensitive(inflation.is_some());
         self.custom_radio.set_sensitive(inflation.is_some());

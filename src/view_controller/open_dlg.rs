@@ -31,9 +31,9 @@ impl OpenDlg {
     pub fn load_glade() -> Option<Rc<Self>> {
         let builder = gtk::Builder::from_string(UI);
 
-        let open_btn = builder.get_object("open")?;
-        let cancel_btn = builder.get_object("cancel")?;
-        let dialog = builder.get_object("openDlg")?;
+        let open_btn = builder.object("open")?;
+        let cancel_btn = builder.object("cancel")?;
+        let dialog = builder.object("openDlg")?;
 
         Some(Rc::new(OpenDlg {
             dialog,
@@ -57,7 +57,7 @@ impl OpenDlg {
 
         me.open_btn
             .connect_clicked(clone!(@weak self as me => move |_| {
-                if let Some(path) = me.dialog.get_filename() {
+                if let Some(path) = me.dialog.filename() {
                     me.dialog.hide();
                     on_open(path);
                 }

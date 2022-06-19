@@ -125,47 +125,47 @@ impl DescriptorDlg {
     pub fn load_glade() -> Option<Rc<Self>> {
         let builder = gtk::Builder::from_string(UI);
 
-        let save_btn = builder.get_object("save")?;
-        let cancel_btn = builder.get_object("cancel")?;
+        let save_btn = builder.object("save")?;
+        let cancel_btn = builder.object("cancel")?;
 
-        let msg_box = builder.get_object("messageBox")?;
-        let msg_image = builder.get_object("messageImage")?;
-        let msg_label = builder.get_object("messageLabel")?;
+        let msg_box = builder.object("messageBox")?;
+        let msg_image = builder.object("messageImage")?;
+        let msg_label = builder.object("messageLabel")?;
 
-        let name_entry = builder.get_object("nameEntry")?;
+        let name_entry = builder.object("nameEntry")?;
 
-        let singlesig_radio = builder.get_object("singlesigRadio")?;
-        let singlesig_box = builder.get_object("singlesigBox")?;
-        let pubkey_entry = builder.get_object("pubkeyEntry")?;
+        let singlesig_radio = builder.object("singlesigRadio")?;
+        let singlesig_box = builder.object("singlesigBox")?;
+        let pubkey_entry = builder.object("pubkeyEntry")?;
 
-        let multisig_radio = builder.get_object("multisigRadio")?;
-        let multisig_frame = builder.get_object("multisigFrame")?;
-        let threshold_spin = builder.get_object("thresholdSpinner")?;
-        let threshold_adj = builder.get_object("thresholdAdj")?;
-        let pubkey_tree = builder.get_object("pubkeyTree")?;
-        let pubkey_store = builder.get_object("pubkeyStore")?;
+        let multisig_radio = builder.object("multisigRadio")?;
+        let multisig_frame = builder.object("multisigFrame")?;
+        let threshold_spin = builder.object("thresholdSpinner")?;
+        let threshold_adj = builder.object("thresholdAdj")?;
+        let pubkey_tree = builder.object("pubkeyTree")?;
+        let pubkey_store = builder.object("pubkeyStore")?;
 
-        let script_radio = builder.get_object("scriptRadio")?;
-        let script_frame = builder.get_object("scriptFrame")?;
-        let script_combo = builder.get_object("scriptCombo")?;
-        let script_text = builder.get_object("scriptText")?;
-        let script_buffer = builder.get_object("scriptBuffer")?;
+        let script_radio = builder.object("scriptRadio")?;
+        let script_frame = builder.object("scriptFrame")?;
+        let script_combo = builder.object("scriptCombo")?;
+        let script_text = builder.object("scriptText")?;
+        let script_buffer = builder.object("scriptBuffer")?;
 
-        let select_pk_btn = builder.get_object("selectPubkey")?;
-        let add_pk_btn = builder.get_object("addPubkey")?;
-        let insert_pk_btn = builder.get_object("insertPubkey")?;
-        let remove_pk_btn = builder.get_object("removePubkey")?;
+        let select_pk_btn = builder.object("selectPubkey")?;
+        let add_pk_btn = builder.object("addPubkey")?;
+        let insert_pk_btn = builder.object("insertPubkey")?;
+        let remove_pk_btn = builder.object("removePubkey")?;
 
-        let bare_check = builder.get_object("bareChk")?;
-        let hash_check = builder.get_object("hashChk")?;
-        let compat_check = builder.get_object("compatChk")?;
-        let segwit_check = builder.get_object("segwitChk")?;
-        let taproot_check = builder.get_object("taprootChk")?;
+        let bare_check = builder.object("bareChk")?;
+        let hash_check = builder.object("hashChk")?;
+        let compat_check = builder.object("compatChk")?;
+        let segwit_check = builder.object("segwitChk")?;
+        let taproot_check = builder.object("taprootChk")?;
 
-        let lookup_combo = builder.get_object("lookupCombo")?;
-        let lookup_btn = builder.get_object("lookupBtn")?;
-        let utxo_tree = builder.get_object("utxoTree")?;
-        let utxo_store = builder.get_object("utxoStore")?;
+        let lookup_combo = builder.object("lookupCombo")?;
+        let lookup_btn = builder.object("lookupBtn")?;
+        let utxo_tree = builder.object("utxoTree")?;
+        let utxo_store = builder.object("utxoStore")?;
 
         let me = Rc::new(Self {
             dialog: glade_load!(builder, "descriptorDlg").ok()?,
@@ -299,10 +299,10 @@ impl DescriptorDlg {
                 pubkey_dlg.run(
                     doc.clone(),
                     clone!(@weak me => move |tracking_account| {
-                        me.pubkey_store.insert_with_values(None, &[0, 1, 2], &[
-                            &tracking_account.name(),
-                            &tracking_account.details(),
-                            &tracking_account.count(),
+                        me.pubkey_store.insert_with_values(None, &[
+                            (0, &tracking_account.name()),
+                            (1, &tracking_account.details()),
+                            (2, &tracking_account.count()),
                         ]);
                         me.keyset.borrow_mut().push(tracking_account.key);
                     }),
@@ -329,12 +329,11 @@ impl DescriptorDlg {
         me.remove_pk_btn.connect_clicked(
             clone!(@weak me, @strong doc => move |_| {
                 if let Some((model, iter)) =
-                        me.pubkey_tree.get_selection().get_selected() {
+                        me.pubkey_tree.selection().selected() {
                     let key = model
-                        .get_value(&iter, 1)
+                        .value(&iter, 1)
                         .get::<String>()
-                        .expect("Must always be parseble")
-                        .expect("Key is always present");
+                        .expect("Must always be parseble");
                     if let Some(tracking_account) =
                             doc.borrow().tracking_account_by_key(&key) {
                         let pos = me.keyset
@@ -414,11 +413,10 @@ impl DescriptorDlg {
                         });
                     self.pubkey_store.insert_with_values(
                         None,
-                        &[0, 1, 2],
                         &[
-                            &tracking_account.name(),
-                            &tracking_account.details(),
-                            &tracking_account.count(),
+                            (0, &tracking_account.name()),
+                            (1, &tracking_account.details()),
+                            (2, &tracking_account.count()),
                         ],
                     );
                     self.keyset.borrow_mut().push(key);
@@ -456,7 +454,7 @@ impl DescriptorDlg {
 
         // TODO: Make sure that types are compatible with the content
 
-        let name = self.name_entry.get_text().to_string();
+        let name = self.name_entry.text().to_string();
         if name.is_empty() {
             return Err(Error::EmptyName);
         }
@@ -467,15 +465,15 @@ impl DescriptorDlg {
     }
 
     pub fn descriptor_content(&self) -> Result<descriptor::Template, Error> {
-        let content = if self.singlesig_radio.get_active() {
+        let content = if self.singlesig_radio.is_active() {
             let key = self.key.borrow().clone().ok_or(Error::EmptyKey)?;
             descriptor::Template::SingleSig(key)
-        } else if self.multisig_radio.get_active() {
+        } else if self.multisig_radio.is_active() {
             let pubkeys = self.keyset.borrow().clone();
             if pubkeys.len() < 2 {
                 return Err(Error::EmptyKeyset);
             }
-            let threshold = Some(self.threshold_spin.get_value_as_int() as u8);
+            let threshold = Some(self.threshold_spin.value_as_int() as u8);
             descriptor::Template::MultiSig(descriptor::MultiSig {
                 threshold,
                 pubkeys,
@@ -485,9 +483,9 @@ impl DescriptorDlg {
         } else {
             let source = self
                 .script_buffer
-                .get_text(
-                    &self.script_buffer.get_start_iter(),
-                    &self.script_buffer.get_end_iter(),
+                .text(
+                    &self.script_buffer.start_iter(),
+                    &self.script_buffer.end_iter(),
                     false,
                 )
                 .ok_or(Error::EmptyScript)?
@@ -499,7 +497,7 @@ impl DescriptorDlg {
             #[allow(unused_variables)]
             let script = match self
                 .script_combo
-                .get_active_id()
+                .active_id()
                 .ok_or(Error::SourceTypeRequired)?
                 .as_str()
             {
@@ -539,11 +537,11 @@ impl DescriptorDlg {
 
     pub fn descriptor_types(&self) -> descriptor::Variants {
         descriptor::Variants {
-            bare: self.bare_check.get_active(),
-            hashed: self.hash_check.get_active(),
-            nested: self.compat_check.get_active(),
-            segwit: self.segwit_check.get_active(),
-            taproot: self.taproot_check.get_active(),
+            bare: self.bare_check.is_active(),
+            hashed: self.hash_check.is_active(),
+            nested: self.compat_check.is_active(),
+            segwit: self.segwit_check.is_active(),
+            taproot: self.taproot_check.is_active(),
         }
     }
 
@@ -557,7 +555,7 @@ impl DescriptorDlg {
             ResolverModeType::from_str(
                 &*self
                     .lookup_combo
-                    .get_active_id()
+                    .active_id()
                     .ok_or(Error::LookupTypeRequired)?,
             )?,
             generator,
@@ -587,9 +585,9 @@ impl DescriptorDlg {
     }
 
     pub fn update_ui(&self) {
-        let is_singlesig = self.singlesig_radio.get_active();
-        let is_multisig = self.multisig_radio.get_active();
-        let is_lockscript = self.script_radio.get_active();
+        let is_singlesig = self.singlesig_radio.is_active();
+        let is_multisig = self.multisig_radio.is_active();
+        let is_lockscript = self.script_radio.is_active();
 
         self.singlesig_box.set_sensitive(is_singlesig);
         self.multisig_frame.set_sensitive(is_multisig);

@@ -31,9 +31,9 @@ impl SaveDlg {
     pub fn load_glade() -> Option<Rc<Self>> {
         let builder = gtk::Builder::from_string(UI);
 
-        let save_btn = builder.get_object("save")?;
-        let cancel_btn = builder.get_object("cancel")?;
-        let dialog = builder.get_object("saveDlg")?;
+        let save_btn = builder.object("save")?;
+        let cancel_btn = builder.object("cancel")?;
+        let dialog = builder.object("saveDlg")?;
 
         Some(Rc::new(SaveDlg {
             dialog,
@@ -50,7 +50,7 @@ impl SaveDlg {
     ) {
         let me = self.clone();
 
-        me.dialog.set_current_name(name.clone());
+        me.dialog.set_current_name(&name);
 
         me.cancel_btn
             .connect_clicked(clone!(@weak self as me => move |_| {
@@ -60,9 +60,9 @@ impl SaveDlg {
 
         me.save_btn
             .connect_clicked(clone!(@weak self as me, @strong name => move |_| {
-                if let Some(mut path) = me.dialog.get_current_folder() {
+                if let Some(mut path) = me.dialog.current_folder() {
                     me.dialog.hide();
-                    path.push(me.dialog.get_current_name().unwrap_or_else(|| name.clone().into()).as_str());
+                    path.push(me.dialog.current_name().unwrap_or_else(|| name.clone().into()).as_str());
                     on_save(path);
                 }
             }));

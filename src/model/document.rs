@@ -174,11 +174,10 @@ impl Document {
         self.profile.tracking.iter().for_each(|tracking_account| {
             store.insert_with_values(
                 None,
-                &[0, 1, 2],
                 &[
-                    &tracking_account.name(),
-                    &tracking_account.details(),
-                    &tracking_account.count(),
+                    (0, &tracking_account.name()),
+                    (1, &tracking_account.details()),
+                    (2, &tracking_account.count()),
                 ],
             );
         });
@@ -268,11 +267,10 @@ impl Document {
             .for_each(|descriptor_generator| {
                 store.insert_with_values(
                     None,
-                    &[0, 1, 2],
                     &[
-                        &descriptor_generator.name(),
-                        &descriptor_generator.type_name(),
-                        &descriptor_generator.descriptor(),
+                        (0, &descriptor_generator.name()),
+                        (1, &descriptor_generator.type_name()),
+                        (2, &descriptor_generator.descriptor()),
                     ],
                 );
             });
@@ -349,12 +347,11 @@ impl Document {
             {
                 store.insert_with_values(
                     None,
-                    &[0, 1, 2, 3],
                     &[
-                        &utxo.outpoint.txid.to_string(),
-                        &utxo.outpoint.vout,
-                        &utxo.amount,
-                        &utxo.height,
+                        (0, &utxo.outpoint.txid.to_string()),
+                        (1, &utxo.outpoint.vout),
+                        (2, &utxo.amount),
+                        (3, &utxo.height),
                     ],
                 );
             }
@@ -409,20 +406,29 @@ impl Document {
             if let Some((asset, _)) = self.asset_by_id(*contract_id) {
                 store.insert_with_values(
                     None,
-                    &[0, 1, 2, 3, 4, 5, 6, 7],
                     &[
-                        &asset.ticker(),
-                        &asset.name(),
-                        &asset.known_filtered_accounting_value(|allocation| {
-                            self.is_outpoint_known(*allocation.outpoint())
-                        }),
-                        &asset.accounting_supply(
-                            rgb20::SupplyMeasure::KnownCirculating,
+                        (0, &asset.ticker()),
+                        (1, &asset.name()),
+                        (
+                            2,
+                            &asset.known_filtered_accounting_value(
+                                |allocation| {
+                                    self.is_outpoint_known(
+                                        *allocation.outpoint(),
+                                    )
+                                },
+                            ),
                         ),
-                        &1,
-                        &(!asset.known_inflation().is_empty()),
-                        &0,
-                        &contract_id.to_string(),
+                        (
+                            3,
+                            &asset.accounting_supply(
+                                rgb20::SupplyMeasure::KnownCirculating,
+                            ),
+                        ),
+                        (4, &1),
+                        (5, &(!asset.known_inflation().is_empty())),
+                        (6, &0),
+                        (7, &contract_id.to_string()),
                     ],
                 );
             };

@@ -335,7 +335,7 @@ where
         Pk: ToPublicKey,
         S: Satisfier<Pk>,
     {
-        self.to_descriptor(false).get_satisfaction(satisfier)
+        self.to_descriptor(false).satisfaction(satisfier)
     }
 
     fn max_satisfaction_weight(&self) -> Result<usize, Error> {

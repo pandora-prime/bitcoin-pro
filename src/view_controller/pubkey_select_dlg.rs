@@ -45,11 +45,11 @@ impl PubkeySelectDlg {
     pub fn load_glade() -> Option<Rc<Self>> {
         let builder = gtk::Builder::from_string(UI);
 
-        let pubkey_store = builder.get_object("pubkeyStore")?;
-        let pubkey_selection = builder.get_object("pubkeySelection")?;
+        let pubkey_store = builder.object("pubkeyStore")?;
+        let pubkey_selection = builder.object("pubkeySelection")?;
 
-        let select_btn = builder.get_object("select")?;
-        let cancel_btn = builder.get_object("cancel")?;
+        let select_btn = builder.object("select")?;
+        let cancel_btn = builder.object("cancel")?;
 
         let me = Rc::new(Self {
             dialog: glade_load!(builder, "pubkeyDlg").ok()?,
@@ -107,16 +107,15 @@ impl PubkeySelectDlg {
 
     pub fn update_ui(&self) {
         self.select_btn
-            .set_sensitive(self.pubkey_selection.get_selected().is_some())
+            .set_sensitive(self.pubkey_selection.selected().is_some())
     }
 
     pub fn selected_pubkey(&self) -> Option<String> {
-        self.pubkey_selection.get_selected().map(|(model, iter)| {
+        self.pubkey_selection.selected().map(|(model, iter)| {
             model
-                .get_value(&iter, 1)
+                .value(&iter, 1)
                 .get::<String>()
                 .expect("Pubkey selection not found")
-                .expect("Pubkey kye string not found")
         })
     }
 }

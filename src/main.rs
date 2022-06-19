@@ -33,7 +33,7 @@ extern crate glib;
 #[macro_export]
 macro_rules! glade_load {
     ($builder:ident, $file:literal) => {
-        $builder.get_object($file).ok_or($crate::Error::ParseFailed)
+        $builder.object($file).ok_or($crate::Error::ParseFailed)
     };
 }
 
@@ -59,7 +59,7 @@ mod model;
 mod util;
 mod view_controller;
 
-use gio::prelude::*;
+use gtk::prelude::*;
 use std::cell::RefCell;
 use std::path::PathBuf;
 use std::rc::Rc;
@@ -68,8 +68,7 @@ use crate::view_controller::OpenDlg;
 
 fn main() {
     let application =
-        gtk::Application::new(Some("com.pandoracore.BitcoinPro"), default!())
-            .expect("BitcoinPro failed to initialize GTK environment");
+        gtk::Application::new(Some("com.pandoracore.BitcoinPro"), default!());
 
     application.connect_activate(|_| {
         fn new_app(path: Option<PathBuf>) {
@@ -91,5 +90,5 @@ fn main() {
         new_app(None);
     });
 
-    application.run(&std::env::args().collect::<Vec<_>>());
+    application.run();
 }

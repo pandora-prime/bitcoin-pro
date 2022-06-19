@@ -120,12 +120,11 @@ pub trait UtxoLookup {
                     if let Some(utxo_store) = uxto_store {
                         utxo_store.insert_with_values(
                             None,
-                            &[0, 1, 2, 3],
                             &[
-                                &utxo.outpoint.txid.to_string(),
-                                &utxo.outpoint.vout,
-                                &utxo.amount,
-                                &utxo.height,
+                                (0, &utxo.outpoint.txid.to_string()),
+                                (1, &utxo.outpoint.vout),
+                                (2, &utxo.amount),
+                                (3, &utxo.height),
                             ],
                         );
                     }
